@@ -95,9 +95,8 @@ qommons-ai-auto-test/
   │     │     └── chat_page.py
   │     ├── smoke/
   │     │     └── test_smoke_qommons.py
-  │     ├── rag_basic/
-  │     │     └── test_rag_basic_*.py
-  │     └── rag_advanced/
+  │     └── rag/
+  │           ├── test_rag_basic_*.py
   │           └── test_rag_advanced_*.py
   ├── data/
   │     └── rag/

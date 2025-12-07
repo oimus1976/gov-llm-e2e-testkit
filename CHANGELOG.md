@@ -5,6 +5,28 @@
 
 ---
 
+## [v0.1.8] - 2025-12-07
+
+### Added
+
+- **RAG Basic / Advanced pytest implementation v0.1** を追加  
+  - YAML → pytest のマッピング仕様（Design_RAG_Test_v0.1）に準拠  
+  - tests/rag/test_rag_basic_v0.1.py  
+  - tests/rag/test_rag_advanced_v0.1.py  
+
+### Changed
+
+- PROJECT_STATUS.md を v0.1.8 に更新  
+  - Next Action を CI（e2e.yml）v0.1 設計へ変更  
+  - rag_basic / rag_advanced の物理フォルダを廃止し、data/rag/ 統合構造へ整合  
+
+### Notes
+
+- v0.1.8 により RAG テストの **データ → 実装 → pytest 結合** が完了。  
+  CI レイヤに進むための準備が整った。
+
+---
+
 ## [v0.1.7] - 2025-12-07
 
 ### Added
