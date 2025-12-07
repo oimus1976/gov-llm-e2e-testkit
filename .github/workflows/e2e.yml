@@ -1,0 +1,45 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install
+
+      - name: Run Smoke Test
+        run: |
+          pytest tests/test_smoke_llm.py -q --disable-warnings
+
+      - name: Run Basic RAG Test
+        if: ${{ success() }}
+        run: |
+          pytest tests/rag/test_rag_basic_v0.1.py -q --disable-warnings
+
+      - name: Run Advanced RAG Test
+        if: ${{ success() }}
+        run: |
+          pytest tests/rag/test_rag_advanced_v0.1.py -q --disable-warnings
+
+      - name: Upload artifacts (failure only)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-failure-screenshots
+          path: logs/
