@@ -1,0 +1,30 @@
+# gov-llm-e2e-testkit — RAG Advanced Test Cases v0.1
+# multi-turn 会話にも対応できる将来拡張版
+
+cases:
+  - id: "RAG_ADV_001"
+    title: "施行日＋附則の確認（複合）"
+    turns:
+      - role: user
+        content: "かつらぎ町情報公開条例の施行日は？"
+      - role: expected_keywords
+        content:
+          - "施行日"
+          - "平成"
+    must_not_contain:
+      - "他自治体"
+      - "架空"
+
+  - id: "RAG_ADV_002"
+    title: "条例の目的（抽象度テスト）"
+    turns:
+      - role: user
+        content: "かつらぎ町情報公開条例の目的を教えてください。"
+      - role: expected_keywords
+        content:
+          - "情報公開"
+          - "透明性"
+          - "住民"
+    must_not_contain:
+      - "無関係"
+      - "別の法律"
