@@ -5,6 +5,32 @@
 
 ---
 
+## [v0.1.7] - 2025-12-07
+
+### Added
+
+- **test_plan_v0.1** を新規追加  
+  - Smoke / Basic RAG / Advanced RAG の3層テスト体系を正式策定  
+  - basic/advanced YAML のスキーマを定義  
+  - INTERNET/LGWAN 実行ポリシーを明文化  
+  - CI（e2e.yml）の基本方針を規定  
+  - UI変動／モデル更新時の再テスト手順を定義  
+  → テスト基盤の“最上位仕様”が確立された
+
+### Changed
+
+- PROJECT_STATUS.md を v0.1.7 に更新  
+  - test_plan 完成を反映  
+  - Next Action を「RAG YAML スキーマ実体化」に変更  
+  - Backlog を整理
+
+### Notes
+
+- v0.1.7 は **E2Eテスト体系の全体像が初めて統合された重要マイルストーン** であり、  
+  RAG 設計・CI 設計へ進むための基盤が整った。
+
+---
+
 ## [v0.1.6] - 2025-12-07
 
 ### Added
