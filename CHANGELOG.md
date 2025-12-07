@@ -5,6 +5,31 @@
 
 ---
 
+## [v0.1.3] - 2025-12-07
+
+### Added
+- **Startup Template v3.0（運転層統合版）** を新規作成  
+  - PROJECT_GRAND_RULES v3.0 と整合した行動規範を統合  
+  - Design_playwright_v0.1 / Locator_Guide_v0.2 への準拠を明文化  
+  - /start 時のブートシーケンスを再定義  
+- PROJECT_STATUS.md を v0.1.3 に更新  
+  - Startup Template v3.0 の運用開始を反映  
+  - 参照文書・Backlog・Next Action を最新化
+
+### Changed
+- 参照文書体系を最新版に整合  
+  - Startup Template → v3.0 に更新  
+  - STATUS / GRAND_RULES / Locator_Guide との依存関係を整理  
+- STATUS の「プロジェクト目的」「現在地」「未完了タスク」を刷新  
+- Next Action を **BasePage（Page Object 基底クラス）の作成**として再設定
+
+### Notes
+- 本バージョン v0.1.3 は、プロジェクトの「運転層（Startup Template）」が  
+  統治層（GRAND_RULES）と完全整合した、  
+  **初のフル統合バージョン**である。
+
+---
+
 ## [v0.1.2] - 2025-12-07
 
 ### Added
