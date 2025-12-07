@@ -5,6 +5,30 @@
 
 ---
 
+## [v0.1.6] - 2025-12-07
+
+### Added
+
+- **Design_LoginPage_v0.1** を新規追加  
+  - username / password / login ボタンのロケータ設計  
+  - login() / wait_for_login_success() など高レベルAPIを定義  
+  - BasePage / Locator_Guide_v0.2 に基づく UI変動耐性を確保  
+  - LGWAN timeout 対応を明示
+
+### Changed
+
+- PROJECT_STATUS.md を **v0.1.6** に更新  
+  - ChatPage / LoginPage 設計フェーズ完了を反映  
+  - Next Action を “BasePage 実装” に更新  
+  - Backlog と必須資料リストを整理
+
+### Notes
+
+- v0.1.6 により主要 Page Object（BasePage + ChatPage + LoginPage）の  
+  **設計段階がすべて完了し、実装フェーズへ移行可能**となった。
+
+---
+
 ## [v0.1.5] - 2025-12-07
 
 ### Added
