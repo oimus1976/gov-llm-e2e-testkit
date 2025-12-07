@@ -5,9 +5,34 @@
 
 ---
 
+## [v0.1.5] - 2025-12-07
+
+### Added
+
+- **Design_BasePage_v0.1** を新規追加  
+  - Page Object 基底クラスの責務・構造を定義  
+  - locator factory / safe actions / LGWAN timeout / loading wait など  
+    共通インターフェースの仕様を確立  
+  - Locator_Guide_v0.2 と Design_playwright_v0.1 に正式準拠
+
+### Changed
+
+- PROJECT_STATUS.md を v0.1.5 に更新  
+  - BasePage 設計書の完成を反映  
+  - Next Action を「ChatPage 設計書 v0.1 作成」に更新  
+  - 参照文書体系を最新化
+
+### Notes
+
+- 本バージョン v0.1.5 により、Page Object 層の“基底構造”が確立され、  
+  ChatPage / LoginPage / Smoke Test へ進むための基盤が完成した。
+
+---
+
 ## [v0.1.4] - 2025-12-07
 
 ### Added
+
 - **ChatGPT Startup Workflow v3.0** を新規追加  
   - PROJECT_GRAND_RULES v2.0 / Startup Template v3.0 と整合  
   - /start 時のブートシーケンスを拡張（参照文書同期・Next Action 単一検証・LGWAN判定など）  
@@ -16,6 +41,7 @@
   - LGWAN 実行モード（オフライン動作）の特別ルールを定義  
 
 ### Changed
+
 - PROJECT_STATUS.md を **v0.1.4** に更新  
   - Startup Workflow v3.0 の導入を反映  
   - 現在地／Backlog／Next Action を最新化  
@@ -24,6 +50,7 @@
   - 「設計（Design）／運転（Startup Template）／行動制御（Workflow）／実行（STATUS）」の4階層構造を明確化  
 
 ### Notes
+
 - 本バージョン v0.1.4 は、  
   Startup Template（運転層）に加えて **Startup Workflow（行動制御層）が完成した最初の版** であり、  
   プロジェクトが「設計駆動で破綻しない統制構造」を正式に獲得した重要バージョンである。
@@ -33,6 +60,7 @@
 ## [v0.1.3] - 2025-12-07
 
 ### Added
+
 - **Startup Template v3.0（運転層統合版）** を新規作成  
   - PROJECT_GRAND_RULES v3.0 と整合した行動規範を統合  
   - Design_playwright_v0.1 / Locator_Guide_v0.2 への準拠を明文化  
@@ -42,6 +70,7 @@
   - 参照文書・Backlog・Next Action を最新化
 
 ### Changed
+
 - 参照文書体系を最新版に整合  
   - Startup Template → v3.0 に更新  
   - STATUS / GRAND_RULES / Locator_Guide との依存関係を整理  
@@ -49,6 +78,7 @@
 - Next Action を **BasePage（Page Object 基底クラス）の作成**として再設定
 
 ### Notes
+
 - 本バージョン v0.1.3 は、プロジェクトの「運転層（Startup Template）」が  
   統治層（GRAND_RULES）と完全整合した、  
   **初のフル統合バージョン**である。
