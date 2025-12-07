@@ -1,32 +1,35 @@
 # PROJECT_STATUS — gov-llm-e2e-testkit
 
 最終更新: 2025-12-07  
-バージョン: v0.1.3  
-ステータス: Startup Template v3.0 反映済（運転層刷新）
+バージョン: v0.1.4  
+ステータス: Startup Workflow v3.0 を採用し、行動制御レイヤを正式装備
 
 ---
 
 ## 1. プロジェクト概要
 
-本プロジェクトは **自治体向け LLLM サービス（Qommons.AI を含む）を対象とした  
+本プロジェクトは **自治体向け LLM サービスを対象とした  
 E2E 自動テスト基盤（Python + Playwright）** を構築する。
 
-設計書（Design）、UI識別規範（Locator Guide）、STATUS、CHANGELOG を軸に  
-INTERNET / LGWAN 両環境で再現性の高い QA テストを長期運用できる仕組みを作ることが目的。
+参照文書（GRAND_RULES / Startup Template / Workflow / Design / Locator Guide / CHANGELOG）を軸に、  
+**INTERNET / LGWAN 両環境**で壊れない長期 QA 基盤を整備する。
 
-本ステータスは **プロジェクト階層の第3層＝実行レイヤ** として、  
-現時点の進捗・次のタスク・未決課題を記録する唯一の正本である。
+本ステータスはプロジェクト階層の **第3層＝実行レイヤ** として、  
+現時点の進捗と次の最小タスク（Next Action）を記録する唯一の正本である。
 
 ---
 
 ## 2. 現在地（Where we are now）
 
-- **Startup Template v3.0（統合運転層）を正式採用**  
-- PROJECT_GRAND_RULES v3.0（統治層）と整合  
-- Design_playwright_v0.1（Playwright設計）を保有  
-- Locator_Guide_v0.2（UI識別規範）を設計・格納済  
-- gov-llm-e2e-testkit の基盤文書体系がほぼ出揃い、  
-  Page Object 実装フェーズに進める状態となった
+- PROJECT_GRAND_RULES v2.0（統治層）を完全採用 :contentReference[oaicite:3]{index=3}
+- Startup Template v3.0（運転層）を正式採用 :contentReference[oaicite:3]{index=3}
+- Startup Workflow v3.0（行動制御レイヤ）を導入 :contentReference[oaicite:4]{index=4}
+- Design_playwright_v0.1（Playwright設計書）を保持 :contentReference[oaicite:0]{index=0}
+- Locator_Guide_v0.2 を保持（UI識別の唯一の規範） :contentReference[oaicite:1]{index=1}
+- CHANGELOG v0.1.3 まで更新済 :contentReference[oaicite:6]{index=6}
+
+設計・運転・統治・行動制御の 4 レイヤが揃い、  
+**BasePage（Page Object 基底）の設計に進む前提条件がすべて整った状態**。
 
 ---
 
@@ -34,75 +37,107 @@ INTERNET / LGWAN 両環境で再現性の高い QA テストを長期運用で�
 
 - プロジェクト名変更（qommons-ai-auto-test → gov-llm-e2e-testkit）
 - Startup Template v1.1 → v3.0（運転層の総合刷新）
-- PROJECT_GRAND_RULES v3.0 を制定・採択
-- Design_playwright_v0.1 の生成・格納
-- Locator_Guide_v0.2（UI識別規範）を生成・格納
-- CHANGELOG 初版（v0.1.0〜v0.1.2）作成完了
-- STATUS v0.1.2 → v0.1.3（本更新）
+- PROJECT_GRAND_RULES v2.0 を制定・採用
+- Design_playwright_v0.1 を作成
+- Locator_Guide_v0.2 を作成
+- ChatGPT Startup Workflow v3.0 を作成（行動制御の定着）
+- CHANGELOG v0.1.0〜v0.1.3 完成
+- STATUS v0.1.3 → v0.1.4（本更新）
 
 ---
 
 ## 4. 未完了タスク（Backlog）
 
-- **Page Object 標準インターフェース（BasePage）作成** ← 最優先
-- ChatPage / LoginPage の実装  
-- RAG テストデータ（YAML/JSON スキーマ）設計  
-- 初回 Smoke Test（test_smoke_llm.py）作成  
-- CI（e2e.yml）初版の設計（pytest + Playwright）  
-- INTERNET / LGWAN 実行切替ロジックの整理（config/env.yaml）  
-- Advanced RAG Test 用 DSL/シナリオ定義  
-- test_plan（RAGテスト方針 v0.1）作成
+### 🔹 設計フェーズ
+
+- **BasePage 標準インターフェース設計（design/BasePage_spec_v0.1）** ← これが次
+- ChatPage / LoginPage の設計
+- test_plan（RAGテスト方針）作成
+- e2e.yml（CI設計書 v0.1）作成
+
+### 🔹 実装フェーズ
+
+- BasePage（Pythonコード）作成
+- ChatPage / LoginPage 実装
+- Smoke Test 初版（test_smoke_llm.py）
+
+### 🔹 データ設計
+
+- RAG テストデータ構造（YAML/JSON）策定
+- basic / advanced ケースのスキーマ化
+
+### 🔹 環境関連
+
+- INTERNET / LGWAN 切替ロジック（config/env.yaml）設計
+- LGWAN 遅延向け timeout / retry 戦略の明文化
 
 ---
 
 ## 5. リスク・注意点（Risks）
 
-- LLM UI の変更に伴う Page Object 崩壊リスク  
-- LGWAN の低速回線によるタイムアウト増大  
-- Qommons.AI 側 DOM 構造の変動  
-- YAML データ（expected_keywords）の粒度過不足  
-- テストログ（Markdown/スクショ）容量増大  
-- CI（GitHub Actions）でのブラウザインストール不備  
-- Startup Template / GR と STATUS の不整合が進むリスク
+- BasePage 設計が曖昧だと Page Object 全体が破綻
+- UI変動 → ロケータ破壊 → テスト全停止のリスク
+- LGWAN 低速での timeout 増大
+- RAG データの品質による誤検知
+- CI（GitHub Actions）でのブラウザ依存
+- 設計書とコードの乖離
+
+Workflow v3.0 と GRAND RULES により  
+“設計駆動で進む限り破綻しない構造” は整備済。  
+次は BasePage 仕様でこの構造をコードに落とす段階。
 
 ---
 
 ## 6. Next Action（最優先タスク：常に1つ）
 
-### ▶ **Page Object 標準インターフェース（BasePage）を design/ に作成する**
+### ▶ **BasePage（Page Object 基底クラス）の設計書を design/ に作成する**
 
-**理由：**
+**目的：**  
 
-- Locator_Guide と Design_playwright の仕様をコードに落とし込む最初の要  
-- ChatPage / LoginPage / Smoke Test すべての土台  
-- UI変動時の影響範囲を最小にする構造を整えるため
+- UI操作の共通インターフェースを確立  
+- Locator_Guide_v0.2 のロケータ優先順位を実装に適用  
+- ChatPage / LoginPage / Smoke Test の共通基盤を構築  
+- UI変動時に修正箇所を 1 箇所に集約できる構造を作る
+
+**必要な参照文書：**  
+
+- Design_playwright_v0.1 :contentReference[oaicite:0]{index=0}  
+- Locator_Guide_v0.2 :contentReference[oaicite:1]{index=1}  
+- Startup Template v3.0 :contentReference[oaicite:3]{index=3}  
+- Startup Workflow v3.0 :contentReference[oaicite:4]{index=4}
 
 ---
 
 ## 7. 必須資料（Files / Specs）
 
-- PROJECT_GRAND_RULES v3.0  
-- Startup Template v3.0（運転層）  
+- PROJECT_GRAND_RULES v2.0  
+- Startup Template v3.0  
+- Startup Workflow v3.0  
 - Design_playwright_v0.1.md  
 - Locator_Guide_v0.2.md  
 - CHANGELOG.md  
-- （未作成）test_plan  
-- （未作成）e2e.yml（CI初版）
+- （未）BasePage_spec_v0.1  
+- （未）test_plan  
+- （未）e2e.yml
 
 ---
 
 ## 8. PENTA 推奨ポイント
 
-- BasePage 設計・メソッド構成  
-- RAG テストデータ設計（YAML/JSON）  
-- CI の timeout / retry 戦略  
-- LGWAN 実行手順の明文化  
-- Breaking Change（互換性破壊）の扱い判断
+- BasePage の責務・必須メソッド一覧  
+- ロケータの抽象化粒度  
+- LGWAN 遅延を考慮した timeout パラメータ  
+- Basic / Advanced RAG の構造統一  
+- CI での安定性確保（timeout / retries / artifacts）
 
 ---
 
 ## 9. 更新履歴（STATUS version history）
 
+- **v0.1.4（2025-12-07）**  
+  - Startup Workflow v3.0 の導入を反映  
+  - Next Action と Backlog を Workflow 仕様に合わせ整理  
+  - 必須資料に Workflow v3.0 を追加  
 - **v0.1.3（2025-12-07）**  
   - Startup Template v3.0 採用に伴い、STATUS を全面更新  
   - 参照文書・Backlog・Next Action を最新化  
