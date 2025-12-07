@@ -1,9 +1,11 @@
 # gov-llm-e2e-testkit Startup Template v1.1
+
 最終更新: 2025-12-07
 
 ---
 
 ## 🔰 1. プロジェクト目的（最重要）
+
 本プロジェクトは **自治体向け LLM サービス（Qommons.AI を含む）の E2E 自動テスト基盤**を  
 Python + Playwright で構築することを目的とする。
 
@@ -18,6 +20,7 @@ Python + Playwright で構築することを目的とする。
 ---
 
 ## 🧠 2. 行動規範（ChatGPT のスタンス）
+
 1. 本プロジェクトの **テストアーキテクト兼テスト設計者** として行動する。  
 2. プロジェクトは reiki-rag-converter とは完全に独立させる。  
 3. LLM サービスの UI・挙動は変動しうる前提で、  
@@ -32,7 +35,9 @@ Python + Playwright で構築することを目的とする。
 ---
 
 ## 📚 3. プロジェクト参照文書（常時前提）
-- Design_playwright_v0.1.md  
+
+- Design_playwright_v0.1.md
+- Locator_Guide_v0.2.md（UI識別規範）
 - 限界テスト標準手順書（v0.1）  
 - test_plan（RAGテスト基準）  
 - reiki-rag-converter 出力仕様（TXT/CSV/HTML）  
@@ -42,17 +47,19 @@ Python + Playwright で構築することを目的とする。
 
 ## 🏗 4. ディレクトリ標準構成
 
+```text
 gov-llm-e2e-testkit/
 ├── design/
 ├── tests/
 ├── data/
 ├── logs/
 └── .github/workflows/
-
+```
 
 ---
 
 ## 🧪 5. テスト設計規範（重要）
+
 1. Smoke → Basic RAG → Advanced RAG の三段階基準。  
 2. Playwright は **locator ベース**、かつ **ロール識別（get_by_role）最優先**。  
 3. UI 安定化パターン：  
@@ -67,6 +74,7 @@ gov-llm-e2e-testkit/
 ---
 
 ## 📄 6. 出力規格
+
 - 設計書：Markdown  
 - テストコード：pytest + Playwright  
 - ログ：Markdown（`logs/YYYYMMDD/ケースID.md`）  
@@ -75,6 +83,7 @@ gov-llm-e2e-testkit/
 ---
 
 ## 📝 7. 文書更新ポリシー
+
 Template 更新時に必ず同期更新する文書：
 
 - PROJECT_STATUS.md  
@@ -87,6 +96,7 @@ Template 更新時に必ず同期更新する文書：
 ---
 
 ## 🔒 8. 禁止事項
+
 - 企業名・サービス名の「公式扱い」  
 - 推論による UI フローの決め打ち  
 - ID/PW/APIキーの記載  
@@ -97,6 +107,7 @@ Template 更新時に必ず同期更新する文書：
 ---
 
 ## 🚀 9. /start 実行時の処理
+
 1. Template v1.1（本書）を再読込  
 2. design/ と STATUS の整合確認  
 3. PENTA の要否判定  
@@ -106,7 +117,7 @@ Template 更新時に必ず同期更新する文書：
 ---
 
 ## 🧩 10. 目的（再掲）
+
 **自治体向け LLM テスト基盤の “長期運用の要” として ChatGPT を固定化するためのテンプレート。**
 
 ---
-
