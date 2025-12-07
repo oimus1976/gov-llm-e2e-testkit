@@ -5,6 +5,31 @@
 
 ---
 
+## [v0.1.4] - 2025-12-07
+
+### Added
+- **ChatGPT Startup Workflow v3.0** を新規追加  
+  - PROJECT_GRAND_RULES v2.0 / Startup Template v3.0 と整合  
+  - /start 時のブートシーケンスを拡張（参照文書同期・Next Action 単一検証・LGWAN判定など）  
+  - 作業フェーズ（設計→実装→テスト→文書更新）を体系化  
+  - UI変動・モデル更新の検知フローを追加  
+  - LGWAN 実行モード（オフライン動作）の特別ルールを定義  
+
+### Changed
+- PROJECT_STATUS.md を **v0.1.4** に更新  
+  - Startup Workflow v3.0 の導入を反映  
+  - 現在地／Backlog／Next Action を最新化  
+  - 必須資料に Workflow v3.0 を追加  
+- プロジェクト内部レイヤを再整理  
+  - 「設計（Design）／運転（Startup Template）／行動制御（Workflow）／実行（STATUS）」の4階層構造を明確化  
+
+### Notes
+- 本バージョン v0.1.4 は、  
+  Startup Template（運転層）に加えて **Startup Workflow（行動制御層）が完成した最初の版** であり、  
+  プロジェクトが「設計駆動で破綻しない統制構造」を正式に獲得した重要バージョンである。
+
+---
+
 ## [v0.1.3] - 2025-12-07
 
 ### Added
