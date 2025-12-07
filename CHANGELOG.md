@@ -5,6 +5,25 @@
 
 ---
 
+## [v0.1.9] - 2025-12-07
+
+### Added
+
+- **Design_ci_e2e_v0.1.md** を追加（INTERNET向け CI 設計の正式版）
+- .github/workflows/e2e.yml の仕様を確定
+
+### Changed
+
+- PROJECT_STATUS を v0.1.9 に更新  
+  - Next Action を「CI（e2e.yml）v0.1 の実装」に変更  
+
+### Notes
+
+- 本版により、gov-llm-e2e-testkit の E2E 自動化パイプラインの設計が完成。  
+  次は CI 実ファイル e2e.yml の GitHub 反映へ進む。
+
+---
+
 ## [v0.1.8] - 2025-12-07
 
 ### Added
