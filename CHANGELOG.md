@@ -5,6 +5,19 @@
 
 ---
 
+## [v0.1.11] - 2025-12-07
+
+### Added
+- env_loader.py v0.1 を追加（env.yaml の正式ローダー）
+- BasePage / pytest への env 連携を統一
+
+### Changed
+- PROJECT_STATUS を v0.1.11 に更新  
+  - env.yaml ローダー実装完了を反映  
+  - Next Action を「ロギング仕様 v0.1」策定に変更
+
+---
+
 ## [v0.1.10] - 2025-12-07
 
 ### Added
