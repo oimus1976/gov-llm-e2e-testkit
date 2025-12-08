@@ -5,6 +5,20 @@
 
 ---
 
+## [v0.1.12] - 2025-12-07
+
+### Added
+- Responsibility_Map_v0.1.md を新規追加（全レイヤの責務境界を正式定義）
+- Design_pytest_env_v0.1.md を追加（pytest Execution Layer の正式設計）
+- conftest.py v0.1 の設計仕様を正式確立（browser/context/page生成・timeout適用・env_loader連携）
+
+### Changed
+- PROJECT_STATUS を v0.1.12 に更新  
+  - Responsibility Map / pytest Execution Layer 追加を反映  
+  - Next Action を「ロギング仕様 v0.1」に変更
+
+---
+
 ## [v0.1.11] - 2025-12-07
 
 ### Added
