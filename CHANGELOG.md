@@ -5,6 +5,34 @@
 
 ---
 
+## v0.2.0 (2025-12-09)
+
+### Added
+
+- `docs/Debugging_Principles_v0.1.md` を追加  
+  - E2E / Python / SPA / CI に共通するデバッグ原則を体系化。
+
+### Changed
+
+- E2Eテスト基盤を Playwright Async → Sync へ移行し、安定動作を実現。
+  - LoginPage（Sync版）を正式採用  
+  - conftest.py を Sync Playwright に書き換え  
+  - no_wait_after=True を標準化  
+  - headless=False を推奨デバッグモードに設定
+
+### Fixed
+
+- Async Playwright が pytest-asyncio(strict) と競合して停止する問題を解消。  
+- SPA ログインが navigation せずタイムアウトする問題を Sync版で安定回避。  
+- Smoke Test が安定して PASS することを確認。
+
+### Notes
+
+- 次版では ChatPage Sync 実装と RAG Basic Sync テストを予定。  
+- Debugging_Principles は v0.2 → v0.3 系でさらに強化（逆引き辞典・フローチャート）。
+
+---
+
 ## v0.1.17 (2025-12-08)
 ### pytest Execution Layer v0.2
 - ADD: conftest.py に `case_dirs` fixture を追加し、テストケース単位で evidence_dir を生成

@@ -1,0 +1,16 @@
+[project]
+name = "gov-llm-e2e-testkit"
+version = "0.1.0"
+description = "E2E Testkit for LLM-based municipal chat systems"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

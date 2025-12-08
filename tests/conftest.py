@@ -1,107 +1,66 @@
-# ---------------------------------------------------------
-# conftest.py  -- pytest Execution Layer v0.2
-# gov-llm-e2e-testkit
-#
-# v0.2 のポイント
-#  - case_dirs fixture によりテストケース単位で evidence_dir を生成
-#  - PageObject v0.2 (safe_click / safe_fill / collect_evidence) と統合
-#  - INTERNET / LGWAN の timeout を page.default_timeout に反映
-# ---------------------------------------------------------
-
 import pytest
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
-
-from playwright.async_api import async_playwright
-
+from datetime import datetime, timedelta, timezone
 from src.env_loader import load_env
-from src.log_writer import ensure_log_dirs   # ★ pytest v0.2 の中心機能
+from playwright.sync_api import sync_playwright
 
-
-# ---------------------------------------------------------
-# 1. env_config
-# ---------------------------------------------------------
+# -------------------------------
+# env.yaml ロード
+# -------------------------------
 @pytest.fixture(scope="session")
 def env_config():
-    """
-    config, options の tuple を返す（仕様通り）
-    config には profile / browser などの環境設定
-    options には retry_policy / log_dir などの実行オプション
-    """
     config, options = load_env()
     return config, options
 
 
-# ---------------------------------------------------------
-# 2. browser fixture
-# ---------------------------------------------------------
+# -------------------------------
+# Playwright browser（Sync版）
+# -------------------------------
 @pytest.fixture(scope="session")
-async def browser(env_config):
-    config, _ = env_config
-
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=config["browser"]["headless"]
-        )
+def browser():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
         yield browser
-        await browser.close()
+        browser.close()
 
 
-# ---------------------------------------------------------
-# 3. log_base_dir
-# ---------------------------------------------------------
-@pytest.fixture(scope="session")
-def log_base_dir(env_config):
-    """
-    log_writer が使用する logs/ ディレクトリの基準パス
-    env.options.log_dir に従う
-    """
-    config, options = env_config
-    log_dir = options.get("log_dir", "logs")
-    return Path(log_dir)
-
-
-# ---------------------------------------------------------
-# 4. page fixture
-# ---------------------------------------------------------
-@pytest.fixture
-async def page(browser, env_config):
-    """
-    PageObject が参照する Playwright Page を生成する。
-    LGWAN / INTERNET の timeout は page.default_timeout に統一して反映。
-    """
+# -------------------------------
+# context fixture（Sync版）
+# -------------------------------
+@pytest.fixture(scope="function")
+def context(browser, env_config):
     config, _ = env_config
+    timeout_ms = config["browser"]["page_timeout_ms"]
 
-    context = await browser.new_context()
-    page = await context.new_page()
+    context = browser.new_context()
+    context.set_default_timeout(timeout_ms)
+    yield context
+    context.close()
 
-    page.set_default_timeout(config["browser"]["page_timeout_ms"])
 
+# -------------------------------
+# page fixture（Sync版）
+# -------------------------------
+@pytest.fixture(scope="function")
+def page(context):
+    page = context.new_page()
     yield page
-    await context.close()
+    page.close()
 
 
-# ---------------------------------------------------------
-# 5. case_dirs fixture（pytest v0.2 の最重要追加）
-# ---------------------------------------------------------
-@pytest.fixture
-def case_dirs(log_base_dir):
-    """
-    case_id と timestamp から以下を生成する:
-      - case_log_dir     : Markdown ログの保存先
-      - case_assets_dir  : スクリーンショット / DOM evidence の保存先
+# -------------------------------
+# ログディレクトリ生成
+# -------------------------------
+@pytest.fixture(scope="function")
+def case_dirs():
+    now = datetime.now(timezone(timedelta(hours=9)))
+    ymd = now.strftime("%Y%m%d")
 
-    使用例:
-        now = datetime.now(JST)
-        case_log_dir, case_assets_dir = case_dirs("SMOKE_001", now)
+    base = Path("logs")
+    d1 = base / ymd
+    d2 = base / "assets" / ymd
 
-        answer = await chat_page.ask(
-            "こんにちは",
-            evidence_dir=case_assets_dir
-        )
-    """
+    d1.mkdir(parents=True, exist_ok=True)
+    d2.mkdir(parents=True, exist_ok=True)
 
-    def _make(case_id: str, now: datetime):
-        return ensure_log_dirs(log_base_dir, case_id, now)
-
-    return _make
+    return d1, d2
