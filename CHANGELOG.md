@@ -5,6 +5,26 @@
 
 ---
 
+## v0.1.15 (2025-12-09)
+
+### Added
+
+* `test_smoke_llm.py`、`test_rag_basic_v0.1.py`、`test_rag_advanced_v0.1.py` に
+  **log_writer v0.1 を正式統合**
+* multi-turn advanced ログ仕様に基づく詳細ログ（details）生成を追加
+
+### Changed
+
+* `tests/conftest.py` を v0.1.15 仕様に書き換え（env_config tuple 化・timeout 正常化）
+* Basic / Advanced 判定ロジックを設計書の通り統一
+
+### Notes
+
+* これにより E2E testkit の全レイヤが一貫し、
+  CI artifacts も公式仕様どおりに整う v0.1 系の最終安定版となった。
+  
+---
+
 ## **[v0.1.14] - 2025-12-08**
 
 ### Added
