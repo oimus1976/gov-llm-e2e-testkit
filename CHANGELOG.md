@@ -5,6 +5,26 @@
 
 ---
 
+## [v0.1.10] - 2025-12-07
+
+### Added
+
+- Design_env_v0.1.md（INTERNET/LGWAN 切替仕様の正式版）を追加
+
+### Changed
+
+- PROJECT_STATUS を v0.1.10 に更新  
+  - env.yaml 設計の完了を反映  
+  - Next Action を「env.yaml（実ファイル）生成」に変更
+
+### Notes
+
+- 本バージョンにより、INTERNET・LGWAN の環境統合レイヤが完成。  
+  gov-llm-e2e-testkit は次に env.yaml 実体生成フェーズへ移行する。
+
+
+---
+
 ## [v0.1.9] - 2025-12-07
 
 ### Added
