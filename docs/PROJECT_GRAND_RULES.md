@@ -77,7 +77,7 @@ ChatGPT を開発メンバーとして長期運用するための **不変の最
 プロジェクトは以下構造に厳格に従う：
 
 ```text
-/design        → 設計書（Design_*.md, Locator_Guide_*.md）
+/docs        → 設計書（Design_*.md, Locator_Guide_*.md）
 /tests         → Playwright/pytest テストコード  
 /data          → RAGテストデータ（YAML/JSON）  
 /config        → INTERNET/LGWAN 設定  
@@ -91,14 +91,41 @@ README.md
 
 ---
 
-## 4. ドキュメント規範（Documentation Standard）
+## **4. ドキュメント規範（Documentation Standard）**
 
-- h1 はタイトルのみ
-- 設計書は統一フォーマット（目的→背景→要求→設計→例外→テスト→拡張）
-- コードブロックは言語指定必須（`python`, `yaml`, `bash`）
-- Markdown で階層構造を守る
-- 設計書・STATUS・Template の不整合が生じた場合は
-  **設計書が正とされる**
+### **4.1 基本規範（General Documentation Rules）**
+
+* h1 はタイトルのみ使用する
+* 設計書は統一フォーマット（目的 → 背景 → 要求 → 設計 → 例外 → テスト → 拡張）に従う
+* コードブロックには必ず言語指定を付与する（`python`, `yaml`, `bash` など）
+* Markdown の階層構造を適切に保つ
+* 設計書・STATUS・Template の間で不整合が生じた場合、
+  **設計書が唯一の“正”として優先される**
+
+---
+
+### **4.2 設計書バージョニング標準（Design Document Versioning Policy）**
+
+1. 設計書（Design_XXX_*）は原則として **バージョン付きファイル形式** で管理する
+   
+   - 例：`Design_BasePage_v0.1.md`, `Design_BasePage_v0.2.md`
+
+2. 過去バージョンは削除せず、**docs ディレクトリ内に全て履歴として永久保存**する
+
+3. 最新版のみ参照させたい場合は、固定名の
+   **`Design_XXX.md`（latest alias）** を作成し、そこに誘導する
+
+4. 破壊的変更（Breaking Changes）がある場合は、
+   **v0.x → v0.(x+1)** の形式でバージョンを increment する
+
+5. 設計書の更新フローは以下の順序に必ず従う
+   **設計 → 実装 → CI → STATUS 更新 → CHANGELOG 追記**
+   （GRAND_RULES 既存の統治原則を踏襲）
+
+6. 設計書を supersede（置換）する場合は、
+   **新バージョンの冒頭に supersede の明記を必須とする**
+
+   - 例：`This document supersedes Design_BasePage_v0.2.`
 
 ---
 
