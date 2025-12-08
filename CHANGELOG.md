@@ -5,6 +5,21 @@
 
 ---
 
+## [v0.1.13] - 2025-12-07
+
+### Added
+
+- Design_logging_v0.1.md を新規追加（標準ログフォーマットを定義）
+  - frontmatter・基本構造・Basic/Advanced 差分・スクショ保存規約を含む
+
+### Changed
+
+- PROJECT_STATUS を v0.1.13 に更新  
+  - logging v0.1 の追加を反映  
+  - Next Action を「logger_v0.1 設計」に変更
+
+---
+
 ## [v0.1.12] - 2025-12-07
 
 ### Added
