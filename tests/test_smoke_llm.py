@@ -1,50 +1,56 @@
 # tests/test_smoke_llm.py
 # gov-llm-e2e-testkit Smoke Test (v0.1)
 # 目的：ログイン → 質問 → 応答取得 が成立することのみを確認
-# UI変動に影響されにくい最小アクションのみを実施する
 
+from datetime import datetime, timezone, timedelta
 import pytest
-import asyncio
-from playwright.async_api import async_playwright
 
-from tests.pages.login_page import LoginPage
-from tests.pages.chat_page import ChatPage
+from src.log_writer import LogContext, create_case_log
 
 
 @pytest.mark.asyncio
-async def test_smoke_llm():
-    async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=True)
-        page = await browser.new_page()
+async def test_smoke_llm(chat_page, env_config, log_base_dir):
+    """
+    Smoke Test の正式構造：
+    - chat_page fixture：ログイン済み PageObject を提供
+    - env_config：config, options から環境情報を取得
+    - log_writer：ログ生成を行う
+    """
+    config, options = env_config
 
-        # Timeout 設定（将来 env.yaml で管理）
-        TIMEOUT = 20000
+    # -------------------------
+    # 1. 実行
+    # -------------------------
+    question = "こんにちは"
+    answer = await chat_page.ask(question)
 
-        # -------------------------
-        # 1. LoginPage 初期化
-        # -------------------------
-        login = LoginPage(page, timeout=TIMEOUT)
+    # -------------------------
+    # 2. 判定
+    # -------------------------
+    status = "PASS" if isinstance(answer, str) and answer.strip() else "FAIL"
 
-        # テスト用アカウント（暫定）
-        # 将来は config/env.yaml から secure に読み込む
-        USERNAME = "test-user"
-        PASSWORD = "test-pass"
+    # -------------------------
+    # 3. ログ生成
+    # -------------------------
+    ctx = LogContext(
+        case_id="SMOKE_001",
+        test_type="smoke",
+        environment=config["profile"],
+        timestamp=datetime.now(timezone(timedelta(hours=9))),
+        browser_timeout_ms=config["browser"]["browser_timeout_ms"],
+        page_timeout_ms=config["browser"]["page_timeout_ms"],
+        question=question,
+        output_text=answer,
+        status=status,
+        metadata={
+            "browser": "chromium",
+            "test_type": "smoke",
+        },
+    )
 
-        await page.goto("https://example.com/login")  # 実環境 URL を後で設定
-        await login.login(USERNAME, PASSWORD)
+    create_case_log(log_base_dir, ctx)
 
-        # -------------------------
-        # 2. ChatPage 初期化
-        # -------------------------
-        chat = ChatPage(page, timeout=TIMEOUT)
-        await chat.wait_for_ready()
-
-        # -------------------------
-        # 3. ask → 応答チェック
-        # -------------------------
-        response = await chat.ask("これは動作テストです。")
-
-        assert isinstance(response, str)
-        assert len(response.strip()) > 0, "LLM が応答を返しませんでした。"
-
-        await browser.close()
+    # -------------------------
+    # 4. pytest アサーション
+    # -------------------------
+    assert status == "PASS", "LLM が応答を返しませんでした。"
