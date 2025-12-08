@@ -1,8 +1,21 @@
+# tests/rag/test_rag_basic_v0.1.py
+# Basic RAG Test v0.1
+# 目的：
+# - expected_keywords がすべて回答に含まれる（AND 判定）
+# - must_not_contain が回答に含まれない（NOT 判定）
+# - 結果を log_writer により Markdown ログとして残す
+
 import pytest
 import yaml
 import pathlib
 
+from datetime import datetime, timezone, timedelta
+from src.log_writer import LogContext, create_case_log
+
+
+# ---------------------------------------------------------
 # YAML 読み込みユーティリティ
+# ---------------------------------------------------------
 def load_basic_cases():
     path = pathlib.Path("data/rag/basic_cases.yaml")
     try:
@@ -15,25 +28,61 @@ def load_basic_cases():
     except Exception as e:
         pytest.skip(f"YAML load error: {e}")
 
+
+# ---------------------------------------------------------
+# Basic RAG Test（正式版）
+# ---------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", load_basic_cases())
-async def test_rag_basic(case, chat_page):
-    """
-    Basic RAG Test v0.1
-    - expected_keywords がすべて回答文に含まれているか
-    - must_not_contain が回答文に含まれないか
-    """
+async def test_rag_basic(case, chat_page, env_config, log_base_dir):
+    config, options = env_config
+
+    # -------------------------
+    # 1. 実行
+    # -------------------------
     question = case["question"]
+    answer = await chat_page.ask(question)
+
+    # -------------------------
+    # 2. 判定
+    # -------------------------
     expected_keywords = case.get("expected_keywords", [])
     must_not = case.get("must_not_contain", [])
 
-    # LLMへの質問（Page Objectの高レベルAPI）
-    answer = await chat_page.ask(question)
+    missing = [kw for kw in expected_keywords if kw not in answer]
+    unexpected = [ng for ng in must_not if ng in answer]
 
-    # expected_keywords の AND 判定
-    for kw in expected_keywords:
-        assert kw in answer, f"[{case['id']}] expected keyword not found: {kw}"
+    status = "PASS" if not missing and not unexpected else "FAIL"
 
-    # must_not_contain の NOT 判定
-    for bad in must_not:
-        assert bad not in answer, f"[{case['id']}] prohibited keyword found: {bad}"
+    # -------------------------
+    # 3. ログ生成
+    # -------------------------
+    ctx = LogContext(
+        case_id=case["id"],
+        test_type="basic",
+        environment=config["profile"],
+        timestamp=datetime.now(timezone(timedelta(hours=9))),
+        browser_timeout_ms=config["browser"]["browser_timeout_ms"],
+        page_timeout_ms=config["browser"]["page_timeout_ms"],
+        question=question,
+        output_text=answer,
+        expected_keywords=expected_keywords,
+        must_not_contain=must_not,
+        missing_keywords=missing,
+        unexpected_words=unexpected,
+        status=status,
+        metadata={
+            "browser": "chromium",
+            "test_type": "basic",
+        },
+    )
+
+    create_case_log(log_base_dir, ctx)
+
+    # -------------------------
+    # 4. pytest アサーション
+    # -------------------------
+    assert status == "PASS", (
+        f"[{case['id']}] Basic RAG Test failed: "
+        f"missing={missing}, unexpected={unexpected}"
+    )
