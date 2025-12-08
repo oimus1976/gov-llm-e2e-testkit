@@ -5,6 +5,22 @@
 
 ---
 
+## v0.1.17 (2025-12-08)
+### pytest Execution Layer v0.2
+- ADD: conftest.py に `case_dirs` fixture を追加し、テストケース単位で evidence_dir を生成
+- ADD: Smoke / Basic / Advanced の全テストを v0.2 構造に全面改修
+- ADD: PageObject v0.2 の evidence_dir 機能と統合
+- IMPROVE: test_smoke_llm を v0.2 仕様へ再設計（LoginPage / ChatPage v0.2 準拠）
+- IMPROVE: basic_cases / advanced_cases のテスト構造を統一
+- IMPROVE: advanced の multi-turn 処理を PageObject API に準拠する形に統一
+- ADD: pytest 設計書の最新版 `Design_pytest_v0.2.md` を追加
+- IMPROVE: latest エントリーポイント `Design_pytest.md` を統一フォーマットへ刷新
+
+### Documentation
+- IMPROVE: Design_BasePage.md / Design_ChatPage.md / Design_pytest.md を統一スタイルへ整理
+
+---
+
 ## v0.1.16 (2025-12-09)
 
 ### Added
