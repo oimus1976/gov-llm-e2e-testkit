@@ -1,14 +1,13 @@
 # PROJECT_STATUS — gov-llm-e2e-testkit
-
 最終更新: 2025-12-07  
-バージョン: v0.1.11  
-ステータス: env.yaml ローダー実装完了
+バージョン: v0.1.12  
+ステータス: pytest Execution Layer（conftest.py）設計完了・責務マップ追加
 
 ---
 
 ## 1. プロジェクト概要
 
-本プロジェクトは、自治体向け LLM サービスを対象とした  
+本プロジェクトは自治体向け LLM サービスを対象とした  
 Python + Playwright ベースの E2E 自動テスト基盤を構築するものである。
 
 以下の 4 層構造によって統制される：
@@ -25,17 +24,20 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 ## 2. 現在地（Where we are now）
 
 - test_plan_v0.1 完成  
-- BasePage / ChatPage / LoginPage 実装完成  
+- PageObject（BasePage / ChatPage / LoginPage）実装済み  
 - Smoke Test 完成  
-- RAG YAML v0.1（basic/advanced）完成  
+- RAG YAML（basic/advanced）v0.1 完成  
 - RAG pytest 実装 v0.1 完成  
-- CI（e2e.yml）v0.1 設計完了  
-- env.yaml v0.1 設計完了
-- **env_loader.py v0.1 実装完了（← NEW）**  
-- BasePage / pytest での env 読み込み経路が統一された  
-- INTERNET / LGWAN の環境抽象が動作可能段階に到達
+- CI（e2e.yml）v0.1 完成  
+- env.yaml v0.1 完成  
+- env_loader.py v0.1 完成  
+- **Responsibility_Map_v0.1.md 新規追加（← NEW）**  
+- **Design_pytest_env_v0.1（pytest Execution Layer の正式設計書）追加（← NEW）**  
+- **conftest.py v0.1 の設計仕様が正式確立（← NEW）**
 
-現時点で、INTERNET / LGWAN の2環境を統合的に扱う基盤設計が完了した。
+INTERNET / LGWAN の環境抽象、  
+PageObject 層、RAG テスト、pytest 実行基盤、CI すべてが  
+「設計書ドリブンで一貫した構造」を獲得した段階。
 
 ---
 
@@ -51,42 +53,53 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 - RAG YAML v0.1  
 - RAG pytest v0.1  
 - Design_ci_e2e_v0.1  
-- Design_env_v0.1（← NEW）
-- **env_loader.py v0.1 ← NEW** 
-- **BasePage 連携コード（timeout/認証情報の注入）← NEW**
+- Design_env_v0.1  
+- env_loader.py v0.1  
+- BasePage ← env連携コード  
+- **Responsibility_Map_v0.1.md ← NEW**  
+- **Design_pytest_env_v0.1.md ← NEW**  
+- **conftest.py v0.1（Execution Layer の正式仕様）← NEW**
 
 ---
 
 ## 4. 未完了タスク（Backlog）
 
 ### 設計関連
-- ロギング仕様（logs/YYYYMMDD/case.md）  
-- env.yaml v0.2（retry_policy / multi-profile 拡張）
+- ロギング仕様（logs/YYYYMMDD/case.md）の正式設計書 v0.1  
+- env.yaml v0.2（retry_policy / multi-profile 拡張）  
+- pytest strict/lenient モード設計 v0.2  
+- Advanced RAG Test の深層比較 v0.2
 
 ### 実装関連
-- pytest strict/lenient モード（v0.2）  
-- Advanced RAG の深層比較（v0.2）
+- ログ生成ユーティリティ  
+- strict/lenient mode の pytest 実装  
+- LGWAN 専用 run-script（手動運用）
 
 ---
 
 ## 5. リスク・注意点
 
-- env.yaml はプロジェクトの唯一の環境抽象 → 削除禁止  
-- LGWAN の timeout 値は INTERNET の 4〜6 倍必要  
-- Secrets の扱いミスによる CI 事故  
-- Smoke / Basic / Advanced の依存順序を壊さないこと  
-- timeout が短すぎると LGWAN 実行が必ず失敗する
+- env.yaml の削除禁止（環境抽象の唯一のファイル）  
+- Smoke / Basic / Advanced の依存順序を維持すること  
+- LGWAN の timeout は INTERNET の 4〜6 倍必要  
+- CI は INTERNET 専用。LGWAN 試験は手動運用  
+- conftest.py の責務境界を崩さないこと（Design_pytest_env_v0.1 準拠）
 
 ---
 
 ## 6. Next Action（最優先・常に1つ）
 
-### ▶ logs/YYYYMMDD/case.md のロギング仕様（v0.1）を策定する
+### ▶ logs/YYYYMMDD/case.md のロギング仕様（v0.1）を作成する  
+
+（Responsibility Map および pytest Execution Layer の整備が完了したため、  
+次はテスト基盤に必須となるログ出力仕様へ進む）
 
 ---
 
 ## 7. 必須資料（Dependencies）
 
+- Responsibility_Map_v0.1.md  
+- Design_pytest_env_v0.1.md  
 - Design_env_v0.1  
 - Design_ci_e2e_v0.1  
 - Design_playwright_v0.1  
@@ -94,15 +107,13 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 - PROJECT_GRAND_RULES v2.0  
 - Startup Template v3.0  
 - Startup Workflow v3.0  
-- 最新の単体・RAG・Smoke テスト実装
 
 ---
 
 ## 8. 更新履歴
 
-- **v0.1.10（2025-12-07）**  
-  - env.yaml v0.1 設計完了を反映  
-  - Next Action を env.yaml 実体生成へ更新  
-  - Design_env_v0.1 を Done に追加  
-- **v0.1.9（2025-12-07）**  
-  - CI 設計書追加  
+- **v0.1.12（2025-12-07） ← NEW**  
+  - Responsibility_Map_v0.1.md を正式追加  
+  - Design_pytest_env_v0.1 を正式追加  
+  - pytest Execution Layer（conftest.py v0.1）の設計仕様を確定  
+  - Next Action を「ロギング仕様 v0.1」へ更新  
