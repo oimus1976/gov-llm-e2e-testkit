@@ -38,12 +38,14 @@ gov-llm-e2e-testkit は、
 ## 3. 完了した主な成果（2025/12/08 時点）
 
 ### ✅ PageObject v0.2 系（Base / Login / Chat）
+
 - evidence_dir を受け取り、操作失敗時に screenshots + DOM を保存  
 - safe_click / safe_fill / collect_evidence の統合  
 - LGWAN / INTERNET 両方の timeout 管理を統一  
 - 設計書（v0.2）＋ latest エントリーポイントを整理
 
 ### ✅ pytest Execution Layer v0.2（今回のメイン成果）
+
 - conftest.py に **case_dirs fixture** を導入  
   → テストケース単位で case_log_dir / case_assets_dir を生成  
 - Smoke / Basic / Advanced すべてを v0.2 対応へ全面改修  
@@ -53,9 +55,37 @@ gov-llm-e2e-testkit は、
 - advanced の multi-turn 検証を安定動作へ調整
 
 ### ✅ 設計書体系の統一
+
 - Design_pytest_v0.2.md の新規作成  
 - Design_ChatPage.md / Design_BasePage.md / Design_pytest.md の latest alias 統合  
 - バージョン付き設計書は docs/ に全保持する方針を確立
+
+## 2025-12-09（E2Eテスト基盤：安定化の大きな前進）
+
+### 🔥 今日の主要成果
+
+- Playwright Async → Sync へ移行し、初めて Smoke Test が PASS。  
+- Qommons の SPA ログイン（navigation を伴わない）の特性に適合した wait 戦略を確立。  
+- LoginPage / BasePage / conftest（Sync構成）が安定し、以降のテスト開発の土台が完成。  
+- HTML ダンプ・スクリーンショット・printログを統合したデバッグ基盤を標準化。  
+- Debugging_Principles_v0.1 を正式追加（E2E以外のプロジェクトでも利用可能な横断原則）。
+
+### 📘 ドキュメント更新
+
+- `docs/Debugging_Principles_v0.1.md` を新規追加。
+
+### 🚧 現在の課題（※Next Actionと整合）
+
+※ 本日の改善により、v0.2 → v0.3 の移行準備フェーズへスムーズに移行できる状態となった。
+
+### 🎯 次の最重要アクション（Next Action：変更なし）
+
+1. **evidence_dir の標準構造化（assets/types/screenshots, dom, raw 等）**  
+2. retry_policy（UI応答遅延時の再試行）  
+3. strict/lenient モード設計  
+4. log_writer v0.2（JSON + 人間可読 diff）  
+5. CI の artifacts 出力強化
+
 
 ---
 
