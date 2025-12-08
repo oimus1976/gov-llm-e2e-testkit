@@ -5,6 +5,21 @@
 
 ---
 
+## v0.1.16 (2025-12-09)
+
+### Added
+- Design_BasePage.md（最新版を参照する固定ファイル）を追加
+- 設計書バージョニング方式（全バージョン保持＋latest ラッパー方式）を正式採用
+
+### Changed
+- Design_BasePage_v0.2.md を最新仕様として確定し、v0.1 を supersede
+- PROJECT_STATUS.md に設計書管理ポリシーを反映
+
+### Notes
+- 今後の設計書（LoginPage / ChatPage / Playwright / CI / Logging など）も同じ方式に統一予定。
+
+---
+
 ## v0.1.15 (2025-12-09)
 
 ### Added
@@ -22,7 +37,7 @@
 
 * これにより E2E testkit の全レイヤが一貫し、
   CI artifacts も公式仕様どおりに整う v0.1 系の最終安定版となった。
-  
+
 ---
 
 ## **[v0.1.14] - 2025-12-08**
