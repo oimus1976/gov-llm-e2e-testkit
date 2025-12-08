@@ -1,8 +1,8 @@
 # PROJECT_STATUS — gov-llm-e2e-testkit
 
 最終更新: 2025-12-07  
-バージョン: v0.1.10  
-ステータス: env.yaml（INTERNET/LGWAN）v0.1 設計完了
+バージョン: v0.1.11  
+ステータス: env.yaml ローダー実装完了
 
 ---
 
@@ -30,7 +30,10 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 - RAG YAML v0.1（basic/advanced）完成  
 - RAG pytest 実装 v0.1 完成  
 - CI（e2e.yml）v0.1 設計完了  
-- **env.yaml v0.1 設計完了（← NEW）**
+- env.yaml v0.1 設計完了
+- **env_loader.py v0.1 実装完了（← NEW）**  
+- BasePage / pytest での env 読み込み経路が統一された  
+- INTERNET / LGWAN の環境抽象が動作可能段階に到達
 
 現時点で、INTERNET / LGWAN の2環境を統合的に扱う基盤設計が完了した。
 
@@ -48,7 +51,9 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 - RAG YAML v0.1  
 - RAG pytest v0.1  
 - Design_ci_e2e_v0.1  
-- **Design_env_v0.1（← NEW）**
+- Design_env_v0.1（← NEW）
+- **env_loader.py v0.1 ← NEW** 
+- **BasePage 連携コード（timeout/認証情報の注入）← NEW**
 
 ---
 
@@ -59,7 +64,6 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 - env.yaml v0.2（retry_policy / multi-profile 拡張）
 
 ### 実装関連
-- **env.yaml（実ファイル）生成（← Next Action）**  
 - pytest strict/lenient モード（v0.2）  
 - Advanced RAG の深層比較（v0.2）
 
@@ -77,12 +81,7 @@ Python + Playwright ベースの E2E 自動テスト基盤を構築するもの�
 
 ## 6. Next Action（最優先・常に1つ）
 
-### ▶ **env.yaml（v0.1）の実ファイル生成**
-
-理由：  
-- 設計（Design_env_v0.1）が完了し、実装フェーズに進む段階に到達  
-- Playwright / pytest / CI の 3レイヤを環境変数で統一するための基盤  
-- LGWAN 実行テストを可能にする最後の要素
+### ▶ logs/YYYYMMDD/case.md のロギング仕様（v0.1）を策定する
 
 ---
 
