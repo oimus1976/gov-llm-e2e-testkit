@@ -1,20 +1,24 @@
-# tests/rag/test_rag_basic_v0.1.py
-# Basic RAG Test v0.1
-# 目的：
-# - expected_keywords がすべて回答に含まれる（AND 判定）
-# - must_not_contain が回答に含まれない（NOT 判定）
-# - 結果を log_writer により Markdown ログとして残す
+# ---------------------------------------------------------
+# test_rag_basic_v0.2.py  -- Basic RAG Test v0.2
+# gov-llm-e2e-testkit
+#
+# - expected_keywords を全て含むか
+# - must_not_contain を含まないか
+# - evidence_dir に証跡を保存
+# ---------------------------------------------------------
 
 import pytest
 import yaml
 import pathlib
-
 from datetime import datetime, timezone, timedelta
+
 from src.log_writer import LogContext, create_case_log
+
+JST = timezone(timedelta(hours=9))
 
 
 # ---------------------------------------------------------
-# YAML 読み込みユーティリティ
+# helper: load basic_cases.yaml
 # ---------------------------------------------------------
 def load_basic_cases():
     path = pathlib.Path("data/rag/basic_cases.yaml")
@@ -30,22 +34,27 @@ def load_basic_cases():
 
 
 # ---------------------------------------------------------
-# Basic RAG Test（正式版）
+# basic test
 # ---------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", load_basic_cases())
-async def test_rag_basic(case, chat_page, env_config, log_base_dir):
-    config, options = env_config
+async def test_rag_basic(case, chat_page, env_config, case_dirs):
+    config, _ = env_config
 
-    # -------------------------
-    # 1. 実行
-    # -------------------------
-    question = case["question"]
-    answer = await chat_page.ask(question)
+    # ---------------------------------------------
+    # case directories
+    # ---------------------------------------------
+    now = datetime.now(JST)
+    case_log_dir, case_assets_dir = case_dirs(case["id"], now)
 
-    # -------------------------
-    # 2. 判定
-    # -------------------------
+    # ---------------------------------------------
+    # ask
+    # ---------------------------------------------
+    answer = await chat_page.ask(case["question"], evidence_dir=case_assets_dir)
+
+    # ---------------------------------------------
+    # evaluation
+    # ---------------------------------------------
     expected_keywords = case.get("expected_keywords", [])
     must_not = case.get("must_not_contain", [])
 
@@ -54,35 +63,25 @@ async def test_rag_basic(case, chat_page, env_config, log_base_dir):
 
     status = "PASS" if not missing and not unexpected else "FAIL"
 
-    # -------------------------
-    # 3. ログ生成
-    # -------------------------
+    # ---------------------------------------------
+    # logging
+    # ---------------------------------------------
     ctx = LogContext(
         case_id=case["id"],
         test_type="basic",
         environment=config["profile"],
-        timestamp=datetime.now(timezone(timedelta(hours=9))),
+        timestamp=now,
         browser_timeout_ms=config["browser"]["browser_timeout_ms"],
         page_timeout_ms=config["browser"]["page_timeout_ms"],
-        question=question,
+        question=case["question"],
         output_text=answer,
         expected_keywords=expected_keywords,
         must_not_contain=must_not,
         missing_keywords=missing,
         unexpected_words=unexpected,
         status=status,
-        metadata={
-            "browser": "chromium",
-            "test_type": "basic",
-        },
+        assets_dir=str(case_assets_dir),
     )
 
-    create_case_log(log_base_dir, ctx)
-
-    # -------------------------
-    # 4. pytest アサーション
-    # -------------------------
-    assert status == "PASS", (
-        f"[{case['id']}] Basic RAG Test failed: "
-        f"missing={missing}, unexpected={unexpected}"
-    )
+    create_case_log(case_log_dir, ctx)
+    assert status == "PASS"
