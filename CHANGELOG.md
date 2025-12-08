@@ -5,6 +5,31 @@
 
 ---
 
+## **[v0.1.14] - 2025-12-08**
+
+### Added
+
+- `log_writer.py v0.1` を実装
+
+  - Design_log_writer_v0.1 の仕様に基づき
+
+    - frontmatter 生成
+    - Markdown セクション生成
+    - Smoke / Basic / Advanced 切替
+    - assets ディレクトリ生成
+      をすべて実装。
+
+### Changed
+
+- PROJECT_STATUS を v0.1.14 に更新。
+  - Next Action を「pytest への log_writer 統合」に変更。
+
+### Notes
+
+- これにより **ログ生成の最終要素が揃い、自動テスト基盤の全レイヤが接続可能となった**。
+
+---
+
 ## [v0.1.13] - 2025-12-07
 
 ### Added
