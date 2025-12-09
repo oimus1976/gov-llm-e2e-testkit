@@ -5,6 +5,30 @@
 
 ---
 
+## v0.2.1 (2025-12-09)
+
+### Added
+
+- Design_env_v0.2.md を追加
+  - env.yaml / .env / 環境変数の統合設計を正式化。
+  - INTERNET / LGWAN / dev / ci プロファイルを .env で切り替える方式を定義。
+  - MissingSecretError を用いた Secrets 不足時の標準エラー仕様を策定。
+
+### Changed
+
+- 環境設定レイヤの推奨運用を「OS環境変数方式」から
+  「.env（dotenv）方式 + 環境変数」のハイブリッド方式へ変更。
+- PROJECT_STATUS を v0.1.18 に更新し、Next Action を
+  「env_loader v0.2 実装」へ切り替え。
+
+### Notes
+
+- 既存の環境変数ベースの運用はそのまま有効。
+- 今後の OSS ユーザー向け Quick Start は `.env` ファイルを前提とする。
+- env_loader v0.2 の実装完了後、CI / LGWAN 手順書と合わせて再度検証予定。
+
+---
+
 ## v0.2.0 (2025-12-09)
 
 ### Added
