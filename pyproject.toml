@@ -5,12 +5,51 @@ description = "E2E Testkit for LLM-based municipal chat systems"
 readme = "README.md"
 requires-python = ">=3.10"
 
+# =======================================================
+# Runtime dependencies（実行に必須）
+# =======================================================
+dependencies = [
+    # dotenv (.env/.env.<profile> 読み込み)
+    "python-dotenv>=1.0.1",
+
+    # env.yaml 読み込み
+    "pyyaml>=6.0",
+
+    # Playwright（Sync v0.2 で使用）
+    "playwright>=1.47",
+
+    # ロギング（log_writer のフロントマター整形など）
+    "python-frontmatter>=1.0.0",
+]
+
+# =======================================================
+# Build system
+# =======================================================
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
+# =======================================================
+# Source layout（src/ パッケージ）
+# =======================================================
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# =======================================================
+# Optional dependencies（開発・CI 用）
+# =======================================================
+[project.optional-dependencies]
+dev = [
+    # テスト基盤（pytest / asyncio）
+    "pytest>=7.4",
+    "pytest-asyncio>=0.23",
+
+    # Playwright の pytest plugin（将来 RAG テストで利用）
+    "pytest-playwright>=0.5",
+
+    # 型チェック（任意）
+    "mypy>=1.0",
+]
