@@ -1,4 +1,11 @@
+import pytest
+from datetime import datetime, timezone, timedelta
+
 from tests.pages.login_page import LoginPage
+from tests.pages.chat_page import ChatPage
+
+JST = timezone(timedelta(hours=9))
+
 
 def test_smoke_llm(page, env_config):
     config, _ = env_config
@@ -9,17 +16,12 @@ def test_smoke_llm(page, env_config):
     page.goto(config["url"])
     print("INITIAL URL:", page.url)
 
-    login = LoginPage(page)
+    login = LoginPage(page, config)
     login.login(config["username"], config["password"])
 
-    # デバッグ：ログイン後の状態を確認
-    print("FINAL URL:", page.url)
-    print("TITLE:", page.title())
+    print("AFTER LOGIN URL:", page.url)
+    assert "/chat" in page.url
 
-    # HTML の先頭1000文字を保存してデバッグ
-    html = page.content()
-    with open("after_login.html", "w", encoding="utf-8") as f:
-        f.write(html)
-
-    # Smoke としては「ログイン後画面に行っていること」を確認
-    assert page.url.startswith("https://qommons.ai/"), "URLが遷移していません"
+    chat = ChatPage(page, config)
+    answer = chat.ask("テスト質問です")
+    print("ANSWER:", answer)

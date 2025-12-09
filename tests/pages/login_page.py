@@ -1,41 +1,33 @@
+# tests/pages/login_page.py
+from playwright.sync_api import Page
 from .base_page import BasePage
 
 class LoginPage(BasePage):
+    """Qommons ログインページ"""
+
+    URL = "/login"
+
+    def goto(self):
+        self.page.goto(self.full_url(self.URL))
+        self.page.wait_for_load_state("networkidle")
 
     def login(self, username: str, password: str):
-        page = self.page
+        # 入力欄
+        user_field = self.page.locator("input[name='username']")
+        pass_field = self.page.locator("input[name='password']")
+        login_btn  = self.page.locator("#login-button")
 
-        # ------- 1) SPA 初期描画の安定化 -------
-        # networkidle は SPA に強い
-        page.wait_for_load_state("networkidle")
+        # 入力
+        user_field.click()
+        user_field.fill(username)
 
-        # ------- 2) ログインフォーム出現を待つ -------
-        page.wait_for_selector("input[name='username']", state="visible")
-        page.wait_for_selector("input[name='password']", state="visible")
+        pass_field.click()
+        pass_field.fill(password)
 
-        # ------- 3) デバッグ：実際に存在するHTMLを確認 -------
-        print("\n=== LOGIN PAGE DEBUG ===")
-        print("URL BEFORE LOGIN:", page.url)
-        print("USERNAME FIELD (before fill):", page.get_attribute("input[name='username']", "value"))
-        print("PASSWORD FIELD (before fill):", page.get_attribute("input[name='password']", "value"))
+        # ボタンが enabled になるまで待つ
+        login_btn.wait_for(state="visible", timeout=5000)
+        login_btn.click()
 
-        # ------- 4) 入力 -------
-        page.fill("input[name='username']", username)
-        page.fill("input[name='password']", password)
-
-        # デバッグ（入力後に再確認）
-        print("USERNAME FIELD (after fill):", page.get_attribute("input[name='username']", "value"))
-        print("PASSWORD FIELD (after fill):", page.get_attribute("input[name='password']", "value"))
-
-        # ------- 5) ログインボタンを押す（遷移を待たない） -------
-        # SPA のログインは navigation しないため no_wait_after=True が必須
-        page.click("button[type='submit']", no_wait_after=True)
-
-        # ------- 6) SPA が内部遷移し始めるまで少し待つ -------
-        page.wait_for_timeout(1500)
-
-        # ------- 7) デバッグ出力 -------
-        print("URL AFTER LOGIN CLICK:", page.url)
-
-        # スクショを取る（デバッグ用）
-        page.screenshot(path="after_login.png", full_page=True)
+        # 遷移待ち
+        self.page.wait_for_url("**/chat", timeout=15000)
+        return True

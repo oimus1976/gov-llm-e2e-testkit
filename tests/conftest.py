@@ -1,11 +1,20 @@
+# ==========================================================
+# conftest.py  Sync Playwright v0.2
+# ==========================================================
+
 import pytest
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
+
+from pages.login_page import LoginPage
+from pages.chat_page import ChatPage
 from src.env_loader import load_env
-from playwright.sync_api import sync_playwright
+
+JST = timezone(timedelta(hours=9))
+
 
 # -------------------------------
-# env.yaml ロード
+# env 読み込み
 # -------------------------------
 @pytest.fixture(scope="session")
 def env_config():
@@ -14,53 +23,35 @@ def env_config():
 
 
 # -------------------------------
-# Playwright browser（Sync版）
+# case ディレクトリ
 # -------------------------------
-@pytest.fixture(scope="session")
-def browser():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        yield browser
-        browser.close()
+@pytest.fixture
+def case_dirs(tmp_path):
+    def _make(case_id: str, now: datetime):
+        base = Path("logs") / now.strftime("%Y%m%d_%H%M%S") / case_id
+        log = base / "log"
+        assets = base / "assets"
+        log.mkdir(parents=True, exist_ok=True)
+        assets.mkdir(parents=True, exist_ok=True)
+        return log, assets
+    return _make
 
 
 # -------------------------------
-# context fixture（Sync版）
+# login_page fixture
 # -------------------------------
-@pytest.fixture(scope="function")
-def context(browser, env_config):
+@pytest.fixture
+def login_page(page, env_config):
     config, _ = env_config
-    timeout_ms = config["browser"]["page_timeout_ms"]
-
-    context = browser.new_context()
-    context.set_default_timeout(timeout_ms)
-    yield context
-    context.close()
+    return LoginPage(page, config)
 
 
 # -------------------------------
-# page fixture（Sync版）
+# chat_page fixture
 # -------------------------------
-@pytest.fixture(scope="function")
-def page(context):
-    page = context.new_page()
-    yield page
-    page.close()
+@pytest.fixture
+def chat_page(page, env_config):
+    config, _ = env_config
+    return ChatPage(page, config)
 
 
-# -------------------------------
-# ログディレクトリ生成
-# -------------------------------
-@pytest.fixture(scope="function")
-def case_dirs():
-    now = datetime.now(timezone(timedelta(hours=9)))
-    ymd = now.strftime("%Y%m%d")
-
-    base = Path("logs")
-    d1 = base / ymd
-    d2 = base / "assets" / ymd
-
-    d1.mkdir(parents=True, exist_ok=True)
-    d2.mkdir(parents=True, exist_ok=True)
-
-    return d1, d2
