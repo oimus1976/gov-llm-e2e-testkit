@@ -23,7 +23,7 @@ jobs:
       # ----------------------------------------
       - name: Install Python Dependencies
         run: |
-          pip install pytest pytest-asyncio python-dotenv
+          pip install pytest pytest-asyncio python-dotenv pyyaml
           pip install playwright
           python -m playwright install --with-deps
 
