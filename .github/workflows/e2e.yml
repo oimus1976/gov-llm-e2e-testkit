@@ -18,15 +18,37 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
+      # ----------------------------------------
+      # Install dependencies (pyproject.toml ベース)
+      # ----------------------------------------
+      - name: Install Python Dependencies
         run: |
-          pip install -r requirements.txt
-          python -m playwright install
+          pip install pytest pytest-asyncio python-dotenv
+          pip install playwright
+          python -m playwright install --with-deps
 
+      # ----------------------------------------
+      # Environment variables for CI
+      # （env_loader v0.2 の仕様に合わせる）
+      # ----------------------------------------
+      - name: Prepare CI environment
+        run: |
+          echo "PROFILE=ci" >> .env
+          echo "URL=https://qommons.ai" >> .env
+          echo "USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
+          echo "PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
+
+      # ----------------------------------------
+      # Run Smoke Test (必ず1件実行 → exit code 5 対策)
+      # ----------------------------------------
       - name: Run Smoke Test
         run: |
-          pytest tests/test_smoke_llm.py -q --disable-warnings
+          mkdir -p logs
+          pytest tests/test_smoke_llm.py -vv --disable-warnings
 
+      # ----------------------------------------
+      # RAG Tests（Smoke が成功した場合のみ実行）
+      # ----------------------------------------
       - name: Run Basic RAG Test
         if: ${{ success() }}
         run: |
@@ -37,9 +59,12 @@ jobs:
         run: |
           pytest tests/rag/test_rag_advanced_v0.1.py -q --disable-warnings
 
+      # ----------------------------------------
+      # Upload artifacts (screenshots, DOM, logs)
+      # ----------------------------------------
       - name: Upload artifacts (failure only)
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-failure-screenshots
+          name: test-failure-evidence
           path: logs/
