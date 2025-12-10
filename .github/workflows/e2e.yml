@@ -38,6 +38,10 @@ jobs:
           echo "USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
           echo "PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
 
+      - name: Add src to PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
+
+
       # ----------------------------------------
       # Run Smoke Test (必ず1件実行 → exit code 5 対策)
       # ----------------------------------------
