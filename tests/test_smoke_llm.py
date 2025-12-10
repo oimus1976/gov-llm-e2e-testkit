@@ -8,7 +8,7 @@ import pytest
 from datetime import datetime, timezone, timedelta
 
 from tests.pages.login_page import LoginPage
-# from tests.pages.chat_select_page import ChatSelectPage
+from tests.pages.chat_select_page import ChatSelectPage
 from tests.pages.chat_page import ChatPage
 
 from src.log_writer import LogContext, create_case_log
