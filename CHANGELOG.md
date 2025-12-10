@@ -5,6 +5,30 @@
 
 ---
 
+## **v4.2 (2025-12-10)**
+
+### **Governance Layer Update（重大更新）**
+
+#### Added
+
+* PROJECT_GRAND_RULES v4.2 を正式採用
+* AI Compliance Rules v1.0（C2仕様）を導入
+* Language Binding Rule（英語拘束／日本語補助）を新設
+* Documentation Standards / QA / Prohibition Sections を整理・拡張
+
+#### Changed
+
+* 旧 v4.0 の AI行動規範を全面刷新し、拘束力を強化
+* Rule Hierarchy の順序と拘束力を明確化
+* PENTA 出動条件の厳格化
+
+#### Notes
+
+* 今後の設計書・CI・環境設定は **すべて v4.2 の拘束ルール下で生成される必要がある**。
+* env_loader・CI の見直し（v0.3 準備）は次アクション。
+
+---
+
 ## v0.4.0 (2025-12-10)
 
 ### Added
