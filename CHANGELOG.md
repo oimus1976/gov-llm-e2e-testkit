@@ -5,6 +5,46 @@
 
 ---
 
+## v0.3.0 (2025-12-10)
+
+### Added
+- **ChatPage v0.5 を正式実装（DOM 完全対応版）**
+  - 最新 DOM 解析に基づき、入力欄・送信ボタン・メッセージ要素のロケータを刷新。
+  - 入力欄を `#message`、送信ボタンを `#chat-send-button` として安定化。
+  - メッセージ取得ロケータを `message-item-N` / `markdown-N` 構造に準拠。
+  - メッセージ数増加による応答検知方式（count-based wait）を採用し、UI揺らぎに強い方式を確立。
+
+- **Design_ChatPage_v0.5.md を追加**
+  - DOM 解析結果・ロケータ仕様・待機戦略・保守ポイントを正式文書化。
+  - gov-llm-e2e-testkit におけるチャット画面自動化の標準仕様を定義。
+
+### Changed
+- **Smoke Test v0.3 の仕様をアップデート**
+  - ChatPage v0.5 に合わせて応答取得方式を刷新。
+  - 旧 data-testid ベースのロケータに依存しない構造へ変更。
+  - Smoke Test が初めてフル成功する安定性を獲得。
+
+- ChatSelectPage の役割を「遷移補助」から「任意利用モジュール」へ整理  
+  - ログイン後に自動で任意チャットへ遷移する UI 仕様を踏まえ、  
+    Smoke Test には必須でないことを明確化。
+
+### Fixed
+- **chat-input が DOM に存在しない問題を修正**
+  - 旧ロケータ `data-testid="chat-input"` を完全廃止し、  
+    最新 DOM に基づく `#message` を採用。
+
+- **送信ボタンのロケータ破損を修正**
+  - `data-testid="chat-send-button"` 廃止に対応し、`#chat-send-button` へ移行。
+
+### Notes
+- ChatPage v0.5 は Qommons.AI（2025年12月時点）の DOM に完全準拠した安定版。
+- UI 変更に強いロケータ構造（id・prefix-based search）を採用しており、  
+  CI / ローカル双方で動作が安定。
+- 次ステップとしては ChatSelectPage v0.3.1 以降の整理、および  
+  マルチケース（RAG 強化テスト）の拡張が可能。
+
+---
+
 ## v0.2.1 (2025-12-09)
 
 ### Added
