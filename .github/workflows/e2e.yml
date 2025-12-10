@@ -10,83 +10,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # -----------------------------
+      # -----------------------------------------------------
       # 1. Checkout
-      # -----------------------------
+      # -----------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # 2. Set up Python
-      # -----------------------------
+      # -----------------------------------------------------
+      # 2. Python Setup
+      # -----------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # -----------------------------
-      # 3. Install dependencies
-      #    (pytest / playwright / dotenv / yaml)
-      # -----------------------------
-      - name: Install Python Dependencies
+      # -----------------------------------------------------
+      # 3. Install Dependencies
+      #   - pytest, pytest-asyncio, pytest-playwright
+      #   - playwright browsers (with-deps)
+      # -----------------------------------------------------
+      - name: Install Python dependencies
         run: |
-          pip install pytest pytest-asyncio python-dotenv pyyaml
-          pip install playwright pytest-playwright
+          pip install -r requirements.txt
           python -m playwright install --with-deps
 
-      # -----------------------------
-      # 4. Prepare CI environment
-      #    (.env を自動生成して env_loader と完全連携)
-      # -----------------------------
-      - name: Prepare CI environment (.env)
+      # -----------------------------------------------------
+      # 4. Prepare CI Environment
+      #   env_loader v0.2 は .env を読み込む
+      #   → PROFILE=ci を強制
+      #   Secrets がなくても conftest の fallback が発動
+      # -----------------------------------------------------
+      - name: Prepare CI .env
         run: |
-          echo "PROFILE=internet" >> .env
-          echo "QOMMONS_URL=https://qommons.ai" >> .env
-          echo "QOMMONS_USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
-          echo "QOMMONS_PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
+          echo "PROFILE=ci" >> .env
+          echo "URL=https://qommons.ai" >> .env
+          echo "USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
+          echo "PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
 
-      # -----------------------------
-      # 5. Debug (任意だが安全性MAX、問題切り分け可)
-      # -----------------------------
-      - name: Debug env + packages
-        run: |
-          echo "--- ENV (.env) ---"
-          cat .env || true
-          echo "--- pip list (pytest/playwright) ---"
-          python -m pip list | grep -E "pytest|playwright" || true
-          echo "--- pytest version ---"
-          pytest --version -q || true
-
-      # -----------------------------
-      # 6. Add src to PYTHONPATH
-      # -----------------------------
+      # -----------------------------------------------------
+      # 5. Add src to PYTHONPATH
+      # -----------------------------------------------------
       - name: Add src to PYTHONPATH
         run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
 
-      # -----------------------------
-      # 7. Run Smoke Test (必ず1件 → exit code 5 対策済)
-      # -----------------------------
+      # -----------------------------------------------------
+      # 6. Smoke Test（必ず1件実行 → exit code 5 対策）
+      # -----------------------------------------------------
       - name: Run Smoke Test
         run: |
           mkdir -p logs
           pytest tests/test_smoke_llm.py -vv --disable-warnings
 
-      # -----------------------------
-      # 8. Run RAG Tests (成功時のみ)
-      # -----------------------------
+      # -----------------------------------------------------
+      # 7. RAG Basic Test（Smoke 成功時のみ）
+      #   ※ 最新ファイル名：test_rag_basic_v0_1.py
+      # -----------------------------------------------------
       - name: Run Basic RAG Test
         if: ${{ success() }}
         run: |
-          pytest tests/rag/test_rag_basic_v0.1.py -q --disable-warnings
+          pytest tests/rag/test_rag_basic_v0_1.py -q --disable-warnings
 
+      # -----------------------------------------------------
+      # 8. RAG Advanced Test（Basic 成功時のみ）
+      #   ※ 最新ファイル名：test_rag_advanced_v0_1.py
+      # -----------------------------------------------------
       - name: Run Advanced RAG Test
         if: ${{ success() }}
         run: |
-          pytest tests/rag/test_rag_advanced_v0.1.py -q --disable-warnings
+          pytest tests/rag/test_rag_advanced_v0_1.py -q --disable-warnings
 
-      # -----------------------------
-      # 9. Upload failure artifacts
-      # -----------------------------
+      # -----------------------------------------------------
+      # 9. Artifact Upload（失敗時のみ）
+      # -----------------------------------------------------
       - name: Upload artifacts (failure only)
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
