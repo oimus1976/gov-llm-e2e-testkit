@@ -36,16 +36,16 @@ jobs:
 
       # -----------------------------------------------------
       # 4. Prepare CI Environment
-      #   env_loader v0.2 は .env を読み込む
-      #   → PROFILE=ci を強制
-      #   Secrets がなくても conftest の fallback が発動
+      #   - env_loader v0.2.3 は .env を読み込む
+      #   - PROFILE=internet を指定し、env.yaml の internet プロファイルを使用する
+      #   - QOMMONS_* は GitHub Secrets から注入（Secrets 未設定時は MissingSecretError で明示的に FAIL）
       # -----------------------------------------------------
       - name: Prepare CI .env
         run: |
-          echo "PROFILE=ci" >> .env
-          echo "URL=https://qommons.ai" >> .env
-          echo "USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
-          echo "PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
+          echo "PROFILE=internet" >> .env
+          echo "QOMMONS_URL=https://qommons.ai" >> .env
+          echo "QOMMONS_USERNAME=${{ secrets.QOMMONS_USERNAME }}" >> .env
+          echo "QOMMONS_PASSWORD=${{ secrets.QOMMONS_PASSWORD }}" >> .env
 
       # -----------------------------------------------------
       # 5. Add src to PYTHONPATH
