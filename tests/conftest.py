@@ -1,57 +1,82 @@
 # ==========================================================
-# conftest.py  Sync Playwright v0.2
+# conftest.py  v0.21
+# env_loader v0.2 互換 / Secrets fallback 対応 / CI 安定化
 # ==========================================================
 
+import os
 import pytest
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
-
-from pages.login_page import LoginPage
-from pages.chat_page import ChatPage
+from datetime import datetime
 from src.env_loader import load_env
 
-JST = timezone(timedelta(hours=9))
 
-
-# -------------------------------
-# env 読み込み
-# -------------------------------
+# ----------------------------------------------------------
+#  fixture: env_config
+#  - env.yaml の読み込み
+#  - Secrets（GitHub Actions）不足時の fallback（安全設計）
+# ----------------------------------------------------------
 @pytest.fixture(scope="session")
 def env_config():
+    """
+    env.yaml → load_env(v0.2) で読み込み
+    さらに URL/USER/PASS の fallback を補完して返す
+    """
+
     config, options = load_env()
+
+    # ------------------------------------------------------
+    # 1. URL fallback
+    # ------------------------------------------------------
+    config["url"] = (
+        config.get("url")
+        or os.getenv("QOMMONS_URL")
+        or "https://qommons.ai"     # 公式デフォルト
+    )
+
+    # ------------------------------------------------------
+    # 2. USER fallback
+    # ------------------------------------------------------
+    config["username"] = (
+        config.get("username")
+        or os.getenv("QOMMONS_USERNAME")
+        or "dummy"                  # ログイン不要テスト用
+    )
+
+    # ------------------------------------------------------
+    # 3. PASSWORD fallback
+    # ------------------------------------------------------
+    config["password"] = (
+        config.get("password")
+        or os.getenv("QOMMONS_PASSWORD")
+        or "dummy"
+    )
+
     return config, options
 
 
-# -------------------------------
-# case ディレクトリ
-# -------------------------------
+# ----------------------------------------------------------
+#  fixture: case_dirs
+#  - ログ + スクショを格納するディレクトリを生成
+# ----------------------------------------------------------
 @pytest.fixture
-def case_dirs(tmp_path):
-    def _make(case_id: str, now: datetime):
-        base = Path("logs") / now.strftime("%Y%m%d_%H%M%S") / case_id
-        log = base / "log"
-        assets = base / "assets"
-        log.mkdir(parents=True, exist_ok=True)
-        assets.mkdir(parents=True, exist_ok=True)
-        return log, assets
+def case_dirs(tmp_path_factory):
+    def _make(case_id: str, timestamp):
+        base = tmp_path_factory.mktemp(case_id)
+
+        # Markdown ログ / raw logs
+        log_dir = base / "logs"
+        log_dir.mkdir(exist_ok=True)
+
+        # screenshot / dom etc
+        assets_dir = base / "assets"
+        assets_dir.mkdir(exist_ok=True)
+
+        return str(log_dir), str(assets_dir)
+
     return _make
 
 
-# -------------------------------
-# login_page fixture
-# -------------------------------
-@pytest.fixture
-def login_page(page, env_config):
-    config, _ = env_config
-    return LoginPage(page, config)
-
-
-# -------------------------------
-# chat_page fixture
-# -------------------------------
-@pytest.fixture
-def chat_page(page, env_config):
-    config, _ = env_config
-    return ChatPage(page, config)
-
-
+# ----------------------------------------------------------
+#  Pytest設定（表示改善）
+# ----------------------------------------------------------
+def pytest_report_header(config):
+    return "gov-llm-e2e-testkit / pytest configuration active (v0.21)"
