@@ -1,4 +1,4 @@
-# gov-llm-e2e-testkit Startup Template v3.0
+# gov-llm-e2e-testkit Startup Template v3.1
 
 （PROJECT_GRAND_RULES v2.0 準拠・Playwright/LGWAN統合版）
 
@@ -145,6 +145,6 @@ ChatGPT は以下のロールを同時に担う：
 
 ---
 
-以上を **gov-llm-e2e-testkit Startup Template v3.0（正式版）** とする。
+以上を **gov-llm-e2e-testkit Startup Template v3.1（正式版）** とする。
 
 ---
