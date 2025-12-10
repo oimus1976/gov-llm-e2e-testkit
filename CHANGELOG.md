@@ -5,6 +5,30 @@
 
 ---
 
+## **v0.4.3 (2025-12-10)**
+
+### **Environment Layer Clarifying Update（Design_env_v0.2.3）**
+
+#### Added
+
+* Schema Integrity Rule（スキーマ不変ルール）を追加
+* AI Prohibitions を拡張（key rename / schema drift 禁止を明文化）
+* Annotated Diff セクションを設計書に追加し、文書追跡性を向上
+* Minimal Binding Example を binding として固定化
+
+#### Changed
+
+* Non-functional Requirements に schema freeze を正式に組み込み
+* env_loader と CI/LGWAN の責務境界をより明確化
+* 日本語補助文と英語拘束文の対訳構造を正式に標準化（今後の設計書もこの形式へ統一可能）
+
+#### Notes
+
+* 本更新は **non-breaking（非破壊）** であり、runtime 挙動は v0.2 / v0.2.2 と完全互換
+* 今後は env_loader の整合レビューに進む
+
+---
+
 ## **v4.2 (2025-12-10)**
 
 ### **Governance Layer Update（重大更新）**
