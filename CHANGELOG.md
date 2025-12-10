@@ -5,6 +5,29 @@
 
 ---
 
+## v0.4.0 (2025-12-10)
+
+### Added
+- PROJECT_GRAND_RULES v4.0 を全面更新  
+  - Debugging_Principles_v0.2 を統治層へ統合  
+  - PageObject 4層構造（Base / Login / ChatSelect / Chat）を正式採用  
+  - CI / env_loader / Secrets 運用規範を追加  
+  - デバッグ行動原則（観察優先・推測禁止・再発防止）を明文化  
+
+- ChatSelectPage v0.3 を正式に import 対応  
+  - test_smoke_llm での依存が解消し、構造が整合  
+
+### Changed
+- PROJECT_STATUS を v0.4.0 へ更新  
+  - Next Action を「CI headless 安定化」に一本化  
+  - 最新成果・課題・リスクを再整理  
+
+### Notes
+- 今後、PageObject 全体のバージョン統一（v0.6 系）へ移行予定  
+- CI での Smoke 成功率向上が最優先タスク  
+
+---
+
 ## v0.3.0 (2025-12-10)
 
 ### Added

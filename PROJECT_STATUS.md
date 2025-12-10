@@ -1,106 +1,91 @@
-# ==========================================================
-# PROJECT_STATUS.md   — gov-llm-e2e-testkit
-# Version: v0.3.0  (2025-12-10)
-# ==========================================================
+# PROJECT_STATUS v0.4.0  
+gov-llm-e2e-testkit — 現在地（Single Source of Truth）
 
-## 1. プロジェクト名
-gov-llm-e2e-testkit  
-（自治体向け LLM サービスの自動 E2E テスト基盤）
+最終更新：2025-12-10  
+参照 GRAND_RULES：v4.0
 
 ---
 
-## 2. 目的
-- Qommons.AI に対する **ログイン → チャット利用 → 応答取得** の完全自動テストを実現する。
-- 自治体環境（INTERNET / LGWAN / CI）の差異を吸収し、  
-  **安定運用できる自動テスト基盤**を提供する。
-- OSS として他自治体でも使えるテンプレート化を目指す。
+## 1. 現在地（Current Status）
+
+本プロジェクトは、以下の 4 つの主要コンポーネントを中心に安定化フェーズへ移行している：
+
+1. **PageObject 4層構造の確立**  
+   - BasePage v0.21  
+   - LoginPage v0.3  
+   - ChatSelectPage v0.3  
+   - ChatPage v0.5（初の安定版）  
+
+2. **CI の改善と headless 動作の確立途中**  
+   - pytest-playwright / pytest-asyncio / PYTHONPATH 設定  
+   - env.yaml → env_loader v0.2 → MissingSecretError → conftest fallback  
+   - Smoke Test v0.3 はローカルでは安定。CI では URL 問題は解決済み。
+
+3. **Debugging_Principles v0.2 を正式運用開始**  
+   - GRAND_RULES v4.0 に統合  
+   - 「推測禁止」「一次情報必須」「再発防止」を憲法レベルへ格上げ
+
+4. **設計書の世代交代（Design_* 最新 v0.5 シリーズの整備進行中）**  
+   - Design_ChatPage_v0.5.md 追加  
+   - BasePage / LoginPage / ChatSelectPage も今後 v0.3〜0.4 系へ統一予定  
 
 ---
 
-## 3. 現在の進捗（Progress v0.3.0）
-### ✔ ChatPage v0.5（DOM 完全対応版）を正式実装  
-- id ベースの安定ロケータ（#message, #chat-send-button）に統一  
-- 最新メッセージ取得を message-item-N / markdown-N に刷新  
-- UI 揺らぎに強い「メッセージ件数増加検知」方式を採用
+## 2. 最新成果（成果サマリ）
 
-### ✔ Smoke Test v0.3 がローカル環境で **初成功**  
-- ログイン → 遷移 → メッセージ送信 → 応答取得まで成功  
-- PageObject・DOM 理解の根本問題がすべて解消
-
-### ✔ Design_ChatPage_v0.5.md をドキュメント化  
-- DOM 構造・ロケータ仕様・待機戦略・保守指針を正式化  
-- E2E テスト基盤の中核設計が完成
-
-### ✔ CHANGELOG v0.3.0 を更新（ChatPage / Smoke Test 大幅刷新）
+- **ChatPage v0.5** が安定し、CI/ローカルとも最小 E2E が通る状態へ到達  
+- **env.yaml → Secrets → conftest fallback** が動作し、CI エラー原因が完全に可視化  
+- **ChatSelectPage v0.3** を正式管理下へ（import 復活も完了）  
+- **GRAND_RULES v4.0** を正式に再構築し、プロジェクト統治の中核を刷新  
+- **Debugging_Principles v0.2** をプロジェクト標準に格上げ  
+- PROJECT_STATUS / CHANGELOG / 設計書の三位一体運用が安定してきた  
 
 ---
 
-## 4. 完了済みの成果物
-- BasePage v0.2（安定動作中）
-- LoginPage v0.3（sync API 完全対応）
-- ChatSelectPage v0.3（任意利用モジュール化）
-- ChatPage v0.5（最新 DOM 対応の正式版）
-- Smoke Test v0.3（ローカルで PASS 済）
-- Design_ChatPage_v0.5.md（新規作成）
-- Design_env_v0.2.md（env_loader v0.2 の前提仕様）
-- CHANGELOG v0.3.0 更新済
+## 3. 未解決の課題（Open Issues）
+
+1. **CI（GitHub Actions）での Smoke 成功率 100% ではない**  
+   - headless モードでの Locator（card, chat-input 等）の安定性改善が必要  
+   - ChatSelectPage と ChatPage の DOM 解析による locator 安定化（v0.6）  
+
+2. **PageObject のバージョン整合性が v0.2〜v0.5 で混在している**  
+   - 統一した PageObject 系 Design Document を作成する必要あり  
+
+3. **RAG テスト（Basic/Advanced）は CI では未検証**  
+   - Smoke が安定後に CI の二段階実行へ移行予定  
+
+4. **sandbox ディレクトリの整理**  
+   - input.html / validation script の扱いを統一すべき  
 
 ---
 
-## 5. 未解決の課題（Open Issues）
-1. **CI（GitHub Actions）で headless=True のまま Smoke Test を安定動作させる**
-2. ChatSelectPage v0.3.1（UI 再設計）  
-3. マルチ AI モデル対応（private / public / カスタムモデル）
-4. ストリーミング応答への将来的対応（今後の UI 変更に備える）
-5. ログ・DOM・スクリーンショットの CI 保存方式の標準化
-6. エラー UI（LLM 応答不可時）の DOM 解析とテストケース化
+## 4. リスク・注意点（Risks）
+
+- CI を壊す修正（locator 変更等）が依然高リスク  
+- DOM 変動の多い Web アプリのため、locator 改修時は Design → PO → test → CI の順を厳守  
+- Secrets 未設定時の fallback はあくまで CI 用であり、本番動作を保証しない  
+- Debugging 原則に違反（推測ベース修正 / import 削除系修正）は再発率が跳ね上がる  
 
 ---
 
-## 6. リスク・注意点
-- Qommons.AI の UI 変更が定期的に入る可能性  
-  → ロケータ維持のための DOM チェック手順が必要  
-- ストリーミング化が導入された場合、現行の「件数増加検知」は要改修  
-- LGWAN プロファイルでのネットワーク遅延が CI・ローカルと大きく異なる  
-- pytest のテスト数 0 件問題（exit code 5）は  
-  Smoke Test が必ず一件実行されることで回避
+## 5. Next Action（単一タスク原則）
+
+### **Next Action（v0.4.0 → v0.4.1）**  
+**CI での Smoke Test の headless 完全安定化（locator 再点検・DOM 再解析）**
+
+理由：  
+- 現状の最大のボトルネックは CI 失敗  
+- PageObject レイヤーの locator 安定が全後続タスクの前提  
+- GRAND_RULES v4.0 のガイドラインが最初に適用されるべき領域のため  
 
 ---
 
-## 7. 次の最重要アクション（Next Action 🟥）
-### **▶ CI 統合（headless 成功の保証）【最優先タスク】**
-- GitHub Actions（e2e.yml）の v0.3 仕様へのアップデート  
-- headless=True で PASS するまで wait 条件を微調整  
-- 失敗時の evidence（スクショ・DOM）を CI に保存  
-- CI プロファイル環境（env_loader v0.2）との整合性確認  
-- Qommons 側の DOM 変動が CI ログで即検知できる状態にする
+## 6. 参照ドキュメント
 
-**これが完了すると、gov-llm-e2e-testkit は  
-「全国自治体で使えるレベルの安定版」に到達する。**
-
----
-
-## 8. 参照すべき資料
-- docs/Design_ChatPage_v0.5.md  
-- docs/Design_env_v0.2.md  
-- tests/pages/chat_page.py（v0.5 実装）  
-- tests/test_smoke_llm.py（v0.3）  
-- CHANGELOG.md（v0.3.0）  
-- DOM 保存ファイル（tmp_chat_dom.html / tmp_menu_dom.html）
-
----
-
-## 9. PENTA 推奨ポイント
-- 複雑な DOM 解析（message-item / markdown）に PENTA を使うと強力  
-- headless 動作の不安定性は  
-  **「タイミング」「DOM 付与」「SPAトランジション」** の 3 種類に分類して解析  
-- CI 導入はブレイン分割が有効：
-  - Brain1：DOM 変動分析  
-  - Brain2：ロケータ安定性  
-  - Brain3：CI のタイミング  
-  - Brain4：エビデンス収集設計  
-  - Brain5：E2E 仕様書の整合性確認
-
----
-
-# Status: **v0.3.0（CI 連携フェーズへ突入）**
+- PROJECT_GRAND_RULES v4.0  
+- Design_BasePage_v0.21  
+- Design_ChatPage_v0.5  
+- Design_LoginPage_v0.3  
+- Design_env_v0.2  
+- Debugging_Principles_v0.2  
+- Design_ci_e2e_v0.1  
