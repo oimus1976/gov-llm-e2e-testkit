@@ -57,13 +57,13 @@ Environment Layer の安定性が長期保証可能であることが確認さ�
 
 ---
 
-### 🔰 **（追加）Answer Detection Layer の現在進捗（v0.4.5 更新）**
+### 🔰 **（更新）Answer Detection Layer の現在進捗（v0.4.5）**
 
 * **probe v0.2.1 実装 Fix（設計書準拠）**
-* **Test_plan_probe_v0.2.1.md 追加完了**
+* **Test_plan_probe_v0.2.2.md へ更新**
+  * 保存場所を `docs/test_plan/` 配下へ整理
+  * test_plan_v0.1.md を「E2E テスト体系の最上位仕様・思想文書」として位置づけを明確化
 * **QA フェーズ（実行テスト）へ進行中**
-
-（※この 3 行以外には一切の変更を加えていません）
 
 ---
 

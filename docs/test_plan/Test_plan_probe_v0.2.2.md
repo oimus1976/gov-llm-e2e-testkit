@@ -14,11 +14,11 @@
 
 probe の役割：
 
-* REST `/messages` を **一次的な回答確定イベント**として観測する
-* GraphQL *createData* を **補助的な検証経路**として記録する
-* 両経路の時系列・整合性を一次情報として保存する
-* ChatPage.ask v0.6 の設計根拠となる事実データを提供する
-* CI に属さない **手動実行ツール（scripts 配下）**として動作する
+- REST `/messages` を **一次的な回答確定イベント**として観測する
+- GraphQL *createData* を **補助的な検証経路**として記録する
+- 両経路の時系列・整合性を一次情報として保存する
+- ChatPage.ask v0.6 の設計根拠となる事実データを提供する
+- CI に属さない **手動実行ツール（scripts 配下）**として動作する
 
 本 Test Plan に準拠した検証により、
 **仕様準拠・後方互換性・揺らぎ耐性**が担保される。
@@ -35,20 +35,21 @@ scripts/probe_v0_2.py   # probe v0.2.2 本体
 
 対象外：
 
-* ChatPage.ask
-* LoginPage
-* CI（GitHub Actions）
-* DOM 依存の回答検知
+- ChatPage.ask
+- LoginPage
+- CI（GitHub Actions）
+- DOM 依存の回答検知
 
 ---
 
 ## 3. References（参照資料）
 
-* Design_chat_answer_detection_v0.1
-* Design_probe_graphql_answer_detection_v0.2
-* PROJECT_STATUS v0.4.5
-* Debugging_Principles v0.2
-* PROJECT_GRAND_RULES v4.2
+- Design_chat_answer_detection_v0.1
+- Design_probe_graphql_answer_detection_v0.2
+- PROJECT_STATUS v0.4.5
+- test_plan_v0.1.md（gov-llm-e2e-testkit における E2E テスト体系の最上位仕様・思想文書）
+- Debugging_Principles v0.2
+- PROJECT_GRAND_RULES v4.2
 
 ---
 
@@ -91,17 +92,17 @@ Playwright + Qommons.AI の実通信を観測する。
 
 対象関数：
 
-* `_extract_graphql_answer(raw)`
-* `_extract_rest_answer(raw)`
-* `_extract_chat_id_from_sk(sk)`
+- `_extract_graphql_answer(raw)`
+- `_extract_rest_answer(raw)`
+- `_extract_chat_id_from_sk(sk)`
 
 確認観点：
 
-* REST `data.messages[*].role == "assistant"` の正規抽出
-* `assistant.content` が文字列として取得できる
-* content が None / 非文字列の場合は None を返す
-* GraphQL `assistant#` プレフィックス揺らぎへの耐性
-* sk → chat_id 抽出（正常系／異常系）
+- REST `data.messages[*].role == "assistant"` の正規抽出
+- `assistant.content` が文字列として取得できる
+- content が None / 非文字列の場合は None を返す
+- GraphQL `assistant#` プレフィックス揺らぎへの耐性
+- sk → chat_id 抽出（正常系／異常系）
 
 ---
 
@@ -109,12 +110,12 @@ Playwright + Qommons.AI の実通信を観測する。
 
 モックイベントを用いて以下を確認する。
 
-* status == `"ok"`
-* status == `"no_graphql"`
-* status == `"mismatch_with_rest"`
-* status == `"incomplete"`
-* first_graphql_ts の正当性
-* has_post / has_get / has_graphql の判定
+- status == `"ok"`
+- status == `"no_graphql"`
+- status == `"mismatch_with_rest"`
+- status == `"incomplete"`
+- first_graphql_ts の正当性
+- has_post / has_get / has_graphql の判定
 
 ---
 
@@ -122,10 +123,10 @@ Playwright + Qommons.AI の実通信を観測する。
 
 URL・method に応じて次が正しく分類されること。
 
-* GraphQL → `"graphql"`
-* POST /messages → `"rest_post"`
-* GET /messages → `"rest_get"`
-* その他 → `"other"`
+- GraphQL → `"graphql"`
+- POST /messages → `"rest_post"`
+- GET /messages → `"rest_get"`
+- その他 → `"other"`
 
 ---
 
@@ -135,15 +136,15 @@ URL・method に応じて次が正しく分類されること。
 
 条件：
 
-* 長文・制約付き質問
-* capture_seconds = 90
+- 長文・制約付き質問
+- capture_seconds = 90
 
 期待結果：
 
-* has_get == true
-* rest_answer != None
-* status == `"no_graphql"`
-* UI 表示内容と rest_answer が一致
+- has_get == true
+- rest_answer != None
+- status == `"no_graphql"`
+- UI 表示内容と rest_answer が一致
 
 ---
 
@@ -151,15 +152,15 @@ URL・method に応じて次が正しく分類されること。
 
 条件：
 
-* createData が発火する質問文
-* capture_seconds = 30〜60
+- createData が発火する質問文
+- capture_seconds = 30〜60
 
 期待結果：
 
-* has_graphql == true
-* graphql_answer != None
-* rest_answer != None
-* status == `"ok"`
+- has_graphql == true
+- graphql_answer != None
+- rest_answer != None
+- status == `"ok"`
 
 ---
 
@@ -167,15 +168,15 @@ URL・method に応じて次が正しく分類されること。
 
 POST →（GraphQL）→ GET の順序が保持されていること。
 
-* events の順序が逆転しない
-* first_graphql_ts が最初の GraphQL と一致
+- events の順序が逆転しない
+- first_graphql_ts が最初の GraphQL と一致
 
 ---
 
 ### B-3. 複数 createData の扱い
 
-* graphql_answer は **最初の 1 回**から抽出
-* first_graphql_ts と一致
+- graphql_answer は **最初の 1 回**から抽出
+- first_graphql_ts と一致
 
 ---
 
@@ -192,12 +193,12 @@ POST →（GraphQL）→ GET の順序が保持されていること。
 
 ### B-5. JSON parse 不能レスポンスの影響
 
-* parse_error == true のイベントが存在しても
+- parse_error == true のイベントが存在しても
 
-  * status
-  * has_graphql
-  * graphql_answer
-  * rest_answer
+  - status
+  - has_graphql
+  - graphql_answer
+  - rest_answer
     に影響しないこと。
 
 ---
@@ -208,8 +209,8 @@ POST →（GraphQL）→ GET の順序が保持されていること。
 
 条件：
 
-* createData が発火しない質問
-* capture_seconds = 30
+- createData が発火しない質問
+- capture_seconds = 30
 
 期待結果：
 
@@ -223,12 +224,12 @@ rest_answer == None または取得済み
 
 ### C-2. REST 遅延ケース
 
-* GraphQL は来るが GET /messages が遅延
+- GraphQL は来るが GET /messages が遅延
 
 期待結果：
 
-* status == `"incomplete"`
-* 例外が発生しない
+- status == `"incomplete"`
+- 例外が発生しない
 
 ---
 
@@ -236,8 +237,8 @@ rest_answer == None または取得済み
 
 POST → GET → GraphQL の順序でも：
 
-* 例外を出さない
-* status が mismatch / incomplete になる
+- 例外を出さない
+- status が mismatch / incomplete になる
 
 ---
 
@@ -245,12 +246,12 @@ POST → GET → GraphQL の順序でも：
 
 条件：
 
-* capture_seconds = 60〜120
-* 大量 XHR を発生させる
+- capture_seconds = 60〜120
+- 大量 XHR を発生させる
 
 期待結果：
 
-* jsonl / summary が破損しない
+- jsonl / summary が破損しない
 
 ---
 
@@ -283,10 +284,10 @@ POST → GET → GraphQL の順序でも：
 
 ## 11. Notes（補足）
 
-* probe は **CI 非対象の手動実行ツール**である
-* seconds は **完了条件ではなく fallback timeout**である
-* 本 Test Plan は probe の後方互換性を保証する基準文書である
-* Test Plan の更新は **設計変更または実測事実確定時のみ**行う
+- probe は **CI 非対象の手動実行ツール**である
+- seconds は **完了条件ではなく fallback timeout**である
+- 本 Test Plan は probe の後方互換性を保証する基準文書である
+- Test Plan の更新は **設計変更または実測事実確定時のみ**行う
 
 ---
 
