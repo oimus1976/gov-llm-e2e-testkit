@@ -1,7 +1,7 @@
-# **PROJECT_GRAND_RULES v4.2**
+# **PROJECT_GRAND_RULES v4.3**
 
 *(English = Binding / Japanese = Non-binding Supplement)*
-最終更新：2025-12-10
+最終更新：2025-12-12
 
 ---
 
@@ -197,12 +197,30 @@ If smoke is skipped, pipeline must fail explicitly.
 /data                → RAG datasets  
 /config              → Environment profiles  
 /logs                → Test artifacts (Git-ignored)  
+/scripts             → Human-invoked execution scripts (QA / verification entrypoints)  
 .github/workflows    → CI definitions  
 PROJECT_STATUS.md  
 CHANGELOG.md  
 README.md
 ```
+### **scripts/ Directory Rule（Execution Scripts）**
 
+**EN (binding):**
+
+* `scripts/` contains **human-invoked execution entrypoints** used during QA or verification phases.
+* Scripts under this directory:
+
+  * Must **not** be executed automatically by CI or pytest.
+  * May call functions from `src/`, but must **not** define reusable library APIs.
+  * Must represent **formally designed assets**, not temporary experiments.
+* `scripts/` is distinct from `sandbox/`, which is reserved for disposable or exploratory code.
+
+**JA（補助）:**
+
+* scripts/ は、人が明示的に実行する QA・検証用スクリプトの置き場。
+* CI や pytest の自動実行対象にはならない。
+* src の機能を呼び出すことはできるが、再利用前提の API は定義しない。
+* 設計書を持つ正式資産のみを置く（sandbox とは明確に区別）。
 ---
 
 # **7. Locator Principles（UI識別統一原則）**
