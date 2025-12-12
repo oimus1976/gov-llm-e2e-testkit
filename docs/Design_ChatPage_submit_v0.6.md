@@ -114,11 +114,17 @@ class SubmitReceipt:
 * `submit_id` は probe 側との **一次相関キー**
 * message_id / conversation_id は **probe 側で補完**する
 
+`ui_ack` is included to explicitly record UI-level acknowledgment,
+even though submit() only returns on successful acknowledgment.
+
 ---
 
 ## 6. UI Acknowledgement Model（送信受理モデル）
 
 ### 6.1 成功条件（最小確認）
+
+UI acknowledgment MUST be observed within a bounded and deterministic timeout
+(implementation-specific, but required to be finite).
 
 送信は、以下が **すべて成立した場合のみ成功**とみなす：
 
