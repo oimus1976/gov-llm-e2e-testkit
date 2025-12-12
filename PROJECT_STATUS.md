@@ -43,19 +43,19 @@
 
 ## 3. Next Action（唯一の次アクション）
 
-### 🎯 A. ChatPage.ask v0.6 — 回答検知前提を刷新した API 設計
+### 🎯 A. ChatPage.submit v0.6 — 送信責務を分離した Submission API 設計
 
 目的：
 
-1. Answer Detection Layer v0.2 の成果を API に反映
-2. GraphQL createData 非発火ケースを前提条件として吸収
-3. REST / GraphQL の差異を ask API 内で隠蔽
-4. Smoke / RAG テストの安定性を向上
+1. Answer Detection Layer v0.2 の成果を前提条件として API 境界を確定する
+2. GraphQL createData 非発火ケースを **submit API の責務外**として切り離す
+3. 回答完了・差異吸収・意味論を Answer Detection Layer に完全委譲する
+4. Smoke / RAG テストにおける API 責務の安定性を向上させる
 
 位置づけ：
 
-- probe は **観測・検証ツール**
-- ChatPage.ask は **利用側 API**
+- probe は **観測・検証レイヤ**
+- ChatPage.submit は **利用側の送信 API**
 - 本フェーズは *設計* に限定する（実装は後続）
 
 ---
@@ -73,6 +73,12 @@
 - signature-based 構造検証
 - AppSync 変更耐性の強化
 - 長期保守を見据えた検知方式の抽象化
+
+### READMEの全面整理
+
+- README の全面整理は ChatPage.submit v0.6 設計完了後に実施する
+  （現時点では PROJECT_STATUS / CHANGELOG を正とする）
+
 
 ---
 
