@@ -1,15 +1,17 @@
-# sandbox/run_probe_once.py
+# scripts/run_probe_once.py
 """
-run_probe_once.py - Probe v0.2.1 起動スクリプト
+run_probe_once.py - Probe v0.2 runner
 
-Design_run_probe_once_v0.1.1 に基づき、
+Design_run_probe_once_v0.1.1
+Design_probe_graphql_answer_detection_v0.2
+
 - Qommons.AI へのログイン & チャット準備（template_prepare_chat_v0_1）
-- GraphQL createData 監視プローブ（probe_v0_2.run_graphql_probe）
-を 1 回だけ実行するユーティリティ。
+- Answer Detection Probe（probe_v0_2.run_graphql_probe）を
+  「意味的完了イベント待ち + 時間上限」で 1 回実行する。
 
-実行例:
-    python -m sandbox.run_probe_once
-    python -m sandbox.run_probe_once --seconds 45 --headless
+NOTE:
+- capture_seconds は完了条件ではなくフォールバック上限。
+- 完了判定の意味論は probe_v0_2 側に委譲する。
 """
 
 import argparse
@@ -20,18 +22,21 @@ from typing import Any, Optional, Tuple
 from src.templates.prepare_chat.template_prepare_chat_v0_1 import (
     prepare_chat_session,
 )
-from sandbox.probe_v0_2 import run_graphql_probe
+from scripts.probe_v0_2 import run_graphql_probe
 
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run Qommons GraphQL probe (probe_v0.2.1) once."
+        description="Run Qommons Answer Detection probe (v0.2) once."
     )
     parser.add_argument(
         "--seconds",
         type=int,
         default=30,
-        help="Probe capture duration in seconds (default: 30).",
+        help=(
+            "Maximum waiting time in seconds. "
+            "Used only as a fallback upper bound (default: 30)."
+        ),
     )
     parser.add_argument(
         "--headless",
@@ -43,26 +48,23 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
 
 def _prepare_chat(headless: bool) -> Tuple[Any, Any, Any, Optional[Any]]:
     """
-    template_prepare_chat_v0_1 の Stable Core に最大限合わせる。
+    template_prepare_chat_v0_1 の Stable Core に合わせる。
 
-    想定されるパターン:
-        1) page, context, chat_id = prepare_chat_session(...)
-        2) browser, context, page, chat_id = prepare_chat_session(...)
+    Supported return patterns:
+        1) (page, context, chat_id)
+        2) (browser, context, page, chat_id)
 
-    どちらでも動作するようにし、テンプレ側の変更を強要しない。
-    戻り値:
+    Returns:
         (page, context, chat_id, browser_or_none)
     """
     kwargs = {}
 
-    # テンプレ側が headless 引数をサポートしている場合のみ渡す
     sig = inspect.signature(prepare_chat_session)
     if "headless" in sig.parameters:
         kwargs["headless"] = headless
 
     result = prepare_chat_session(**kwargs)
 
-    # 返り値をタプルとして扱う（list でも OK）
     try:
         seq = tuple(result)  # type: ignore[arg-type]
     except TypeError:
@@ -78,8 +80,7 @@ def _prepare_chat(headless: bool) -> Tuple[Any, Any, Any, Optional[Any]]:
         browser, context, page, chat_id = seq
     else:
         raise RuntimeError(
-            "prepare_chat_session() must return 3 or 4 values: "
-            "(page, context, chat_id) or (browser, context, page, chat_id). "
+            "prepare_chat_session() must return 3 or 4 values. "
             f"Got {len(seq)} values."
         )
 
@@ -88,13 +89,13 @@ def _prepare_chat(headless: bool) -> Tuple[Any, Any, Any, Optional[Any]]:
 
 def main(argv: Optional[list[str]] = None) -> int:
     args = _parse_args(argv)
-    capture_seconds: int = args.seconds
+    max_wait_seconds: int = args.seconds
     headless: bool = args.headless
 
-    # QA 基準値は 30 秒。変更された場合は警告のみ出す（挙動は変えない）
-    if capture_seconds != 30:
+    # QA 基準は 30 秒（意味論は変えない）
+    if max_wait_seconds != 30:
         print(
-            "[run_probe_once] WARNING: capture_seconds is not the QA standard (30s).",
+            "[run_probe_once] WARNING: max_wait_seconds is not the QA standard (30s).",
             file=sys.stderr,
         )
 
@@ -104,36 +105,37 @@ def main(argv: Optional[list[str]] = None) -> int:
     chat_id = None
 
     try:
-        # 1. チャット準備（ログイン・チャット画面遷移・chat_id 取得）
+        # 1. チャット準備
         page, context, chat_id, browser = _prepare_chat(headless=headless)
 
         print("[run_probe_once] Chat prepared.")
         print(f"[run_probe_once] chat_id = {chat_id}")
-        print(f"[run_probe_once] capture_seconds = {capture_seconds}")
-
-        # 2. GraphQL createData 監視プローブ起動
-        #    戻り値は probe の出力ディレクトリ（想定）
-        probe_dir = run_graphql_probe(
-            page=page,
-            chat_id=chat_id,
-            capture_seconds=capture_seconds,
+        print(
+            "[run_probe_once] waiting for semantic completion "
+            f"(fallback timeout = {max_wait_seconds}s)"
         )
 
-        print("[run_probe_once] Probe finished successfully.")
-        if probe_dir is not None:
-            print(f"[run_probe_once] probe_dir = {probe_dir}")
+        # 2. Answer Detection Probe 起動
+        #    - 完了条件は probe 側で判断
+        #    - seconds は上限としてのみ使用
+        probe_result = run_graphql_probe(
+            page=page,
+            chat_id=chat_id,
+            capture_seconds=max_wait_seconds,
+        )
 
-        # 成功: exit code 0
+        print("[run_probe_once] Probe finished.")
+        if probe_result is not None:
+            print(f"[run_probe_once] probe_result = {probe_result}")
+
         return 0
 
     except Exception as exc:
-        # 失敗時: 標準エラーにメッセージ出力 + exit code 1
         print(f"[run_probe_once] ERROR: {exc}", file=sys.stderr)
         return 1
 
     finally:
-        # 3. リソース解放（context / browser を確実に閉じる）
-        #    どちらが存在していても落とさないように try/except で保護
+        # 3. リソース解放
         if page is not None:
             try:
                 page.close()
