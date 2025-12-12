@@ -5,6 +5,18 @@
 
 ---
 
+## v0.4.4 (2025-12-12)
+### Status / Roadmap
+- UPDATE: PROJECT_STATUS を v0.4.4 に更新し、唯一の Next Action を  
+  「Environment Layer（env_loader） — Design_env_v0.2.3 準拠のスキーマ整合レビュー」に一本化。
+- ADD: XHR / GraphQL ベースの回答検知まわりについて、
+  - 「probe v0.2（GraphQL createData 監視＋assistant テキスト抽出）」を Next Next Action として登録
+  - 「XHR/GraphQL フュージョン方式検証」「ChatPage.ask v0.6 刷新案」「CI 上での回答検知安定化」を Roadmap に追加。
+- NOTE: Environment Layer（env_loader）の仕様は非破壊（v0.2 系との互換）であり、  
+  本フェーズでは **実装と Design_env_v0.2.3 の完全整合性確認** を目的とする。
+
+---
+
 ## **v0.4.3 (2025-12-10)**
 
 ### **Environment Layer Clarifying Update（Design_env_v0.2.3）**
