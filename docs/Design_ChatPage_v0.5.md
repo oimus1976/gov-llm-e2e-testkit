@@ -17,6 +17,16 @@ gov-llm-e2e-testkit – ChatPage DOM 対応設計書（2025-12）
 
 本設計書は、Smoke Test v0.3 を安定動作させるための正式仕様である。
 
+**Note (Important):**
+
+ The `ask()` API defined in this document is a **DOM-based legacy interface**
+ that includes UI-level answer observation and extraction.
+
+ Formal submission semantics and responsibility boundaries are defined separately in  
+ **Design_ChatPage_submit_v0.6.md**.
+
+ This document remains valid for DOM observation, debugging, and experimental usage,
+ but it does **not** define the canonical submission API.
 
 ---
 
