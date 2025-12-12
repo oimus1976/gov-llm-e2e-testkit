@@ -6,14 +6,33 @@
 ---
 
 ## v0.4.4 (2025-12-12)
-### Status / Roadmap
-- UPDATE: PROJECT_STATUS を v0.4.4 に更新し、唯一の Next Action を  
-  「Environment Layer（env_loader） — Design_env_v0.2.3 準拠のスキーマ整合レビュー」に一本化。
-- ADD: XHR / GraphQL ベースの回答検知まわりについて、
-  - 「probe v0.2（GraphQL createData 監視＋assistant テキスト抽出）」を Next Next Action として登録
-  - 「XHR/GraphQL フュージョン方式検証」「ChatPage.ask v0.6 刷新案」「CI 上での回答検知安定化」を Roadmap に追加。
-- NOTE: Environment Layer（env_loader）の仕様は非破壊（v0.2 系との互換）であり、  
-  本フェーズでは **実装と Design_env_v0.2.3 の完全整合性確認** を目的とする。
+
+### Added
+- Answer Detection Layer に関する正式仕様を追加：  
+  - `Design_chat_answer_detection_v0.1.md`  
+  - `Design_probe_graphql_answer_detection_v0.1.md`
+- `test_env_loader_matrix_v0.2` を追加し、Environment Layer（env_loader v0.2.3）の QA プロセスを体系化。
+
+### Changed
+- PROJECT_STATUS を v0.4.4 に更新し、  
+  **唯一の Next Action を env_loader（Design_env_v0.2.3 準拠のスキーマ整合レビュー）から  
+  probe v0.2（GraphQL createData 監視＋assistant 抽出）へ正式に切り替え。**
+- Roadmap を再編し、以下の後続タスクを正式登録：  
+  - XHR/GraphQL フュージョン方式検証  
+  - ChatPage.ask v0.6 の刷新  
+  - CI 上での回答検知安定化
+
+### Fixed
+- env_loader v0.2.3 の以下が QA により設計仕様と完全一致することを確認：  
+  - MissingSecretError の拘束仕様  
+  - Schema Freeze Rule（構造不変性）  
+  - OS > .env の優先順位  
+  - ENV_PROFILE の正しい適用  
+  - recursive / list placeholder などの特殊ケース解決
+
+### Notes
+- Environment Layer（env_loader）は v0.2 系と完全互換であり、  
+  本バージョンでは **実装のレビューと設計書 v0.2.3 との整合確認のみを目的とした非破壊更新** である。
 
 ---
 
