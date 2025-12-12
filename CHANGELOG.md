@@ -6,29 +6,40 @@
 ---
 
 ## v0.4.5 (2025-12-12)
+
 ### Added
-- Added formal QA specification: `docs/Test_plan_probe_v0.2.1.md`
-  - Defines complete test plan for Answer Detection Layer (probe v0.2.1)
+
+- 正式 QA 仕様書を追加：`docs/test_plan/Test_plan_probe_v0.2.1.md`
+  - Answer Detection Layer（probe v0.2.1）に対する完全なテスト計画を定義
 
 ### Changed
-- PROJECT_STATUS updated to v0.4.5
-  - Recorded that probe v0.2.1 implementation is now FIX (design compliant)
-  - Test Plan added and QA execution phase has started (Answer Detection Layer)
+
+- PROJECT_STATUS を v0.4.5 に更新
+  - probe v0.2.1 の実装が「設計書準拠の FIX 状態」であることを記録
+  - Test Plan の追加と、Answer Detection Layer が QA 実行フェーズに入ったことを明記
+
+- probe 用テスト計画を v0.2.1 → v0.2.2 に更新
+- Test_plan_probe_v0.2.2.md を docs/test_plan/ 配下へ移動（構造整理のため）
+- test_plan_v0.1.md を「E2E テスト体系における最上位仕様・思想文書」として位置づけを明確化
 
 ### Notes
-- probe v0.2.1 is *not yet fully QA-verified*; final verification notes will be added in a later release.
+
+- probe v0.2.1 は **まだ最終 QA 完了状態ではない**
+  - 最終検証結果および評価は、後続リリースで追記予定
 
 ---
 
 ## v0.4.4 (2025-12-12)
 
 ### Added
+
 - Answer Detection Layer に関する正式仕様を追加：  
   - `Design_chat_answer_detection_v0.1.md`  
   - `Design_probe_graphql_answer_detection_v0.1.md`
 - `test_env_loader_matrix_v0.2` を追加し、Environment Layer（env_loader v0.2.3）の QA プロセスを体系化。
 
 ### Changed
+
 - PROJECT_STATUS を v0.4.4 に更新し、  
   **唯一の Next Action を env_loader（Design_env_v0.2.3 準拠のスキーマ整合レビュー）から  
   probe v0.2（GraphQL createData 監視＋assistant 抽出）へ正式に切り替え。**
@@ -38,6 +49,7 @@
   - CI 上での回答検知安定化
 
 ### Fixed
+
 - env_loader v0.2.3 の以下が QA により設計仕様と完全一致することを確認：  
   - MissingSecretError の拘束仕様  
   - Schema Freeze Rule（構造不変性）  
