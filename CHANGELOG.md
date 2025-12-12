@@ -5,6 +5,21 @@
 
 ---
 
+## v0.4.5 (2025-12-12)
+### Added
+- Added formal QA specification: `docs/Test_plan_probe_v0.2.1.md`
+  - Defines complete test plan for Answer Detection Layer (probe v0.2.1)
+
+### Changed
+- PROJECT_STATUS updated to v0.4.5
+  - Recorded that probe v0.2.1 implementation is now FIX (design compliant)
+  - Test Plan added and QA execution phase has started (Answer Detection Layer)
+
+### Notes
+- probe v0.2.1 is *not yet fully QA-verified*; final verification notes will be added in a later release.
+
+---
+
 ## v0.4.4 (2025-12-12)
 
 ### Added

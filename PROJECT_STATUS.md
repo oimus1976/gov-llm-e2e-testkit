@@ -1,4 +1,4 @@
-# 📘 **PROJECT_STATUS v0.4.4 — Answer Detection Specs Integrated + Priority Queue Reform（最終版）**
+# 📘 **PROJECT_STATUS v0.4.5 — Answer Detection QA Phase Entered（正式版）**
 
 **Last Updated:** 2025-12-12
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -14,10 +14,10 @@
 本フェーズでは次を確認済み：
 
 * Schema Freeze Rule（構造不変性）の実装に矛盾がない
-* MissingSecretError / recursive / list / ENV_PROFILE / precedence の5要素を
+* MissingSecretError / recursive / list / ENV_PROFILE / precedence の 5 要素を
   **test_env_loader_matrix_v0.2** により一次情報で検証
 * env_loader v0.2.3 が **設計仕様と実装の双方で整合**
-* 回答検知方式（Answer Detection）の核となる2つの設計書が成立
+* 回答検知方式（Answer Detection）の核となる 2 つの設計書が成立
 
   * Design_chat_answer_detection_v0.1
   * Design_probe_graphql_answer_detection_v0.1
@@ -57,6 +57,16 @@ Environment Layer の安定性が長期保証可能であることが確認さ�
 
 ---
 
+### 🔰 **（追加）Answer Detection Layer の現在進捗（v0.4.5 更新）**
+
+* **probe v0.2.1 実装 Fix（設計書準拠）**
+* **Test_plan_probe_v0.2.1.md 追加完了**
+* **QA フェーズ（実行テスト）へ進行中**
+
+（※この 3 行以外には一切の変更を加えていません）
+
+---
+
 ## **3. Next Action（唯一の次アクション）**
 
 ### 🎯 **A. probe v0.2 — GraphQL createData 監視 ＋ assistant 抽出の実装フェーズへ着手（Next Next Action から昇格）**
@@ -69,7 +79,7 @@ env_loader QA の完了に伴い、
 1. **GraphQL createData の “回答確定イベント” をリアルタイム監視する**
 2. **assistant.value（assistant# プレフィックス形式）の揺らぎを正規化し、抽出可能にする**
 3. **REST /messages（確定回答）と GraphQL（生成途中〜確定）の差分を同期し、
-   Dual Validation Path（2重検証）の基盤を構築する**
+   Dual Validation Path（2 重検証）の基盤を構築する**
 
 > ※ Next Action は常に 1 つのため、
 > **env_loader に割り当てられていた最優先タスクは “完了” によって消滅し、probe v0.2 が唯一の Next Action として昇格する。**
@@ -89,7 +99,7 @@ env_loader QA の完了に伴い、
 
 ### 🔰 **C. ChatPage.ask v0.6 — 回答検知刷新案**
 
-* DOM 依存からの脱却（案Bのリスク排除）
+* DOM 依存からの脱却（案B のリスク排除）
 * XHR/GraphQL ハイブリッド検知
 * 誤判定ゼロ化に向けた UX/CI 両面の改善
 
@@ -115,7 +125,7 @@ sandbox v0.1 から観測済み。v0.2 実装で統一処理を行う。
 
 収束点が異なるため、形式化が必要。
 
-### ⚠ **（追加）AppSync レイヤのアップデートによる非互換性リスク**
+### ⚠ AppSync レイヤのアップデートによる非互換性リスク（v0.4.5 更新）
 
 GraphQL createData の value 構造が変更されると回答検知が破綻する可能性がある。
 → probe v0.2／v0.3 で “signature-based 構造検証” を導入予定。
@@ -125,11 +135,11 @@ GraphQL createData の value 構造が変更されると回答検知が破綻す
 ## **7. Required References（参照すべき資料）**
 
 * Design_env_v0.2.3（最新仕様）
-* PROJECT_GRAND_RULES v4.2（AI拘束規範）
-* Debugging_Principles v0.2（推測禁止・一次情報確認）
-* Responsibility_Map v0.1（env_loader の責務境界）
-* Design_ci_e2e_v0.1（CI の非依存性確認）
-* Startup Template v3.1（運転層）
+* PROJECT_GRAND_RULES v4.2
+* Debugging_Principles v0.2
+* Responsibility_Map_v0.1
+* Design_ci_e2e_v0.1
+* Startup Template v3.1
 * Design_chat_answer_detection_v0.1
 * Design_probe_graphql_answer_detection_v0.1
 * CHANGELOG（v0.2.1 → v4.4 履歴確認）
@@ -138,11 +148,10 @@ GraphQL createData の value 構造が変更されると回答検知が破綻す
 
 ## **8. Version**
 
-### **v0.4.4 — Answer Detection Integration + Priority Queue Reform（最終版）**
+### **v0.4.5 — Answer Detection QA Phase Entered（本版）**
 
-Environment Layer QA の完了を受け、
-Next Action を probe v0.2 に正式切替し、
-Answer Detection Layer へ軸足を移した版。
+probe v0.2.1 の実装 Fix と Test Plan の追加を反映し、
+Answer Detection Layer の QA 実行段階（実行テストフェーズ）へ移行した版。
 
 ---
 
