@@ -5,6 +5,28 @@
 
 ---
 
+## v0.4.8 (2025-12-13)
+
+### Added
+
+- Finalized submit–probe correlation design:
+  - Introduced `submit_id` as the primary correlation key
+  - Clearly separated submission responsibility from answer detection
+  - Formally accepted REST-only and GraphQL-non-firing cases
+  - Added observed facts appendix based on real execution logs
+
+### Changed
+
+- PROJECT_STATUS updated to reflect completion of correlation design
+- Next Action advanced to implementation readiness (test perspective definition)
+
+### Notes
+
+- No implementation or CI behavior changes in this version
+
+
+---
+
 ## v0.4.7 (2025-12-13)
 
 ### Added

@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.4.7 — Answer Detection QA Completed
+# 📘 PROJECT_STATUS v0.4.8 — submit–probe Correlation Design Completed
 
 **Last Updated:** 2025-12-13  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -50,21 +50,30 @@
 
 ---
 
+### ✅ submit_id ↔ Answer Detection（probe）相関設計 完了（New）
+
+- ChatPage.submit が発行する `submit_id` を一次相関キーとする設計を確定
+- UI 送信責務（submit）と回答観測・完了判定責務（probe）の境界を正式定義
+- GraphQL createData 非発火 / REST-only ケースを前提条件として包含
+- 観測事実（logs/ に基づく一次情報）を Appendix A（Observed Facts）として固定
+- 実装・CI 変更は未着手（設計フェーズ完了を宣言）
+
+---
+
 ## 3. Next Action（唯一の次アクション）
 
-### 🎯 A. submit_id ↔ Answer Detection（probe）相関設計
+### 🎯 A. submit_id ↔ probe 相関の実装準備（テスト観点定義）
 
 目的：
 
-1. ChatPage.submit が発行する submit_id を一次相関キーとして正式化
-2. probe（GraphQL / REST）側で取得される message / answer との対応関係を定義
-3. テスト・ログ・CI における追跡可能性（traceability）を確立する
+1. Design_submit_probe_correlation_v0.1 に基づく実装前チェック観点の明文化
+2. submit / probe 双方の MUST / MUST NOT をテスト可能な形に落とす
+3. REST-only / GraphQL 非発火ケースを含む期待挙動の固定
 
 位置づけ：
 
-- ChatPage.submit：**送信責務のみ**
-- probe：**観測・完了判定・回答取得**
-- 本フェーズは *設計* に限定する（実装は後続）
+- 本フェーズは **設計補助・テスト観点整理に限定**
+- 実装・CI 変更は次フェーズ以降
 
 ---
 
@@ -117,6 +126,14 @@
 ---
 
 ## 7. Version
+
+### v0.4.8 — submit–probe Correlation Design Completed
+
+submit_id を一次相関キーとする
+ChatPage.submit ↔ Answer Detection（probe）の相関設計を確定。
+
+観測事実を Appendix として固定し、
+相関不能ケースを「失敗」と誤認しない設計を正式化した版。
 
 ### v0.4.7 — ChatPage.submit v0.6 Design Completed
 
