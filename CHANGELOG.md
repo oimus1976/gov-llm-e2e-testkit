@@ -5,6 +5,19 @@
 
 ---
 
+## v0.4.6 (2025-12-13)
+
+### Changed
+
+- Updated test plan doctrine document:
+  - `test_plan_v0.1.md` → `test_plan_v0.1.1.md`
+  - Clarified that test_plan is a **top-level doctrine document** defining
+    test hierarchy, priorities, and responsibilities
+  - Explicitly separated test system philosophy from executable test specifications
+  - No changes to test structure, execution logic, or CI behavior
+
+---
+
 ## v0.4.5 (2025-12-12)
 
 ### Added

@@ -62,7 +62,7 @@ Environment Layer の安定性が長期保証可能であることが確認さ�
 * **probe v0.2.1 実装 Fix（設計書準拠）**
 * **Test_plan_probe_v0.2.2.md へ更新**
   * 保存場所を `docs/test_plan/` 配下へ整理
-  * test_plan_v0.1.md を「E2E テスト体系の最上位仕様・思想文書」として位置づけを明確化
+  * test_plan_v0.1.1.md を「E2E テスト体系の最上位仕様・思想文書」として正式確定
 * **QA フェーズ（実行テスト）へ進行中**
 
 ---
