@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.4.6 — Answer Detection QA Completed
+# 📘 PROJECT_STATUS v0.4.7 — Answer Detection QA Completed
 
 **Last Updated:** 2025-12-13  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -41,21 +41,29 @@
 
 ---
 
+### ✅ ChatPage.submit v0.6 — Submission API 設計完了（New）
+
+- UI 送信責務のみを担う Submission API として設計を確定
+- 回答完了・意味論・差異吸収は Answer Detection Layer に完全委譲
+- Design_ChatPage_v0.5（DOM-based ask）との責務分離を明文化
+- 実装・CI 変更は未着手（設計フェーズ完了）
+
+---
+
 ## 3. Next Action（唯一の次アクション）
 
-### 🎯 A. ChatPage.submit v0.6 — 送信責務を分離した Submission API 設計
+### 🎯 A. submit_id ↔ Answer Detection（probe）相関設計
 
 目的：
 
-1. Answer Detection Layer v0.2 の成果を前提条件として API 境界を確定する
-2. GraphQL createData 非発火ケースを **submit API の責務外**として切り離す
-3. 回答完了・差異吸収・意味論を Answer Detection Layer に完全委譲する
-4. Smoke / RAG テストにおける API 責務の安定性を向上させる
+1. ChatPage.submit が発行する submit_id を一次相関キーとして正式化
+2. probe（GraphQL / REST）側で取得される message / answer との対応関係を定義
+3. テスト・ログ・CI における追跡可能性（traceability）を確立する
 
 位置づけ：
 
-- probe は **観測・検証レイヤ**
-- ChatPage.submit は **利用側の送信 API**
+- ChatPage.submit：**送信責務のみ**
+- probe：**観測・完了判定・回答取得**
 - 本フェーズは *設計* に限定する（実装は後続）
 
 ---
@@ -110,7 +118,15 @@
 
 ## 7. Version
 
+### v0.4.7 — ChatPage.submit v0.6 Design Completed
+
+ChatPage.submit v0.6 の設計完了を宣言し、  
+UI 送信責務と回答検知責務の分離を正式確定した版。
+
+Next Action を  
+submit_id ↔ Answer Detection（probe）相関設計へ進めた。
+
 ### v0.4.6 — Answer Detection QA Completed
 
 Answer Detection Layer（probe v0.2 系）の QA 完了を宣言し、  
-ChatPage.ask v0.6 設計フェーズへ移行した版。
+ChatPage.submit v0.6 設計フェーズへ移行した版。

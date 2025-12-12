@@ -5,6 +5,22 @@
 
 ---
 
+## v0.4.7 (2025-12-13)
+
+### Added
+
+- Finalized `Design_ChatPage_submit_v0.6`:
+  - Introduced submission-only API with explicit responsibility separation
+  - Clarified boundary between UI submission and answer detection
+  - Preserved legacy DOM-based `ask()` semantics in v0.5
+
+### Changed
+
+- PROJECT_STATUS updated to mark submission API design as completed
+- Next Action advanced to submit_id ↔ probe correlation design
+
+---
+
 ## v0.4.6 (2025-12-13)
 
 ### Changed
