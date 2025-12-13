@@ -82,12 +82,13 @@ jobs:
           fi
 
           sed \
-            -e \"s|\\\${SUBMIT_ID}|$SUBMIT_ID|g\" \
-            -e \"s|\\\${CHAT_ID}|$CHAT_ID|g\" \
-            -e \"s|\\\${CORRELATION_STATE}|$CORR_STATE|g\" \
-            -e \"s|\\\${CI_RESULT}|$CI_RESULT|g\" \
+            -e 's|${SUBMIT_ID}|'"$SUBMIT_ID"'|g' \
+            -e 's|${CHAT_ID}|'"$CHAT_ID"'|g' \
+            -e 's|${CORRELATION_STATE}|'"$CORR_STATE"'|g' \
+            -e 's|${CI_RESULT}|'"$CI_RESULT"'|g' \
             docs/ci/summary_template_submit_probe_v0.1.md \
-            >> \"$GITHUB_STEP_SUMMARY\"
+            >> "$GITHUB_STEP_SUMMARY"
+
 
       # Smoke Test:
       # - guarantees UI submit works
