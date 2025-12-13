@@ -5,6 +5,23 @@
 
 ---
 
+## [0.5.1] - 2025-12-14
+
+### Added
+
+- Basic RAG Test v0.1 requirements document (basic_rag_v0.1.md)
+
+### Changed
+
+- Clarified CI as foundation verification CI (Design_ci_e2e_v0.1.1)
+- Explicitly separated E2E foundation phase and RAG QA phase in project status
+
+### Docs
+
+- Linked test_plan_v0.1.1 to Basic RAG Test requirements
+
+---
+
 ## v0.5.0 — E2E 基盤確定 / RAG QA 自動化フェーズ開始
 
 *2025-12-13*
