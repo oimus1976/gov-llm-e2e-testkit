@@ -47,7 +47,6 @@ def _default_output_dir() -> Path:
     return base / f"xhr_probe_{ts}"
 
 
-
 def _extract_chat_id_from_sk(sk: str) -> Optional[str]:
     if not isinstance(sk, str):
         return None
@@ -68,15 +67,13 @@ def _extract_graphql_answer(raw: Dict[str, Any]) -> Optional[str]:
     if not isinstance(value, str):
         return None
 
-    # もっとも期待される形式
     if value.startswith("assistant#"):
         return value.split("assistant#", 1)[1]
 
-    # プレフィックス揺らぎ対策
     if "#" in value:
         return value.split("#", 1)[1]
 
-    return value  # 最終 fallback
+    return value
 
 
 def _extract_rest_answer(raw: Dict[str, Any]) -> Optional[str]:
@@ -86,7 +83,6 @@ def _extract_rest_answer(raw: Dict[str, Any]) -> Optional[str]:
     if not isinstance(raw, dict):
         return None
 
-    # data ラップを吸収
     data = raw.get("data") if isinstance(raw.get("data"), dict) else raw
 
     msgs = data.get("messages")
@@ -98,7 +94,6 @@ def _extract_rest_answer(raw: Dict[str, Any]) -> Optional[str]:
                     return content
 
     return None
-
 
 
 def run_graphql_probe(
@@ -131,7 +126,6 @@ def run_graphql_probe(
         parsed_json: Optional[Dict[str, Any]] = None
         parse_error = False
 
-        # JSON 解析（失敗してもイベント記録するため raw=None で保持）
         try:
             parsed_json = response.json()
         except Exception:
@@ -140,14 +134,11 @@ def run_graphql_probe(
         # ---- GraphQL createData 判定 ----
         if "/graphql" in url and method.upper() == "POST":
 
-            # createData 以外の GraphQL は記録しない（設計書の厳密化）
             if parsed_json and isinstance(parsed_json, dict):
-                # GraphQL の operationName を優先してチェック
                 op = parsed_json.get("operationName")
                 if op != "createData":
                     return
 
-                # data.createData.sk の chat_id 抽出
                 try:
                     create_data = parsed_json["data"]["createData"]
                     sk = create_data.get("sk")
@@ -177,7 +168,6 @@ def run_graphql_probe(
                 )
                 return
 
-            # GraphQL だが JSON パース失敗 → 設計に従い raw=None で記録
             events.append(
                 ProbeEvent(
                     ts=_now_ts(),
@@ -218,8 +208,7 @@ def run_graphql_probe(
             )
             return
 
-        # ---- それ以外の XHR も記録（設計書の "一次情報保持" に従う）----
-        # ただし chat_id に関係しない一般通信は kind="other"
+        # ---- その他 ----
         events.append(
             ProbeEvent(
                 ts=_now_ts(),
@@ -233,10 +222,7 @@ def run_graphql_probe(
             )
         )
 
-    # Playwright の response イベント登録
     page.on("response", _handle_response)
-
-    # capture_seconds 監視
     page.wait_for_timeout(capture_seconds * 1000)
 
     # ---- JSONL 出力 ----
@@ -260,7 +246,7 @@ def run_graphql_probe(
                 + "\n"
             )
 
-    # ---- summary.json を生成 ----
+    # ---- summary.json 生成 ----
     has_post = any(e.kind == "rest_post" for e in events)
     has_get = any(e.kind == "rest_get" for e in events)
     has_graphql = any(e.kind == "graphql" for e in events)
@@ -268,21 +254,19 @@ def run_graphql_probe(
     graphql_answer: Optional[str] = None
     rest_answer: Optional[str] = None
 
-    # 最初の createData から回答抽出
     for ev in events:
         if ev.kind == "graphql" and ev.raw:
             graphql_answer = _extract_graphql_answer(ev.raw)
             if graphql_answer:
                 break
 
-    # 最後の GET /messages から回答抽出
     for ev in reversed(events):
         if ev.kind == "rest_get" and ev.raw:
             rest_answer = _extract_rest_answer(ev.raw)
             if rest_answer:
                 break
 
-    # ステータス判定
+    # ---- 既存 status 判定（不変）----
     if not has_graphql:
         status = "no_graphql"
     elif graphql_answer and rest_answer and graphql_answer == rest_answer:
@@ -292,9 +276,18 @@ def run_graphql_probe(
     else:
         status = "incomplete"
 
+    # ---- correlation_state 判定（Design_submit_probe_correlation_v0.2 準拠）----
+    if graphql_answer or rest_answer:
+        correlation_state = "Established"
+    elif has_post or has_get or has_graphql:
+        correlation_state = "Not Established"
+    else:
+        correlation_state = "No Evidence"
+
     summary = {
         "chat_id": chat_id,
         "status": status,
+        "correlation_state": correlation_state,
         "first_graphql_ts": first_graphql_ts,
         "graphql_answer": graphql_answer,
         "rest_answer": rest_answer,
@@ -307,7 +300,8 @@ def run_graphql_probe(
     }
 
     (output_dir / "summary.json").write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(summary, ensure_ascii=False, indent=2),
+        encoding="utf-8",
     )
 
     return summary
