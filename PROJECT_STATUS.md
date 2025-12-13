@@ -8,6 +8,7 @@
 ## 1. Current Focus（現在の主眼）
 
 ### ⭐ Answer Detection Layer（probe v0.2 系）の QA を完了し、  
+
 **ChatPage.ask v0.6 設計フェーズへ正式に移行する。**
 
 - Environment Layer は完了済み・凍結
@@ -36,6 +37,7 @@
 - **REST-only / GraphQL 非発火ケースを含めて成立確認**
 
 補足：
+
 - test_plan_v0.1.1 を  
   **「E2E テスト体系の最上位仕様・思想文書」**として正式確定
 
@@ -72,7 +74,27 @@
   **設計レビュー専用文書**として位置づけを明確化
 
 配置先：
+
 - docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md
+
+---
+
+### ✅ SubmitReceipt 定義確定（ChatPage.submit v0.6）（New）
+
+- ChatPage.submit v0.6 が返却する唯一のデータ構造
+  **SubmitReceipt** の正式定義を確定
+- submit の責務境界（UI送信の成立確認まで）を
+  **不変データ構造（immutable）としてコードで固定**
+- submit_id / sent_at / ui_ack / diagnostics の最小構成とし、
+  回答完了・probe・REST/GraphQL 概念を明示的に排除
+- submit と Answer Detection Layer（probe）間の
+  責務リークを型レベルで防止
+- 本定義は **意図的に最小化され、将来的な拡張を想定しない**
+  設計装置として位置づけ
+
+配置先：
+
+- docs/design_support/Design_SubmitReceipt_v0.1.md
 
 ---
 
@@ -111,7 +133,6 @@
 
 - README の全面整理は ChatPage.submit v0.6 設計完了後に実施する
   （現時点では PROJECT_STATUS / CHANGELOG を正とする）
-
 
 ---
 

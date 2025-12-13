@@ -29,6 +29,16 @@
   File:
   - docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md
 
+- Added formal design document for SubmitReceipt (v0.1)
+  - Defined immutable return type for ChatPage.submit v0.6
+  - Fixed submission responsibility boundary at the data-structure level
+  - Explicitly excluded completion semantics, probe concepts,
+    and REST/GraphQL results
+  - Positioned as intentionally minimal and non-extensible
+    design artifact to prevent responsibility leakage
+
+  File:
+  - docs/design_support/Design_SubmitReceipt_v0.1.md
 
 ### Changed
 
