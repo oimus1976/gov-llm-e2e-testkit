@@ -41,6 +41,12 @@
 - 本バージョンは **機能追加ではなく「設計・責務境界の確定」**が主目的
 - 相関不能ケースを FAIL と誤認しない設計原則を正式固定
 
+### CI
+
+- FIX: Simplified e2e workflow to single smoke execution
+- RAG tests are explicitly deferred to align with submit–probe correlation design
+- Resolved pytest exit code 5 by removing redundant test invocations
+
 ---
 
 ## v0.4.9 (2025-12-13)
