@@ -61,10 +61,23 @@ jobs:
           mkdir -p logs
           pytest tests/test_smoke_llm.py -vv --disable-warnings
       
-      - name: Write correlation summary to GitHub Actions Summary
+      - name: Write correlation summary (from summary.json)
         shell: bash
         run: |
-          cat docs/ci/summary_template_submit_probe_v0.1.md >> "$GITHUB_STEP_SUMMARY"
+          SUMMARY_JSON="$(ls -td logs/xhr_probe_* | head -n 1)/summary.json"
+          echo "Using summary: $SUMMARY_JSON"
+
+          CORR_STATE=$(python -c "import json;print(json.load(open('$SUMMARY_JSON'))['correlation_state'])")
+
+          if [ \"$CORR_STATE\" = \"Established\" ]; then CI_RESULT=\"PASS\";
+          elif [ \"$CORR_STATE\" = \"Not Established\" ]; then CI_RESULT=\"WARN\";
+          else CI_RESULT=\"INFO\"; fi
+
+          sed \
+            -e \"s|\\\${CORRELATION_STATE}|$CORR_STATE|g\" \
+            -e \"s|\\\${CI_RESULT}|$CI_RESULT|g\" \
+            docs/ci/summary_template_submit_probe_v0.1.md \
+            >> \"$GITHUB_STEP_SUMMARY\"
 
       # Smoke Test:
       # - guarantees UI submit works
