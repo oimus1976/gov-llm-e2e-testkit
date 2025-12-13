@@ -9,6 +9,8 @@ from tests.rag.rag_cases_basic import load_basic_cases
 from tests.pages.chat_page import ChatPage
 from src.log_writer import LogContext, create_case_log
 
+pytestmark = pytest.mark.rag
+
 JST = timezone(timedelta(hours=9))
 
 

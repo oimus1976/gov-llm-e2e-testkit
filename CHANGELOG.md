@@ -5,6 +5,44 @@
 
 ---
 
+## v0.4.10 (2025-12-13)
+
+### Added
+
+- **submit–probe 相関設計 v0.2 を正式採用**
+  - submit_id を一次相関キーとする設計を完全確定
+  - 相関をアルゴリズムではなく「状態（state）」として定義
+    - Established / Not Established / No Evidence / Unassessed
+  - 相関状態とテスト結果（PASS / WARN / INFO）の写像ルールを明文化
+  - GraphQL createData 非発火 / REST-only ケースを前提条件として包含
+- **観測事実（Observation_submit_probe_correlation_v0.2）を固定**
+  - 実行結果を一次情報として保存し、設計判断の唯一の根拠とした
+- **CI / E2E 基盤安定化方針を明文化**
+  - submit / probe / 相関を基盤レイヤとして確定
+  - ask / RAG 系テストを一時的に Deferred として切り離し
+
+### Changed
+
+- **PROJECT_STATUS を自己完結型ドキュメントに再構成**
+  - 変更有無に関わらず、前バージョン内容を省略せず再掲
+  - 最新版単体でプロジェクトの到達点・判断履歴が読める構成に変更
+- **ChatPage.submit v0.6 を基盤 API として位置づけ**
+  - UI送信のみの責務を担う API として確定
+  - completion / semantic 判定は Answer Detection Layer に完全委譲
+
+### Deferred
+
+- **RAG 系テスト（basic / advanced）**
+  - ask API は submit–probe 基盤の上位レイヤと位置づけ
+  - 基盤安定化完了後に再接続予定（削除ではなく Deferred）
+
+### Notes
+
+- 本バージョンは **機能追加ではなく「設計・責務境界の確定」**が主目的
+- 相関不能ケースを FAIL と誤認しない設計原則を正式固定
+
+---
+
 ## v0.4.9 (2025-12-13)
 
 ### Added
