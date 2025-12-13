@@ -67,10 +67,9 @@ def test_smoke_llm(page, env_config, case_dirs):
     page.goto(url, wait_until="load")
 
     login.login(
-        username=username,
-        password=password,
         evidence_dir=case_assets_dir,
     )
+
 
     log.add_section("login", {"result": "success", "url": url})
 
