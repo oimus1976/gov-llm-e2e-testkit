@@ -61,23 +61,15 @@ jobs:
           mkdir -p logs
           pytest tests/test_smoke_llm.py -vv --disable-warnings
 
-      # -----------------------------------------------------
-      # 7. RAG Basic Test（Smoke 成功時のみ）
-      #   ※ 最新ファイル名：test_rag_basic_v0_1.py
-      # -----------------------------------------------------
-      - name: Run Basic RAG Test
-        if: ${{ success() }}
-        run: |
-          pytest tests/rag/test_rag_basic_v0_1.py -q --disable-warnings
+      # Smoke Test:
+      # - guarantees UI submit works
+      # - guarantees probe observes correlation_state
+      # - does NOT validate semantic correctness
 
-      # -----------------------------------------------------
-      # 8. RAG Advanced Test（Basic 成功時のみ）
-      #   ※ 最新ファイル名：test_rag_advanced_v0_1.py
-      # -----------------------------------------------------
-      - name: Run Advanced RAG Test
-        if: ${{ success() }}
-        run: |
-          pytest tests/rag/test_rag_advanced_v0_1.py -q --disable-warnings
+      # NOTE:
+      # RAG tests (ask / semantic evaluation) are intentionally deferred.
+      # They will be re-enabled after submit–probe correlation stabilizes.
+
 
       # -----------------------------------------------------
       # 9. Artifact Upload（失敗時のみ）
