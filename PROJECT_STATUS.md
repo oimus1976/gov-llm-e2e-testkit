@@ -1,19 +1,21 @@
-# 📘 PROJECT_STATUS v0.4.8 — submit–probe Correlation Design Completed
+# 📘 PROJECT_STATUS v0.4.9 — submit–probe Correlation Design v0.2 Adopted
 
-**Last Updated:** 2025-12-13  
+**Last Updated:** 2025-12-13
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
 
 ## 1. Current Focus（現在の主眼）
 
-### ⭐ Answer Detection Layer（probe v0.2 系）の QA を完了し、  
+### ⭐ Answer Detection Layer（probe v0.2 系）の QA を完了し、
 
-**ChatPage.ask v0.6 設計フェーズへ正式に移行する。**
+**ChatPage.submit v0.6 および**  
+**submit–probe 相関設計（v0.2）の完了をもって、**  
+**基盤設計フェーズを収束させる。**
 
 - Environment Layer は完了済み・凍結
 - Answer Detection Layer は設計・実装・QA が一巡
-- 本プロジェクトの主軸を **PageObject API（ask）の刷新**へ移す
+- submit / probe / 相関の責務境界が設計として確定
 
 ---
 
@@ -43,62 +45,7 @@
 
 ---
 
-### ✅ ChatPage.submit v0.6 — Submission API 設計完了（New）
-
-- UI 送信責務のみを担う Submission API として設計を確定
-- 回答完了・意味論・差異吸収は Answer Detection Layer に完全委譲
-- Design_ChatPage_v0.5（DOM-based ask）との責務分離を明文化
-- 実装・CI 変更は未着手（設計フェーズ完了）
-
----
-
-### ✅ submit_id ↔ Answer Detection（probe）相関設計 完了（New）
-
-- ChatPage.submit が発行する `submit_id` を一次相関キーとする設計を確定
-- UI 送信責務（submit）と回答観測・完了判定責務（probe）の境界を正式定義
-- GraphQL createData 非発火 / REST-only ケースを前提条件として包含
-- 観測事実（logs/ に基づく一次情報）を Appendix A（Observed Facts）として固定
-- 実装・CI 変更は未着手（設計フェーズ完了を宣言）
-
----
-
-### ✅ submit–probe 相関 テスト観点チェックリスト v0.1 確定（New）
-
-- ChatPage.submit v0.6 と Answer Detection Layer（probe v0.2）の
-  責務境界を検証する **設計補助・実装前レビュー用チェックリスト**を正式確定
-- submit_id を一次相関キーとする設計について、
-  MUST / MUST NOT をテスト観点として明文化
-- REST-only / GraphQL 非発火 / 相関不能ケースを
-  「失敗」と誤認しない判定原則を固定
-- 実装・CI・pytest 仕様は一切含めず、
-  **設計レビュー専用文書**として位置づけを明確化
-
-配置先：
-
-- docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md
-
----
-
-### ✅ SubmitReceipt 定義確定（ChatPage.submit v0.6）（New）
-
-- ChatPage.submit v0.6 が返却する唯一のデータ構造
-  **SubmitReceipt** の正式定義を確定
-- submit の責務境界（UI送信の成立確認まで）を
-  **不変データ構造（immutable）としてコードで固定**
-- submit_id / sent_at / ui_ack / diagnostics の最小構成とし、
-  回答完了・probe・REST/GraphQL 概念を明示的に排除
-- submit と Answer Detection Layer（probe）間の
-  責務リークを型レベルで防止
-- 本定義は **意図的に最小化され、将来的な拡張を想定しない**
-  設計装置として位置づけ
-
-配置先：
-
-- docs/design_support/Design_SubmitReceipt_v0.1.md
-
----
-
-### ✅ ChatPage.submit v0.6 確定（form submit / UI送信のみ）
+### ✅ ChatPage.submit v0.6 — Submission API 設計完了
 
 - ChatPage.submit v0.6 を実装し、UI送信のみの責務で確定
 - `submit_id` を submit 内で生成し、SubmitReceipt として返却
@@ -114,20 +61,63 @@
 
 ---
 
+### ✅ submit_id ↔ Answer Detection（probe）相関設計 完了（v0.2 正式採用）
+
+* ChatPage.submit が発行する `submit_id` を一次相関キーとする設計を確定
+* UI 送信責務（submit）と回答観測・完了判定責務（probe）の境界を正式定義
+* GraphQL createData 非発火 / REST-only ケースを前提条件として包含
+* 観測事実（logs/ に基づく一次情報）を **Appendix（Observed Facts）として固定**
+* 相関を **アルゴリズムではなく「状態」として定義**
+* 相関状態（Established / Not Established / No Evidence / Unassessed）と
+  テスト結果（PASS / WARN / INFO）の **写像ルールを正式化**
+* 相関不能ケースを **FAIL と誤認しない設計原則**を明文化
+* v0.2 は **v0.1 を完全に包含する上位互換・完全統合版**として確定
+* 実装・CI 変更は未着手（設計フェーズ完了を宣言）
+
+正式設計書：
+
+* `docs/Design_submit_probe_correlation_v0.2.md`
+
+補足：
+
+* v0.1 は設計履歴としての位置づけとし、
+  **今後の参照は v0.2 を正とする**
+
+---
+
+### ✅ submit–probe 相関 テスト観点チェックリスト v0.1 確定
+
+（※変更なし）
+
+---
+
+### ✅ SubmitReceipt 定義確定（ChatPage.submit v0.6）
+
+（※変更なし）
+
+---
+
+### ✅ ChatPage.submit v0.6 確定（form submit / UI送信のみ）
+
+（※変更なし）
+
+---
+
 ## 3. Next Action（唯一の次アクション）
 
-### 🎯 A. submit_id ↔ probe 相関の実装準備（テスト観点定義）
+### 🎯 A. submit_id ↔ probe 相関の実装準備（状態付与・表示のみ）
 
 目的：
 
-1. Design_submit_probe_correlation_v0.1 に基づく実装前チェック観点の明文化
-2. submit / probe 双方の MUST / MUST NOT をテスト可能な形に落とす
-3. REST-only / GraphQL 非発火ケースを含む期待挙動の固定
+1. **Design_submit_probe_correlation_v0.2** に基づき、
+   相関状態（state）を probe 出力に付与
+2. PASS / WARN / INFO の表示を CI / レポート層で整理
+3. 判定ロジックの肥大化・意味論侵入を防止
 
 位置づけ：
 
-- 本フェーズは **設計補助・テスト観点整理に限定**
-- 実装・CI 変更は次フェーズ以降
+* 本フェーズは **設計反映・表示整備に限定**
+* 相関アルゴリズムの高度化・FAIL 導入は行わない
 
 ---
 
@@ -165,20 +155,33 @@
 
 ## 6. Required References（参照資料）
 
-- Design_env_v0.2.3
-- PROJECT_GRAND_RULES v4.2
-- Debugging_Principles v0.2
-- Responsibility_Map_v0.1
-- Design_ci_e2e_v0.1
-- Startup Template v3.1
-- Design_chat_answer_detection_v0.1
-- Design_probe_graphql_answer_detection_v0.2
-- test_plan_v0.1.1
-- CHANGELOG
+* Design_env_v0.2.3
+* PROJECT_GRAND_RULES v4.2
+* Debugging_Principles v0.2
+* Responsibility_Map_v0.1
+* Design_ci_e2e_v0.1
+* Startup Template v3.1
+* Design_chat_answer_detection_v0.1
+* Design_probe_graphql_answer_detection_v0.2
+* **Design_submit_probe_correlation_v0.2**
+* test_plan_v0.1.1
+* CHANGELOG
 
 ---
 
 ## 7. Version
+
+### v0.4.9 — submit–probe Correlation Design v0.2 Adopted
+
+submit_id を一次相関キーとする
+ChatPage.submit ↔ Answer Detection（probe）の相関設計を
+**v0.2（完全統合版）として正式採用**。
+
+相関を「状態」として定義し、
+PASS / WARN / INFO への写像を明文化。
+
+v0.2 単体で設計が完結し、
+相関不能ケースを「失敗」と誤認しない原則を固定した版。
 
 ### v0.4.8 — submit–probe Correlation Design Completed
 

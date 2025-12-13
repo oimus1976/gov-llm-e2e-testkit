@@ -5,6 +5,22 @@
 
 ---
 
+## v0.4.9 (2025-12-13)
+
+### Added
+
+- Added Design_submit_probe_correlation_v0.2 as the authoritative correlation design
+  - Integrated v0.1 and extended with explicit correlation states
+  - Defined mapping from correlation states to test results (PASS / WARN / INFO)
+  - Explicitly excluded FAIL semantics for unobservable or non-correlated cases
+  - Clarified responsibility boundaries between submit and probe layers
+
+### Changed
+
+- submit–probe correlation design reference updated to v0.2 (supersedes v0.1)
+
+---
+
 ## v0.4.8 (2025-12-13)
 
 ### Added
