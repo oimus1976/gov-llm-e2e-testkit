@@ -8,6 +8,9 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        capture_seconds: [5, 30]
 
     steps:
       # -----------------------------------------------------
@@ -59,6 +62,7 @@ jobs:
       - name: Run Smoke Test
         run: |
           mkdir -p logs
+          export PROBE_CAPTURE_SECONDS=${{ matrix.capture_seconds }}
           pytest tests/test_smoke_llm.py -vv --disable-warnings
       
       - name: Write correlation summary (from summary.json)
