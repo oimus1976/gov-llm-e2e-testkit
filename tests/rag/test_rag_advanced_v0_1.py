@@ -9,8 +9,9 @@ from tests.rag.rag_cases_advanced import load_advanced_cases
 from tests.pages.chat_page import ChatPage
 from src.log_writer import LogContext, create_case_log
 
-JST = timezone(timedelta(hours=9))
+pytestmark = pytest.mark.rag
 
+JST = timezone(timedelta(hours=9))
 
 @pytest.mark.parametrize("case", load_advanced_cases())
 def test_rag_advanced(case, chat_page, env_config, case_dirs):
