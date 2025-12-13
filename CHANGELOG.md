@@ -15,6 +15,21 @@
   - Formally accepted REST-only and GraphQL-non-firing cases
   - Added observed facts appendix based on real execution logs
 
+- Added design-support document:
+  submit–probe correlation test perspective checklist (v0.1)
+  - Formalized MUST / MUST NOT boundaries between
+    ChatPage.submit v0.6 and Answer Detection Layer (probe v0.2)
+  - Explicitly covered REST-only, GraphQL-non-firing,
+    and correlation-inconclusive cases
+  - Clarified that correlation failure must not be treated
+    as submit or probe failure
+  - Positioned strictly as a pre-implementation
+    design review aid (no code / CI impact)
+
+  File:
+  - docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md
+
+
 ### Changed
 
 - PROJECT_STATUS updated to reflect completion of correlation design
