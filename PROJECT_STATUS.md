@@ -1,237 +1,152 @@
-# 📘 PROJECT_STATUS v0.4.10 — submit–probe Correlation v0.2 + RAG Tests Deferred
+# 📘 PROJECT_STATUS v0.5.0 — E2E 基盤確定 / RAG QA 自動化フェーズ開始
 
-**Last Updated:** 2025-12-13  
+**Last Updated:** 2025-12-13
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
 
 ## 1. Current Focus（現在の主眼）
 
-### ⭐ Answer Detection Layer（probe v0.2 系）の QA を完了し、
+本プロジェクトは、
+**例規 HTML 変換プロジェクトにおける RAG 品質を
+人手ではなく自動テストで担保する**ことを最終目的としている。
 
-**ChatPage.submit v0.6 と submit–probe 相関設計（v0.2）を基盤として、  
-E2E テスト基盤の安定化フェーズへ移行する。**
+Phase 1〜6 では、その前提条件として、
 
-- Environment Layer は完了済み・凍結
-- Answer Detection Layer は設計・実装・QA が一巡
-- submit / probe / 相関の責務境界は設計として確定
-- ask / RAG 系テストは一時的に切り離し、基盤安定化を優先する
+* UI 送信
+* 回答検知
+* submit–probe 相関
+* CI 上での誤解のない可視化
 
----
+からなる **E2E テスト基盤の土台**を構築・確定した。
 
-## 2. Completed（完了）
-
-### ✅ Environment Layer（env_loader v0.2.3）— 完全 QA 完了
-
-- Design_env_v0.2.3 と実装の完全一致を確認
-- test_env_loader_matrix_v0.2 による一次情報 QA を保存
-- Schema Freeze / MissingSecretError / precedence 等を実証
-- **完成モジュールとしてクローズ**
+**本バージョン（v0.5.0）以降は、
+この基盤の上で RAG QA 自動化を進める第2章に入る。**
 
 ---
 
-### ✅ Answer Detection Layer — QA 完了（probe v0.2）
+## 2. Completed（完了・ダイジェスト）
 
-- Design_chat_answer_detection_v0.1 成立
-- Design_probe_graphql_answer_detection_v0.2 成立
-- probe v0.2.1 実装完了
-- Test_plan_probe_v0.2.2 に基づく実行テストを完了
-- **REST-only / GraphQL 非発火ケースを含めて成立確認**
+### ✅ E2E 基盤（Phase 1〜6）— 完全確定
 
-補足：
+* Environment Layer（env_loader v0.2.3）QA 完了・凍結
+* ChatPage.submit v0.6
 
-- test_plan_v0.1.1 を  
-  **「E2E テスト体系の最上位仕様・思想文書」**として正式確定
+  * UI 送信責務のみに限定
+  * submit_id / SubmitReceipt 定義確定
+* Answer Detection Layer（probe v0.2.1）成立
 
----
+  * REST-only / GraphQL 非発火ケースを包含
+* submit–probe 相関設計 v0.2 正式採用
 
-### ✅ ChatPage.submit v0.6 — Submission API 設計・実装完了
+  * 相関を **アルゴリズムではなく状態（state）**として定義
+* CI Correlation Summary Presentation Semantics v0.1 確定
 
-- ChatPage.submit v0.6 を **UI送信のみの責務**として設計・実装
-- submit 呼び出し単位ごとに `submit_id` を生成
-- SubmitReceipt（immutable）を返却
-- UI 受理確認は `ui_ack`（入力欄クリア）で最小化
-- 送信操作は **HTML form submit（requestSubmit → Enter fallback）** を採用
-  - 送信ボタン locator 依存を排除し安定化
-- completion 判定・回答取得・REST/GraphQL 参照は **MUST NOT**
-- sync Smoke にて submit() 1回呼び出し・SubmitReceipt 返却を確認
+  * PASS / WARN / INFO を表示意味論として整理
+  * WARN / INFO を FAIL と誤認しない設計を保証
+* GitHub Actions summary による
+  **日本語 E2E 相関サマリーを正式採用**
+* 英語版との設計差分ゼロ対照表を保存
+* Phase 5（条件軸 × matrix 実験）は完了・撤去
 
-検証スクリプト：
-
-- `scripts/smoke_submit_v0_6.py`
+👉 **CI 上で「次に何をすべきか」が即座に判断可能な状態を達成**
 
 ---
 
-### ✅ SubmitReceipt 定義確定（ChatPage.submit v0.6）
-
-- ChatPage.submit が返却する **唯一のデータ構造**
-- 構成要素：
-  - submit_id
-  - sent_at
-  - ui_ack
-  - diagnostics
-- 回答完了・probe・REST/GraphQL 概念を明示的に排除
-- submit と Answer Detection Layer 間の責務リークを型レベルで防止
-- **意図的に最小・拡張非前提**の設計装置として確定
-
-設計書：
-
-- `docs/design_support/Design_SubmitReceipt_v0.1.md`
-
----
-
-### ✅ submit_id ↔ Answer Detection（probe）相関設計 完了（v0.2 正式採用）
-
-- ChatPage.submit が発行する `submit_id` を **一次相関キー**として採用
-- UI 送信責務（submit）と回答観測・完了判定責務（probe）を明確分離
-- GraphQL createData 非発火 / REST-only ケースを **前提条件として包含**
-- 観測事実（logs/ に基づく一次情報）を **Appendix（Observed Facts）として固定**
-- 相関を **アルゴリズムではなく「状態（state）」として定義**
-- 相関状態：
-  - Established
-  - Not Established
-  - No Evidence
-  - Unassessed
-- 相関状態とテスト結果（PASS / WARN / INFO）の写像ルールを正式化
-- 相関不能ケースを **FAIL と誤認しない設計原則**を明文化
-- v0.2 は **v0.1 を完全に包含する上位互換・完全統合版**
-
-設計書：
-
-- `docs/Design_submit_probe_correlation_v0.2.md`
-
----
-
-- **CI Correlation Summary Presentation Semantics v0.1 を正式採用**
-  - submit–probe 相関結果を CI 上で誤解なく可視化するための
-    表現意味論（presentation semantics）を設計補助文書として固定
-  - 相関状態（Established / Not Established / No Evidence / Unassessed）と
-    CI 結果（PASS / WARN / INFO）の対応関係を拘束定義
-  - WARN / INFO を失敗と誤認しないことを明示的に保証
-  - 本仕様は CI 実装（GitHub Actions summary）の上位規範とする
-
-  Design support:
-  - docs/design_support/Design_CI_Correlation_Summary_v0.1.md
-
----
-
-### ✅ submit–probe 相関 テスト観点チェックリスト v0.1
-
-- submit / probe の責務境界を検証するための設計補助文書
-- MUST / MUST NOT をテスト観点として明文化
-- REST-only / GraphQL 非発火 / 相関不能ケースを
-  **失敗と誤認しない原則**を固定
-- 実装・CI・pytest 仕様は含めない
-
-配置先：
-
-- `docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md`
-
----
-
-### ✅ 観測事実（Observation）固定
-
-- submit → probe 実行結果を **観測事実として 1 ファイルに固定**
-- correlation_state = Established / no_graphql の実例を保存
-- 設計・判断の唯一の根拠として使用
-
-配置先：
-
-- `docs/observations/Observation_submit_probe_correlation_v0.2.md`
-
----
-
-## 3. Deferred / Out of Scope（一時的に切り離した事項）
+## 3. Deferred / Out of Scope（第1章で扱わなかった事項）
 
 ### ⏸ RAG 系テスト（basic / advanced）
 
-- `test_rag_basic_v0_1.py`
-- `test_rag_advanced_v0_1.py`
+* `test_rag_basic_*`
+* `test_rag_advanced_*`
 
 理由：
 
-- ask API は submit / probe / 相関設計の上位レイヤであり、
-  現フェーズの責務対象ではない
-- 現時点では **UI送信成立と相関状態の観測**を最優先とする
-- セマンティック正しさ・内容評価は次フェーズで再導入する
+* RAG QA は **E2E 基盤が信用できることが前提**
+* Phase 1〜6 では基盤確立を最優先とした
 
 位置づけ：
 
-- **削除ではなく Deferred**
-- submit–probe–CI 基盤安定後に再接続予定
+* 削除ではなく **意図的な Deferred**
+* 本章（第2章）で再接続する対象
 
 ---
 
-## 4. Next Action（唯一の次アクション）
+## 4. Next Action（第2章の開始）
 
-### 🎯 A. CI 上での submit–probe 相関状態の安定可視化
+### 🎯 Playwright を用いた RAG QA 自動化への移行
 
-目的：
+本プロジェクトの Next Action は明確である。
 
-1. probe 出力（summary / result）に相関状態を明示
-2. PASS / WARN / INFO の CI 表示整理
-3. 判定ロジックの肥大化・意味論侵入を防止
+> **Design_playwright_v0.1 に基づき、
+> Playwright を用いた RAG QA 自動化を本格的に開始する。**
 
-制約：
+具体的には：
 
-- 相関アルゴリズムの高度化は行わない
-- FAIL 導入は次フェーズ以降
+* Smoke Test を「基盤確認」から「QA エントリポイント」へ拡張
+* Basic RAG Test の再導入
 
----
+  * 固定ケース × YAML 定義による再現可能 QA
+* Advanced RAG Test の設計検討
 
-## 5. Roadmap（後続フェーズ）
+  * 複数ターン・例外系・時間制御
+* RAG テストデータ設計（期待値・許容揺らぎ）の具体化
+* LGWAN / INTERNET 両環境での実行整理
 
-### 🔰 B. CI 上での回答検知安定化
-
-- GitHub Actions 上の揺らぎ吸収
-- timeout / 遅延差分の整理
-- completion semantics の CI 観点での形式化
-
-### 🔰 C. Answer Detection v0.3（将来）
-
-- signature-based 構造検証
-- AppSync 変更耐性の強化
-- 長期保守を見据えた検知方式の抽象化
-
-### README の全面整理
-
-- README の整理は基盤設計完全収束後に実施
-- 現時点では PROJECT_STATUS / CHANGELOG を正とする
+本フェーズでは、
+**E2E 基盤は“触らない前提”**とし、
+その上に QA ロジックを積み上げる。
 
 ---
 
-## 6. Risks / Issues（リスク・課題）
+## 5. Roadmap（第2章・概略）
 
-- GraphQL スキーマ変更への依存
-- assistant.value prefix 揺らぎ
-- REST / GraphQL の非同期性
-- AppSync アップデートによる非互換リスク
+### Phase B. RAG QA 自動化（Playwright）
 
-※ すべて probe v0.2 系で一次情報として把握済み
+* Basic RAG Test v0.1
+* テストデータ（YAML）運用確立
+* 判定基準（semantic / keyword / heuristic）の整理
+
+### Phase C. 高度化・運用整理
+
+* Advanced RAG Test
+* 長時間・非同期揺らぎの扱い
+* LGWAN 実行手順の文書化
+* ログ・差分の可視化改善
 
 ---
 
-## 7. Required References（参照資料）
+## 6. Risks / Issues（引き続き意識すべき点）
 
-- Design_env_v0.2.3
-- PROJECT_GRAND_RULES v4.2
-- Debugging_Principles v0.2
-- Responsibility_Map_v0.1
-- Startup Template v3.1
-- Design_chat_answer_detection_v0.1
-- Design_probe_graphql_answer_detection_v0.2
-- Design_submit_probe_correlation_v0.2
-- test_plan_v0.1.1
-- CHANGELOG
+* LLM 応答の非決定性
+* AppSync / UI 変更によるロケータ揺らぎ
+* RAG ナレッジ更新による期待値変動
+* LGWAN 制約下でのログ持ち出し運用
+
+※ いずれも **基盤ではなく QA レイヤ側で扱う課題**
+
+---
+
+## 7. Required References（主要参照）
+
+* Design_playwright_v0.1
+* Design_env_v0.2.3
+* Design_submit_probe_correlation_v0.2
+* Design_CI_Correlation_Summary_v0.1
+* Debugging_Principles v0.2
+* PROJECT_GRAND_RULES v4.2
+* CHANGELOG
 
 ---
 
 ## 8. Version
 
-### v0.4.10 — submit–probe 基盤確定 / RAG Tests Deferred
+### v0.5.0 — E2E 基盤確定 / RAG QA 自動化フェーズ開始
 
-submit / probe / 相関（v0.2）を
-**基盤として完全確定**。
+Phase 1〜6 により
+**E2E 基盤は完成・固定**。
 
-RAG / ask 系テストを一時切り離し、
-E2E 基盤安定化を最優先とする運用方針を明文化した版。
+本バージョン以降は、
+この基盤の上で **RAG QA 自動化を主眼とする第2章**に入る。
+
+---
