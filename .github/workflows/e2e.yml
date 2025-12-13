@@ -64,11 +64,41 @@ jobs:
       - name: Write correlation summary (from summary.json)
         shell: bash
         run: |
+          set -euo pipefail
+
           SUMMARY_JSON="$(ls -td logs/xhr_probe_* | head -n 1)/summary.json"
           echo "Using summary: $SUMMARY_JSON"
 
-          CORR_STATE=$(python -c "import json;print(json.load(open('$SUMMARY_JSON'))['correlation_state'])")
+          # ---- extract values (safe) ----
+          CORR_STATE=$(python - << 'EOF'
+import json
+import sys
+p=sys.argv[1]
+d=json.load(open(p))
+print(d.get("correlation_state","Unassessed"))
+EOF
+          "$SUMMARY_JSON")
 
+          CHAT_ID=$(python - << 'EOF'
+import json
+import sys
+p=sys.argv[1]
+d=json.load(open(p))
+print(d.get("chat_id","(n/a)"))
+EOF
+          "$SUMMARY_JSON")
+
+          # submit_id は summary に無い場合がある → 安全フォールバック
+          SUBMIT_ID=$(python - << 'EOF'
+import json
+import sys
+p=sys.argv[1]
+d=json.load(open(p))
+print(d.get("submit_id","(n/a)"))
+EOF
+          "$SUMMARY_JSON")
+
+          # ---- map CI label ----
           if [ "$CORR_STATE" = "Established" ]; then
             CI_RESULT="PASS"
           elif [ "$CORR_STATE" = "Not Established" ]; then
@@ -77,11 +107,15 @@ jobs:
             CI_RESULT="INFO"
           fi
 
+          # ---- render markdown ----
           sed \
+            -e "s|\${SUBMIT_ID}|$SUBMIT_ID|g" \
+            -e "s|\${CHAT_ID}|$CHAT_ID|g" \
             -e "s|\${CORRELATION_STATE}|$CORR_STATE|g" \
             -e "s|\${CI_RESULT}|$CI_RESULT|g" \
             docs/ci/summary_template_submit_probe_v0.1.md \
             >> "$GITHUB_STEP_SUMMARY"
+
 
 
       # Smoke Test:
