@@ -20,6 +20,18 @@
 - **CI / E2E 基盤安定化方針を明文化**
   - submit / probe / 相関を基盤レイヤとして確定
   - ask / RAG 系テストを一時的に Deferred として切り離し
+- **CI Correlation Summary template v0.1 を追加**
+  - submit–probe 相関結果を GitHub Actions summary 上で
+    誤解なく可視化するための Markdown テンプレートを追加
+  - 相関状態（Established / Not Established / No Evidence / Unassessed）を
+    「状態（state）」として明示し、成功／失敗判定と分離
+  - CI 表示ラベル（PASS / WARN / INFO）を
+    presentation semantics として扱うことを固定
+  - WARN / INFO を失敗と誤認しない設計原則を CI 出力に反映
+  - FAIL を導入しない方針を維持
+
+  File:
+  - docs/ci/summary_template_submit_probe_v0.1.md
 
 ### Changed
 
