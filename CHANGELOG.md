@@ -5,6 +5,49 @@
 
 ---
 
+## v0.5.0 — E2E 基盤確定 / RAG QA 自動化フェーズ開始
+
+*2025-12-13*
+
+### 🎉 Added / Finalized
+
+- submit–probe 相関設計 v0.2 を基盤として正式確定
+- CI 上での相関状態（Established / Not Established / No Evidence / Unassessed）の
+  **誤解のない可視化（Presentation Semantics v0.1）を正式採用**
+- GitHub Actions summary による
+  **日本語 E2E Correlation Summary テンプレートを追加・運用開始**
+- 英語版 summary との **設計差分ゼロ対照表**を追加
+- Phase 1〜6（E2E 基盤構築フェーズ）を完了としてクローズ
+
+### 🧱 Stabilized
+
+- ChatPage.submit v0.6（UI 送信責務のみに限定）
+- SubmitReceipt（submit_id / sent_at / ui_ack）定義の確定
+- Answer Detection Layer（probe v0.2.1）
+  - REST-only / GraphQL 非発火ケースを前提条件として包含
+- PASS / WARN / INFO を
+  **成否ではなく表示セマンティクスとして扱う CI 設計を固定**
+
+### 🔁 Changed
+
+- E2E workflow（GitHub Actions）を単発実行に復帰
+  - Phase 5 の matrix 実験（capture_seconds 条件軸）は完了・撤去
+- CI summary 出力を英語テンプレから日本語テンプレへ切り替え
+
+### ⏸ Deferred
+
+- RAG 系テスト（basic / advanced）
+  - E2E 基盤確定を優先するため一時的に切り離し
+  - 次フェーズ（RAG QA 自動化）で再接続予定
+
+### 🚀 Next
+
+- Design_playwright_v0.1 に基づく
+  **Playwright を用いた RAG QA 自動化フェーズへ移行**
+- Basic RAG Test の再導入とテストデータ設計の具体化
+
+---
+
 ## v0.4.10 (2025-12-13)
 
 ### Added
