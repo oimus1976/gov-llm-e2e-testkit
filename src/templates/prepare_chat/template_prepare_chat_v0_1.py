@@ -85,9 +85,8 @@ def prepare_chat_session(question: str = "テストメッセージ"):
     # ---------------------------
     chat = ChatPage(page, config)
     try:
-        chat.input_message(question, evidence_dir=outdir)
-        chat.click_send(evidence_dir=outdir)
-        print(f"[template] message sent: {question}")
+        receipt = chat.submit(question, evidence_dir=outdir)
+        print(f"[template] submit returned submit_id={receipt.submit_id}")
     except Exception as e:
         raise RuntimeError(f"[template] MESSAGE SEND FAILED: {e}")
 
