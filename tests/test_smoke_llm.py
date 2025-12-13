@@ -1,7 +1,6 @@
 # ---------------------------------------------------------
-# Smoke Test v0.3 (Sync Playwright)
+# Smoke Test v0.4 (Sync Playwright)
 # gov-llm-e2e-testkit
-# 最終更新: 2025-12-10
 # ---------------------------------------------------------
 
 import pytest
@@ -11,6 +10,7 @@ from tests.pages.login_page import LoginPage
 from tests.pages.chat_select_page import ChatSelectPage
 from tests.pages.chat_page import ChatPage
 
+from scripts.probe_v0_2 import run_graphql_probe
 from src.log_writer import LogContext, create_case_log
 
 
@@ -21,10 +21,17 @@ JST = timezone(timedelta(hours=9))
 @pytest.mark.smoke
 def test_smoke_llm(page, env_config, case_dirs):
     """
-    gov-llm-e2e-testkit の最小動作保証テスト（Smoke v0.3）
-    - ログイン成功
-    - プライベートナレッジのチャット画面へ遷移
-    - メッセージ送信 → 応答取得
+    Smoke Test v0.4
+
+    Guarantees:
+    - Login succeeds
+    - Chat page can be opened
+    - UI submit succeeds (submit v0.6)
+    - Probe observes correlation_state (submit–probe v0.2)
+
+    Non-goals:
+    - Semantic answer correctness
+    - ask() API
     """
 
     config, _options = env_config
@@ -37,44 +44,38 @@ def test_smoke_llm(page, env_config, case_dirs):
     case_log_dir, case_assets_dir = case_dirs(case_id, now)
 
     # -----------------------------------------------------
-    # 2. LogContext（v0.11）
+    # 2. LogContext
     # -----------------------------------------------------
     log = LogContext(
         case_id=case_id,
         timestamp=now,
         test_type="smoke",
-        environment=config.get("profile", "internet"),     # fallback 安全
+        environment=config.get("profile", "internet"),
         browser_timeout_ms=config["browser"]["browser_timeout_ms"],
         page_timeout_ms=config["browser"]["page_timeout_ms"],
     )
-
     create_case_log(case_log_dir, log)
 
     # -----------------------------------------------------
     # 3. Instantiate Page Objects
     # -----------------------------------------------------
-    login = LoginPage(page, timeout=30000)
-    select = ChatSelectPage(page, timeout=30000)
-    chat = ChatPage(page, timeout=30000)
+    login = LoginPage(page, config, timeout=30000)
+    select = ChatSelectPage(page, config, timeout=30000)
+    chat = ChatPage(page, config, timeout=30000)
+
 
     # -----------------------------------------------------
     # 4. Login
     # -----------------------------------------------------
-    url = config["url"]
-    username = config["username"]
-    password = config["password"]
-
-    page.goto(url, wait_until="load")
+    page.goto(config["url"], wait_until="load")
 
     login.login(
         evidence_dir=case_assets_dir,
     )
-
-
-    log.add_section("login", {"result": "success", "url": url})
+    log.add_section("login", {"result": "success"})
 
     # -----------------------------------------------------
-    # 5. Select Chat ("プライベートナレッジ")
+    # 5. Select Chat
     # -----------------------------------------------------
     AI_NAME = "プライベートナレッジ"
 
@@ -82,22 +83,48 @@ def test_smoke_llm(page, env_config, case_dirs):
         name=AI_NAME,
         evidence_dir=case_assets_dir,
     )
-
-    log.add_section("chat_select", {"ai_name": AI_NAME, "result": "opened"})
+    log.add_section("chat_select", {"ai_name": AI_NAME})
 
     # -----------------------------------------------------
-    # 6. Chat → Send → Response
+    # 6. Submit (UI only)
     # -----------------------------------------------------
     QUESTION = "こんにちは"
 
-    answer = chat.ask(
+    receipt = chat.submit(
         QUESTION,
         evidence_dir=case_assets_dir,
     )
+    log.add_section(
+        "chat_submit",
+        {
+            "submit_id": receipt.submit_id,
+            "ui_ack": receipt.ui_ack,
+        },
+    )
 
-    log.add_section("chat_ask", {"question": QUESTION, "answer": answer})
+    assert receipt.ui_ack is True, "UI submit did not complete"
 
     # -----------------------------------------------------
-    # 7. Assertions
+    # 7. Probe (Answer Detection)
     # -----------------------------------------------------
-    assert isinstance(answer, str) and len(answer) > 0, "LLM 応答が取得できませんでした。"
+    capture_seconds = config.get("probe_capture_seconds", 30)
+
+    summary = run_graphql_probe(
+        page,
+        chat_id=page.url.split("/")[-1],
+        capture_seconds=capture_seconds,
+    )
+
+    log.add_section(
+        "probe_summary",
+        {
+            "status": summary["status"],
+            "correlation_state": summary["correlation_state"],
+        },
+    )
+
+    # Smoke-level assertion:
+    # At least some evidence must exist.
+    assert summary["correlation_state"] != "No Evidence", (
+        "No observable correlation evidence was detected"
+    )
