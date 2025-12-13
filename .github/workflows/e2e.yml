@@ -60,6 +60,13 @@ jobs:
         run: |
           mkdir -p logs
           pytest tests/test_smoke_llm.py -vv --disable-warnings
+      
+      - name: Write correlation summary to GitHub Actions Summary
+        shell: bash
+        run: |
+          echo "# 🧪 E2E Correlation Summary — submit–probe v0.2" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat docs/ci/summary_template_submit_probe_v0.1.md >> "$GITHUB_STEP_SUMMARY"
 
       # Smoke Test:
       # - guarantees UI submit works
