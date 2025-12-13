@@ -1,153 +1,190 @@
-# ==========================================================
-# ChatPage v0.7  （2025-12 DOM 実証版）
-# ----------------------------------------------------------
-# DOM 実態：
-#   - AIメッセージ:  div.message-received
-#   - 本文:          div.markdown
-# ==========================================================
+# tests/pages/chat_page.py
+#
+# ChatPage — Submission API v0.6 (rc2)
+#
+# Responsibility:
+#   - UI submission only
+#   - No completion semantics
+#   - No answer extraction
+#
+# Design references:
+#   - Design_ChatPage_submit_v0.6
+#   - Design_SubmitReceipt_v0.1
+#   - Locator_Guide_v0.2
+#
+# Notes:
+#   - Submission uses HTML form submit (semantic & stable).
+#   - No button locator is used.
+#
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional, Mapping, Any, Dict
+import uuid
+import time
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from .base_page import BasePage
 
+from tests.pages.base_page import BasePage
+# ----------------------------------------------------------------------
+# IMPORTANT:
+# SubmitReceipt MUST be imported from the single source of truth.
+# ----------------------------------------------------------------------
+from tests.models.submit_receipt import SubmitReceipt  # ← 共通定義（要配置）
+
+
+# ----------------------------------------------------------------------
+# ChatPage
+# ----------------------------------------------------------------------
 
 class ChatPage(BasePage):
-    """Qommons.AI 個別チャット画面"""
+    """
+    ChatPage — UI submission only (v0.6-rc2)
 
-    RESPONSE_POLL_INTERVAL_MS = 200
-    RESPONSE_POLL_MAX_STEPS = 70  # 70 * 200ms = 最大14秒
+    MUST NOT:
+      - judge answer completion
+      - access REST / GraphQL
+      - parse assistant messages
+      - interpret streaming states
+    """
 
-    # -----------------------------------------------------
-    # DOM Locators
-    # -----------------------------------------------------
-    def input_box(self):
-        return self.page.locator("#message")
+    # ------------------------------------------------------------------
+    # Locator definitions
+    # ------------------------------------------------------------------
+    # NOTE:
+    # - MESSAGE_INPUT is stable and confirmed.
+    # - Submission is performed via HTML form submit (no button locator).
+    MESSAGE_INPUT = "#message"  # confirmed
 
-    def send_button(self):
-        return self.page.locator("#chat-send-button")
-
-    def ai_bubbles(self):
-        """実 DOM：AI 側メッセージは常に .message-received"""
-        return self.page.locator("div.message-received")
-
-    # -----------------------------------------------------
-    # 基本操作
-    # -----------------------------------------------------
-    def input_message(self, text, *, evidence_dir=None):
-        self.safe_fill(
-            self.input_box(),
-            text,
-            evidence_dir=evidence_dir,
-            label="input_message_error",
-        )
-
-    def click_send(self, *, evidence_dir=None):
-        self.safe_click(
-            self.send_button(),
-            evidence_dir=evidence_dir,
-            label="send_button_error",
-        )
-
-    # -----------------------------------------------------
-    # AI 応答待ち
-    # -----------------------------------------------------
-    def _wait_for_new_ai_bubble(self, before, *, evidence_dir=None):
-        """
-        DOM 実態：AI バブルは div.message-received の件数で増える
-        """
-        try:
-            self.page.wait_for_function(
-                """(before) => {
-                    return document.querySelectorAll("div.message-received").length > before;
-                }""",
-                arg=before,           # ← 修正ポイント（位置引数 → arg=）
-                timeout=60000,
-            )
-        except PlaywrightTimeoutError as e:
-            if evidence_dir:
-                self.collect_evidence(evidence_dir, "wait_ai_bubble_timeout")
-            raise AssertionError(
-                f"[ChatPage] New AI bubble did not appear: {e}"
-            )
-
-
-    def _get_latest_ai_text(self, *, evidence_dir=None):
-        bubbles = self.ai_bubbles()
-        count = bubbles.count()
-
-        if count == 0:
-            raise AssertionError("[ChatPage] No AI bubbles found.")
-
-        last = bubbles.nth(count - 1)
-        md = last.locator(".markdown")
-
-        # 内部テキストが確定するまでポーリング
-        last_text = ""
-        for _ in range(self.RESPONSE_POLL_MAX_STEPS):
-            text = md.inner_text().strip()
-            last_text = text
-
-            if text and text != "回答を作成中...":
-                return text
-
-            self.page.wait_for_timeout(self.RESPONSE_POLL_INTERVAL_MS)
-
-        if evidence_dir:
-            self.collect_evidence(evidence_dir, "ai_content_not_ready")
-
-        raise AssertionError(
-            f"[ChatPage] AI response text not ready. last_text={last_text!r}"
-        )
-
-    # -----------------------------------------------------
+    # ------------------------------------------------------------------
     # Public API
-    # -----------------------------------------------------
-    def ask(self, message: str, *, evidence_dir=None, timeout=60000):
+    # ------------------------------------------------------------------
+
+    def submit(
+        self,
+        message: str,
+        *,
+        evidence_dir: Optional[Path] = None,
+    ) -> SubmitReceipt:
         """
-        Qommons の実装に対応した ask()
-        - DOM 上の message-item は増えないため count 比較は使わない
-        - 最新バブルの markdown が空 / プレースホルダ から本文に変わる瞬間を監視する
+        Submit a message via UI and return a SubmitReceipt.
+
+        Completion semantics are explicitly OUT OF SCOPE.
         """
 
-        # 1. 送信
-        self.input_message(message, evidence_dir=evidence_dir)
-        self.click_send(evidence_dir=evidence_dir)
+        submit_id = str(uuid.uuid4())
 
-        # 2. 最新の message-item を取得（常に最後が AI バブル）
-        bubble = self.page.locator("div[id^='message-item-']").last
-        md = bubble.locator(".markdown")
+        diagnostics: Dict[str, Any] = {
+            "submit_id": submit_id,
+            "phase": "ui_submit",
+        }
 
-        # 3. ストリーミング開始を待つ（markdown が空→非空）
         try:
-            self.page.wait_for_function(
-                """
-                (selector) => {
-                    const el = document.querySelector(selector);
-                    if (!el) return false;
-                    const text = el.innerText.trim();
-                    return text.length > 0;
-                }
-                """,
-                arg=".markdown",
-                timeout=timeout
+            # ----------------------------------------------------------
+            # 1. Locate input box
+            # ----------------------------------------------------------
+            input_box = self.page.locator(self.MESSAGE_INPUT)
+            input_box.wait_for(state="visible", timeout=self.timeout)
+
+            # ----------------------------------------------------------
+            # 2. Fill message
+            # ----------------------------------------------------------
+            input_box.fill(message)
+
+            # ----------------------------------------------------------
+            # 3. Submit via HTML form (semantic & stable)
+            #    Prefer requestSubmit(); fallback to Enter key.
+            # ----------------------------------------------------------
+            try:
+                # nearest ancestor <form> from the input box
+                form = input_box.locator("xpath=ancestor::form[1]")
+                form.evaluate("f => f.requestSubmit()")
+            except Exception:
+                # Fallback: Enter key triggers form submit
+                input_box.press("Enter")
+
+            # ----------------------------------------------------------
+            # 4. Minimal UI acknowledgement check
+            #    (input box becomes empty)
+            # ----------------------------------------------------------
+            ui_ack = self._wait_for_input_clear(input_box)
+
+            sent_at = datetime.now(timezone.utc)
+
+            diagnostics.update({
+                "ui_ack": ui_ack,
+                "sent_at": sent_at.isoformat(),
+            })
+
+            return SubmitReceipt(
+                submit_id=submit_id,
+                sent_at=sent_at,
+                ui_ack=ui_ack,
+                diagnostics=diagnostics,  # Mapping[str, Any]
             )
+
+        except PlaywrightTimeoutError as e:
+            diagnostics.update({
+                "error": "timeout",
+                "detail": str(e),
+            })
+            self._capture_evidence(evidence_dir, submit_id)
+            raise
+
+        except Exception as e:
+            diagnostics.update({
+                "error": "unexpected",
+                "detail": str(e),
+            })
+            self._capture_evidence(evidence_dir, submit_id)
+            raise
+
+    # ------------------------------------------------------------------
+    # Internal helpers (UI-level only)
+    # ------------------------------------------------------------------
+
+    def _wait_for_input_clear(self, input_box, *, max_wait_sec: float = 3.0) -> bool:
+        """
+        Wait until the input box value becomes empty.
+
+        This is the ONLY acknowledgement signal used by submit v0.6.
+        """
+        start = time.time()
+
+        while time.time() - start < max_wait_sec:
+            try:
+                value = input_box.input_value()
+            except Exception:
+                # input box lost → treat as failure
+                return False
+
+            if value == "":
+                return True
+
+            time.sleep(0.1)
+
+        return False
+
+    def _capture_evidence(
+        self,
+        evidence_dir: Optional[Path],
+        submit_id: str,
+    ) -> None:
+        """
+        Capture minimal evidence on failure.
+
+        Evidence is best-effort and must not affect control flow.
+        This method is diagnostic-only and outside submit semantics.
+        """
+        if evidence_dir is None:
+            return
+
+        try:
+            evidence_dir.mkdir(parents=True, exist_ok=True)
+            screenshot_path = evidence_dir / f"submit_failure_{submit_id}.png"
+            self.page.screenshot(path=str(screenshot_path))
         except Exception:
-            if evidence_dir:
-                self.collect_evidence(evidence_dir, "ai_stream_not_started")
-            raise RuntimeError("AI stream did not start")
-
-        # 4. 本文確定までポーリング
-        for _ in range(120):  # 最大 60 秒
-            text = md.inner_text().strip()
-
-            if text and text != "回答を作成中...":
-                if evidence_dir:
-                    self.collect_evidence(evidence_dir, "ai_answer_ready")
-                return text
-
-            self.page.wait_for_timeout(500)
-
-        # 5. タイムアウト
-        if evidence_dir:
-            self.collect_evidence(evidence_dir, "ai_answer_not_ready")
-
-        raise RuntimeError(f"AI answer did not complete. last_text={text!r}")
+            # Evidence capture must never raise
+            pass

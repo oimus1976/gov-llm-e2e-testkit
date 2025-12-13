@@ -98,6 +98,22 @@
 
 ---
 
+### ✅ ChatPage.submit v0.6 確定（form submit / UI送信のみ）
+
+- ChatPage.submit v0.6 を実装し、UI送信のみの責務で確定
+- `submit_id` を submit 内で生成し、SubmitReceipt として返却
+- UI受理確認は `ui_ack`（入力欄クリア）で最小化
+- 送信操作は HTML form submit（requestSubmit → Enter fallback）を採用し、
+  送信ボタン locator 依存を排除（安定化）
+- completion 判定・回答取得・REST/GraphQL 参照は実装範囲外（MUST NOT遵守）
+- sync Smoke にて submit() 1回呼び出し・SubmitReceipt 返却を確認
+
+検証スクリプト：
+
+- scripts/smoke_submit_v0_6.py
+
+---
+
 ## 3. Next Action（唯一の次アクション）
 
 ### 🎯 A. submit_id ↔ probe 相関の実装準備（テスト観点定義）

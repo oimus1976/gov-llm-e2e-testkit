@@ -40,6 +40,11 @@
   File:
   - docs/design_support/Design_SubmitReceipt_v0.1.md
 
+- Added ChatPage.submit v0.6 (UI submission only)
+  - Returns immutable SubmitReceipt (submit_id, sent_at, ui_ack, diagnostics)
+  - Uses HTML form submit (requestSubmit with Enter fallback) to avoid button locator dependency
+  - Explicitly excludes completion semantics, answer parsing, and REST/GraphQL access
+
 ### Changed
 
 - PROJECT_STATUS updated to reflect completion of correlation design
