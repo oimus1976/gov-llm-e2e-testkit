@@ -61,6 +61,9 @@ gov-llm-e2e-testkit における **E2E テスト体系の最上位仕様・思�
 - YAML により質問データを定義する
 - 評価ロジック・検知方式は本書では規定しない
 
+- 詳細なテスト要件・合否判定ルールは
+  docs/test_plan/basic_rag_v0.1.md にて定義する
+
 ---
 
 ### 2.3 Advanced RAG Test
@@ -73,6 +76,9 @@ gov-llm-e2e-testkit における **E2E テスト体系の最上位仕様・思�
 - 実行時間は長くなることを許容
 - モデル更新・UI 変動時の影響検知に重点を置く
 - 詳細な合否判定は各 Test Plan に委譲する
+
+- 詳細なテスト要件は
+  docs/test_plan/advanced_rag_v0.1.md にて定義する
 
 ---
 
