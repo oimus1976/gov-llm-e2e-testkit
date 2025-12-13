@@ -27,6 +27,17 @@ They represent *observable-but-non-conclusive* states by design.
 
 ---
 
+## Action Guidance
+
+| correlation_state | CI Label | Action Required | Notes |
+|------------------|----------|-----------------|-------|
+| Established | PASS | No | Correlation successfully explained |
+| Not Established | WARN | Optional | Retry only if correlation is required |
+| No Evidence | INFO | No | Investigate only if repeated |
+| Unassessed | INFO | No | Expected for skipped executions |
+
+---
+
 ## State Interpretation
 
 - **Established (PASS)**  
