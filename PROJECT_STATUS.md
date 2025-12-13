@@ -60,6 +60,22 @@
 
 ---
 
+### ✅ submit–probe 相関 テスト観点チェックリスト v0.1 確定（New）
+
+- ChatPage.submit v0.6 と Answer Detection Layer（probe v0.2）の
+  責務境界を検証する **設計補助・実装前レビュー用チェックリスト**を正式確定
+- submit_id を一次相関キーとする設計について、
+  MUST / MUST NOT をテスト観点として明文化
+- REST-only / GraphQL 非発火 / 相関不能ケースを
+  「失敗」と誤認しない判定原則を固定
+- 実装・CI・pytest 仕様は一切含めず、
+  **設計レビュー専用文書**として位置づけを明確化
+
+配置先：
+- docs/design_support/Test_Perspective_submit_probe_correlation_v0.1.md
+
+---
+
 ## 3. Next Action（唯一の次アクション）
 
 ### 🎯 A. submit_id ↔ probe 相関の実装準備（テスト観点定義）
