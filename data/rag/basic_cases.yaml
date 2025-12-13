@@ -1,5 +1,5 @@
-# gov-llm-e2e-testkit — RAG Basic Test Cases v0.1
-# INTERNET / LGWAN 両環境で共通利用する固定データ
+# data/rag/basic_cases.yaml
+# RAG Basic Test Cases v0.1
 
 cases:
   - id: "RAG_BASIC_001"
@@ -10,13 +10,3 @@ cases:
     must_not_contain:
       - "他自治体"
       - "架空"
-
-  - id: "RAG_BASIC_002"
-    title: "施行日の確認"
-    question: "かつらぎ町情報公開条例の施行日はいつですか？"
-    expected_keywords:
-      - "施行日"
-      - "平成"
-    must_not_contain:
-      - "推測"
-      - "誤情報"
