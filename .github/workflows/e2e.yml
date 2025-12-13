@@ -90,7 +90,7 @@ jobs:
             -e 's|${CHAT_ID}|'"$CHAT_ID"'|g' \
             -e 's|${CORRELATION_STATE}|'"$CORR_STATE"'|g' \
             -e 's|${CI_RESULT}|'"$CI_RESULT"'|g' \
-            docs/ci/summary_template_submit_probe_v0.1.md \
+            docs/ci/summary_template_submit_probe_v0.1.ja.md \
             >> "$GITHUB_STEP_SUMMARY"
 
 
