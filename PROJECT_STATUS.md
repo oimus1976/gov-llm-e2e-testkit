@@ -102,6 +102,19 @@ E2E テスト基盤の安定化フェーズへ移行する。**
 
 ---
 
+- **CI Correlation Summary Presentation Semantics v0.1 を正式採用**
+  - submit–probe 相関結果を CI 上で誤解なく可視化するための
+    表現意味論（presentation semantics）を設計補助文書として固定
+  - 相関状態（Established / Not Established / No Evidence / Unassessed）と
+    CI 結果（PASS / WARN / INFO）の対応関係を拘束定義
+  - WARN / INFO を失敗と誤認しないことを明示的に保証
+  - 本仕様は CI 実装（GitHub Actions summary）の上位規範とする
+
+  Design support:
+  - docs/design_support/Design_CI_Correlation_Summary_v0.1.md
+
+---
+
 ### ✅ submit–probe 相関 テスト観点チェックリスト v0.1
 
 - submit / probe の責務境界を検証するための設計補助文書
