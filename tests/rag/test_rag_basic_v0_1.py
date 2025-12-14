@@ -6,7 +6,8 @@ from datetime import datetime, timezone, timedelta
 from tests.rag.rag_cases_basic import load_basic_cases
 from tests.pages.chat_page import ChatPage
 from src.log_writer import LogContext, create_case_log
-from src.answer_probe import wait_for_answer_text  # ← 既存 or 最小ラッパー
+from src.answer_probe import wait_for_answer_text
+
 
 pytestmark = pytest.mark.rag
 JST = timezone(timedelta(hours=9))
