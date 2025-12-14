@@ -1,115 +1,121 @@
 # src/answer_probe.py
 """
-answer_probe v0.1
-pytest から Answer Detection Layer（probe v0.2）を正規利用するための最小入口。
+pytest-facing Answer Detection API.
 
-- probe の完了意味論には介入しない
-- DOM/UI 操作は一切行わない
-- v0.1 では証跡保存は扱わない（probe 内部出力は制御対象外）
+This module provides a minimal adapter between pytest-based tests
+and the existing Answer Detection Layer (probe v0.2).
+
+- Completion semantics are fully delegated to probe.
+- This module does NOT inspect UI / DOM.
+- This module does NOT redefine probe semantics.
+- This module surfaces observable facts only.
 """
 
-from __future__ import annotations
-
-from typing import Optional
+from typing import Any, Dict
 
 from playwright.sync_api import Page
 
 from scripts.probe_v0_2 import run_graphql_probe
 
 
-# =========================
-# Exceptions（v0.1）
-# =========================
+# ----------------------------------------------------------------------
+# Exceptions (pytest-facing, fact-based)
+# ----------------------------------------------------------------------
 
 
-class AnswerProbeError(Exception):
-    """answer_probe 系の基底例外"""
-
-
-class AnswerTimeoutError(AnswerProbeError):
-    """timeout_sec 経過までに answer を取得できなかった（原因は推測しない）"""
-
-
-class AnswerNotAvailableError(AnswerProbeError):
-    """観測は行われたが、answer_text を取得できなかった（観測事実）"""
-
-
-class ProbeExecutionError(AnswerProbeError):
-    """probe 呼び出し自体が失敗した"""
-
-
-# =========================
-# Internal Adapter
-# =========================
-
-
-class _ProbeClient:
+class AnswerTimeoutError(Exception):
     """
-    probe v0.2 呼び出し専用の薄いアダプタ。
-
-    - v0.1 では submit_id は使用しない
-    - capture_seconds は timeout_sec をそのままマッピング
+    Raised when no relevant probe evidence is observed
+    within the bounded waiting period.
     """
 
-    def wait_for_summary(
-        self,
-        *,
-        page: Page,
-        chat_id: str,
-        timeout_sec: int,
-    ) -> dict:
-        try:
-            summary = run_graphql_probe(
-                page=page,
-                chat_id=chat_id,
-                capture_seconds=timeout_sec,
-            )
-            return summary
-        except Exception as e:
-            # probe 内部の詳細には踏み込まない
-            raise ProbeExecutionError("probe execution failed") from e
+
+class AnswerNotAvailableError(Exception):
+    """
+    Raised when probe evidence exists, but no answer text
+    (REST nor GraphQL) could be obtained.
+    """
 
 
-# =========================
-# Public API（v0.1）
-# =========================
+class ProbeExecutionError(Exception):
+    """
+    Raised when probe execution itself fails.
+    The original exception is chained as the cause.
+    """
+
+
+# ----------------------------------------------------------------------
+# Public API
+# ----------------------------------------------------------------------
 
 
 def wait_for_answer_text(
     *,
     page: Page,
-    submit_id: str,
     chat_id: str,
     timeout_sec: int = 60,
-    poll_interval_sec: float = 1.0,  # v0.1 では未使用（将来拡張用）
 ) -> str:
     """
-    probe v0.2 を用いて回答テキスト（raw str）を取得する。
+    Wait for an answer text via Answer Detection Layer (probe).
 
-    Notes:
-    - page は response hook 観測のために必須
-    - submit_id は v0.1 では probe 呼び出しに使用しない（API互換用）
-    - DOM/UI 操作は行わない
+    Parameters
+    ----------
+    page : Page
+        Playwright Page object (used by probe only).
+    chat_id : str
+        Chat boundary identifier.
+    timeout_sec : int, optional
+        Upper bound for waiting (seconds).
+        Completion semantics are defined by probe, not here.
+
+    Returns
+    -------
+    str
+        Raw answer text.
+
+    Raises
+    ------
+    AnswerTimeoutError
+        When no relevant probe evidence is observed.
+    AnswerNotAvailableError
+        When probe evidence exists but answer text is unavailable.
+    ProbeExecutionError
+        When probe execution itself fails.
     """
 
-    client = _ProbeClient()
-    summary = client.wait_for_summary(
-        page=page,
-        chat_id=chat_id,
-        timeout_sec=timeout_sec,
-    )
+    try:
+        summary: Dict[str, Any] = run_graphql_probe(
+            page=page,
+            chat_id=chat_id,
+            capture_seconds=timeout_sec,
+        )
+    except Exception as exc:
+        raise ProbeExecutionError("probe execution failed") from exc
 
-    # --- answer_text 抽出ルール（v0.1 確定） ---
-    # 1. REST answer を最優先
-    rest_answer: Optional[str] = summary.get("rest_answer")
-    if isinstance(rest_answer, str) and rest_answer.strip():
+    # ------------------------------------------------------------------
+    # Answer selection (mapping is strictly defined by specification)
+    # ------------------------------------------------------------------
+
+    rest_answer = summary.get("rest_answer")
+    graphql_answer = summary.get("graphql_answer")
+
+    if rest_answer:
         return rest_answer
 
-    # 2. GraphQL answer をフォールバック
-    graphql_answer: Optional[str] = summary.get("graphql_answer")
-    if isinstance(graphql_answer, str) and graphql_answer.strip():
+    if graphql_answer:
         return graphql_answer
 
-    # 3. どちらも無い → 観測事実として例外
-    # timeout / mismatch 等の理由は推測しない
-    raise AnswerNotAvailableError("answer_text not available after probe observation")
+    # ------------------------------------------------------------------
+    # Exception mapping (observable facts only)
+    # ------------------------------------------------------------------
+
+    has_post = summary.get("has_post", False)
+    has_get = summary.get("has_get", False)
+    has_graphql = summary.get("has_graphql", False)
+
+    if has_post or has_get or has_graphql:
+        raise AnswerNotAvailableError(
+            "probe observed related events, but answer text is not available"
+        )
+
+    raise AnswerTimeoutError("no probe evidence observed within bounded waiting period")
