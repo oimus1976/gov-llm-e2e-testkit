@@ -7,7 +7,10 @@
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "python.analysis.extraPaths": [
+    "./src"
+    ]
   },
 
   // -----------------------------
@@ -21,4 +24,5 @@
   // Python tooling
   // -----------------------------
   "python.analysis.typeCheckingMode": "basic"
+
 }

@@ -1,14 +1,14 @@
 # src/answer_probe.py
 """
-pytest-facing Answer Detection API.
+pytest-facing Answer Detection API (v0.1r).
 
-This module provides a minimal adapter between pytest-based tests
-and the existing Answer Detection Layer (probe v0.2).
+Operational binding for Spec_answer_probe_api_v0.1,
+reflecting current probe implementation constraints.
 
-- Completion semantics are fully delegated to probe.
-- This module does NOT inspect UI / DOM.
-- This module does NOT redefine probe semantics.
-- This module surfaces observable facts only.
+Key points:
+- Requires Playwright sync Page as execution context.
+- Delegates all completion semantics to probe.
+- Surfaces observable facts only (raw answer or exceptions).
 """
 
 from typing import Any, Dict
@@ -52,6 +52,7 @@ class ProbeExecutionError(Exception):
 def wait_for_answer_text(
     *,
     page: Page,
+    submit_id: str,
     chat_id: str,
     timeout_sec: int = 60,
 ) -> str:
@@ -61,7 +62,10 @@ def wait_for_answer_text(
     Parameters
     ----------
     page : Page
-        Playwright Page object (used by probe only).
+        Playwright sync Page used as probe execution context.
+    submit_id : str
+        Client-generated submit identifier.
+        (Kept for pytest-side correlation; not passed to probe in v0.1r.)
     chat_id : str
         Chat boundary identifier.
     timeout_sec : int, optional
@@ -83,6 +87,10 @@ def wait_for_answer_text(
         When probe execution itself fails.
     """
 
+    # NOTE:
+    # submit_id is intentionally unused in v0.1r.
+    # It is kept to preserve API contract and future extensibility.
+
     try:
         summary: Dict[str, Any] = run_graphql_probe(
             page=page,
@@ -93,15 +101,14 @@ def wait_for_answer_text(
         raise ProbeExecutionError("probe execution failed") from exc
 
     # ------------------------------------------------------------------
-    # Answer selection (mapping is strictly defined by specification)
+    # Answer selection (summary -> pytest API mapping)
     # ------------------------------------------------------------------
 
     rest_answer = summary.get("rest_answer")
-    graphql_answer = summary.get("graphql_answer")
-
     if rest_answer:
         return rest_answer
 
+    graphql_answer = summary.get("graphql_answer")
     if graphql_answer:
         return graphql_answer
 
