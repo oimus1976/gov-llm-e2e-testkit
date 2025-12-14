@@ -10,15 +10,15 @@
 本プロジェクトのフェーズ定義は、
 **Roadmap v1.1 を唯一の正本**として以下に統一する。
 
-| 区分 | 内容                             |
-| -- | ------------------------------ |
-| F1 | 設計フェーズ                         |
-| F2 | Page Object 実装フェーズ             |
+| 区分 | 内容 |
+| -- | -- |
+| F1 | 設計フェーズ |
+| F2 | Page Object 実装フェーズ |
 | F3 | Answer Detection & テスト基盤構築フェーズ |
-| F4 | RAG 評価基準・比較テストフェーズ             |
-| F5 | CI（e2e.yml）整備フェーズ              |
-| F6 | LGWAN 対応フェーズ                   |
-| F7 | 運用・保守フェーズ                      |
+| F4 | RAG 評価基準・比較テストフェーズ |
+| F5 | CI（e2e.yml）整備フェーズ |
+| F6 | LGWAN 対応フェーズ |
+| F7 | 運用・保守フェーズ |
 
 以降、本 STATUS では
 **Phase A / B / C といった別系統の呼称は使用しない。**
@@ -61,7 +61,6 @@
 * Environment Layer（env_loader v0.2.3）QA 完了・凍結
 * Page Object（Base / Login / Chat）安定版
 * ChatPage.submit v0.6
-
   * UI送信責務のみに限定
   * submit_id / SubmitReceipt 意味論確定
 
@@ -69,10 +68,8 @@
 
 * probe v0.2.1（GraphQL / REST 両対応）
 * submit–probe 相関設計 v0.2
-
   * 相関を **アルゴリズムではなく state** として定義
 * pytest-facing Answer Probe API v0.1r 確定
-
   * page を受け取る低レベル API 境界を正式採用
 
 #### CI / 可視化
@@ -82,6 +79,17 @@
 * WARN / INFO を FAIL と誤認しない意味論を保証
 
 👉 **E2E 基盤としての完成条件をすべて満たした**
+
+---
+
+### ✅ F4 事前検証（完了）
+
+* 部署境界が **RAG 検索境界として機能すること**を、
+  固有トークンを用いた **1問プローブ**により検証（OK）
+* F4 において、
+  * 部署方式によるナレッジ切替
+  * アカウント分離方式
+  の **いずれも採用可能**であることを確認
 
 ---
 
@@ -109,13 +117,14 @@
 #### 確定事項
 
 * **RAG 評価基準 v0.1（正式決定）**
-
   * Evidence Hit Rate（条例由来語）
   * Hallucination Rate（無根拠表現）
   * Answer Stability（再現性）
 * 絶対評価ではなく **差分評価**
-
   * HTML 投入 vs Markdown 投入
+* **Golden Question Pool / Golden Ordinance Set は直接使用しない**
+  * 上位基準として保持
+  * F4 ではそこから抽出した **最小3ケース**のみを用いる
 
 #### 状態
 
@@ -143,6 +152,8 @@
 * 高度な意味理解・同義語判定
 * 自動要約の品質評価
 * モデル間比較
+* **Golden Question Pool / Golden Ordinance Set の消費・改変**
+  *（上位基準として保持）*
 
 ※ いずれも **F4 完了後に再検討**
 
@@ -165,6 +176,8 @@
 * Roadmap v1.1 にフェーズ定義を完全統一
 * F1–F3 を「基盤フェーズ」として明確に凍結
 * RAG 評価基準 v0.1 を STATUS に反映
+* F4 事前検証（部署境界プローブ）完了を明記
+* Golden 資産と F4 最小3ケース設計の関係を明文化
 
 ### v0.5.1 — 基盤確認 CI 意味論確定
 
@@ -182,12 +195,3 @@
 という、非常に健全な状態にある。
 
 ---
-
-### 次の作業提案
-
-1. この PROJECT_STATUS v0.6.0 を採用
-2. CHANGELOG 更新（Roadmap v1.1 / STATUS v0.6.0 反映）
-3. F4 作業ログの整理開始
-
-👉 この STATUS 更新案、
-**そのまま確定して CHANGELOG に進みますか？**

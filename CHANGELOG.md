@@ -1,13 +1,13 @@
 # CHANGELOG — gov-llm-e2e-testkit
 
-全ドキュメント・設計書・仕様変更の履歴を記録する公式 CHANGELOG です。  
+全ドキュメント・設計書・仕様変更の履歴を記録する公式 CHANGELOG です。
 本プロジェクトは Keep a Changelog に準拠し、バージョンは日付ベース＋プロジェクト内バージョンで管理します。
 
 本ファイルは、本プロジェクトにおける
 **設計・実装・運用上の意思決定の履歴**を記録する。
 
-* バージョン番号は PROJECT_STATUS と同期する
-* 単なるコード変更ログではなく、
+- バージョン番号は PROJECT_STATUS と同期する
+- 単なるコード変更ログではなく、
   **「何が確定し、何が前提になったか」**を残す
 
 ---
@@ -25,25 +25,41 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 「テスト基盤を作る」段階を終え、
 **「テストで価値判断を行う」段階**に入る。
 
+F4 では、HTML / Markdown 形式の差分が
+RAG 回答に与える影響を、
+**最小構成・差分評価のみ**で検証する。
+
 ---
 
 ### ✅ Added（追加）
 
-* **RAG 評価基準 v0.1（正式決定）**
+- **RAG 評価基準 v0.1（正式決定）**
 
-  * Evidence Hit Rate（条例由来語の出現）
-  * Hallucination Rate（無根拠表現の抑制）
-  * Answer Stability（再現性）
-* Basic RAG Test 実装（Playwright / pytest）
-* pytest-facing Answer Detection API v0.1r
+  - Evidence Hit Rate（条例由来語の出現）
+  - Hallucination Rate（無根拠表現の抑制）
+  - Answer Stability（再現性）
+- Basic RAG Test 実装（Playwright / pytest）
+- pytest-facing Answer Detection API v0.1r
 
-  * page を受け取る低レベル API 境界を正式採用
-* RAG 評価・設計関連ドキュメント群
+  - page を受け取る低レベル API 境界を正式採用
+- **F4 事前検証：部署境界プローブ（完了）**
 
-  * Design_answer_probe_api_v0.1
-  * Spec_answer_probe_api_v0.1
-  * 評価設計メモ・背景資料
-* Markdown lint 設定（文書品質の安定化）
+  - 部署境界が RAG 検索境界として機能することを
+    固有トークンによる 1 問テストで検証（OK）
+- **Golden 資産の確定・凍結**
+
+  - Golden Question Pool A（18 問）
+  - Golden Ordinance Set（対象条例 10 本）
+- **F4 用 最小 3 ケース評価設計の確定**
+
+  - HTML / Markdown 差分検出に特化した最小構成
+- RAG 評価・設計関連ドキュメント群
+
+  - Design_rag_f4_eval_v0.1
+  - Design_rag_f4_dept_boundary_probe_v0.1
+  - Golden_Question_Pool_A_v1.1
+  - Golden_Ordinance_Set_v1.0
+- Markdown lint 設定（文書品質の安定化）
 
 ---
 
@@ -57,6 +73,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
   * F1–F3 を「基盤フェーズ」として明示的に凍結
   * F4（RAG 評価フェーズ）を Current Phase として明文化
+  * F4 が **Golden 資産を直接消費せず、最小 3 ケースで評価する**
+    ことを明記
 * RAG テストにおける判定モデルを三値化
 
   * PASS / FAIL / SKIPPED（Inconclusive）
@@ -69,6 +87,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 * submit–probe 相関はアルゴリズムではなく **state**
 * 「意味的に正しい」と「文字列的に一致」は別問題
 * 高レベル API による page 隠蔽は採用しない
+* Golden Question Pool / Ordinance Set は
+  **上位基準資産として保持し、F4では消費しない**
 
 これらは **設計判断として固定**され、
 今後のフェーズで覆されることはない。
@@ -80,6 +100,7 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 * 意味的同義語判定
 * モデル間性能比較
 * 高度な自然言語理解評価
+* Golden 資産の改変・消費
 
 ※ いずれも v0.2 以降の検討事項とする。
 
@@ -90,6 +111,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 * HTML → Markdown 変換の **費用対効果を定量比較**できる
 * 容量制約（20GB）下での RAG 最適化判断が可能
 * 人手レビューに依存しない RAG QA が成立
+* 差分評価・能力評価・将来 CI を
+  **同一基盤・同一資産体系で段階的に拡張可能**
 
 ---
 
@@ -334,32 +357,32 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- Answer Detection Layer に関する正式仕様を追加：  
-  - `Design_chat_answer_detection_v0.1.md`  
+- Answer Detection Layer に関する正式仕様を追加：
+  - `Design_chat_answer_detection_v0.1.md`
   - `Design_probe_graphql_answer_detection_v0.1.md`
 - `test_env_loader_matrix_v0.2` を追加し、Environment Layer（env_loader v0.2.3）の QA プロセスを体系化。
 
 ### Changed
 
-- PROJECT_STATUS を v0.4.4 に更新し、  
-  **唯一の Next Action を env_loader（Design_env_v0.2.3 準拠のスキーマ整合レビュー）から  
+- PROJECT_STATUS を v0.4.4 に更新し、
+  **唯一の Next Action を env_loader（Design_env_v0.2.3 準拠のスキーマ整合レビュー）から
   probe v0.2（GraphQL createData 監視＋assistant 抽出）へ正式に切り替え。**
-- Roadmap を再編し、以下の後続タスクを正式登録：  
-  - XHR/GraphQL フュージョン方式検証  
-  - ChatPage.ask v0.6 の刷新  
+- Roadmap を再編し、以下の後続タスクを正式登録：
+  - XHR/GraphQL フュージョン方式検証
+  - ChatPage.ask v0.6 の刷新
   - CI 上での回答検知安定化
 
 ### Fixed
 
-- env_loader v0.2.3 の以下が QA により設計仕様と完全一致することを確認：  
-  - MissingSecretError の拘束仕様  
-  - Schema Freeze Rule（構造不変性）  
-  - OS > .env の優先順位  
-  - ENV_PROFILE の正しい適用  
+- env_loader v0.2.3 の以下が QA により設計仕様と完全一致することを確認：
+  - MissingSecretError の拘束仕様
+  - Schema Freeze Rule（構造不変性）
+  - OS > .env の優先順位
+  - ENV_PROFILE の正しい適用
   - recursive / list placeholder などの特殊ケース解決
 
 ### Notes
-- Environment Layer（env_loader）は v0.2 系と完全互換であり、  
+- Environment Layer（env_loader）は v0.2 系と完全互換であり、
   本バージョンでは **実装のレビューと設計書 v0.2.3 との整合確認のみを目的とした非破壊更新** である。
 
 ---
@@ -415,23 +438,23 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 ## v0.4.0 (2025-12-10)
 
 ### Added
-- PROJECT_GRAND_RULES v4.0 を全面更新  
-  - Debugging_Principles_v0.2 を統治層へ統合  
-  - PageObject 4層構造（Base / Login / ChatSelect / Chat）を正式採用  
-  - CI / env_loader / Secrets 運用規範を追加  
-  - デバッグ行動原則（観察優先・推測禁止・再発防止）を明文化  
+- PROJECT_GRAND_RULES v4.0 を全面更新
+  - Debugging_Principles_v0.2 を統治層へ統合
+  - PageObject 4層構造（Base / Login / ChatSelect / Chat）を正式採用
+  - CI / env_loader / Secrets 運用規範を追加
+  - デバッグ行動原則（観察優先・推測禁止・再発防止）を明文化
 
-- ChatSelectPage v0.3 を正式に import 対応  
-  - test_smoke_llm での依存が解消し、構造が整合  
+- ChatSelectPage v0.3 を正式に import 対応
+  - test_smoke_llm での依存が解消し、構造が整合
 
 ### Changed
-- PROJECT_STATUS を v0.4.0 へ更新  
-  - Next Action を「CI headless 安定化」に一本化  
-  - 最新成果・課題・リスクを再整理  
+- PROJECT_STATUS を v0.4.0 へ更新
+  - Next Action を「CI headless 安定化」に一本化
+  - 最新成果・課題・リスクを再整理
 
 ### Notes
-- 今後、PageObject 全体のバージョン統一（v0.6 系）へ移行予定  
-- CI での Smoke 成功率向上が最優先タスク  
+- 今後、PageObject 全体のバージョン統一（v0.6 系）へ移行予定
+- CI での Smoke 成功率向上が最優先タスク
 
 ---
 
@@ -454,13 +477,13 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
   - 旧 data-testid ベースのロケータに依存しない構造へ変更。
   - Smoke Test が初めてフル成功する安定性を獲得。
 
-- ChatSelectPage の役割を「遷移補助」から「任意利用モジュール」へ整理  
-  - ログイン後に自動で任意チャットへ遷移する UI 仕様を踏まえ、  
+- ChatSelectPage の役割を「遷移補助」から「任意利用モジュール」へ整理
+  - ログイン後に自動で任意チャットへ遷移する UI 仕様を踏まえ、
     Smoke Test には必須でないことを明確化。
 
 ### Fixed
 - **chat-input が DOM に存在しない問題を修正**
-  - 旧ロケータ `data-testid="chat-input"` を完全廃止し、  
+  - 旧ロケータ `data-testid="chat-input"` を完全廃止し、
     最新 DOM に基づく `#message` を採用。
 
 - **送信ボタンのロケータ破損を修正**
@@ -468,9 +491,9 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Notes
 - ChatPage v0.5 は Qommons.AI（2025年12月時点）の DOM に完全準拠した安定版。
-- UI 変更に強いロケータ構造（id・prefix-based search）を採用しており、  
+- UI 変更に強いロケータ構造（id・prefix-based search）を採用しており、
   CI / ローカル双方で動作が安定。
-- 次ステップとしては ChatSelectPage v0.3.1 以降の整理、および  
+- 次ステップとしては ChatSelectPage v0.3.1 以降の整理、および
   マルチケース（RAG 強化テスト）の拡張が可能。
 
 ---
@@ -503,26 +526,26 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- `docs/Debugging_Principles_v0.1.md` を追加  
+- `docs/Debugging_Principles_v0.1.md` を追加
   - E2E / Python / SPA / CI に共通するデバッグ原則を体系化。
 
 ### Changed
 
 - E2Eテスト基盤を Playwright Async → Sync へ移行し、安定動作を実現。
-  - LoginPage（Sync版）を正式採用  
-  - conftest.py を Sync Playwright に書き換え  
-  - no_wait_after=True を標準化  
+  - LoginPage（Sync版）を正式採用
+  - conftest.py を Sync Playwright に書き換え
+  - no_wait_after=True を標準化
   - headless=False を推奨デバッグモードに設定
 
 ### Fixed
 
-- Async Playwright が pytest-asyncio(strict) と競合して停止する問題を解消。  
-- SPA ログインが navigation せずタイムアウトする問題を Sync版で安定回避。  
+- Async Playwright が pytest-asyncio(strict) と競合して停止する問題を解消。
+- SPA ログインが navigation せずタイムアウトする問題を Sync版で安定回避。
 - Smoke Test が安定して PASS することを確認。
 
 ### Notes
 
-- 次版では ChatPage Sync 実装と RAG Basic Sync テストを予定。  
+- 次版では ChatPage Sync 実装と RAG Basic Sync テストを予定。
 - Debugging_Principles は v0.2 → v0.3 系でさらに強化（逆引き辞典・フローチャート）。
 
 ---
@@ -612,8 +635,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Changed
 
-- PROJECT_STATUS を v0.1.13 に更新  
-  - logging v0.1 の追加を反映  
+- PROJECT_STATUS を v0.1.13 に更新
+  - logging v0.1 の追加を反映
   - Next Action を「logger_v0.1 設計」に変更
 
 ---
@@ -626,8 +649,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 - conftest.py v0.1 の設計仕様を正式確立（browser/context/page生成・timeout適用・env_loader連携）
 
 ### Changed
-- PROJECT_STATUS を v0.1.12 に更新  
-  - Responsibility Map / pytest Execution Layer 追加を反映  
+- PROJECT_STATUS を v0.1.12 に更新
+  - Responsibility Map / pytest Execution Layer 追加を反映
   - Next Action を「ロギング仕様 v0.1」に変更
 
 ---
@@ -639,8 +662,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 - BasePage / pytest への env 連携を統一
 
 ### Changed
-- PROJECT_STATUS を v0.1.11 に更新  
-  - env.yaml ローダー実装完了を反映  
+- PROJECT_STATUS を v0.1.11 に更新
+  - env.yaml ローダー実装完了を反映
   - Next Action を「ロギング仕様 v0.1」策定に変更
 
 ---
@@ -653,13 +676,13 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Changed
 
-- PROJECT_STATUS を v0.1.10 に更新  
-  - env.yaml 設計の完了を反映  
+- PROJECT_STATUS を v0.1.10 に更新
+  - env.yaml 設計の完了を反映
   - Next Action を「env.yaml（実ファイル）生成」に変更
 
 ### Notes
 
-- 本バージョンにより、INTERNET・LGWAN の環境統合レイヤが完成。  
+- 本バージョンにより、INTERNET・LGWAN の環境統合レイヤが完成。
   gov-llm-e2e-testkit は次に env.yaml 実体生成フェーズへ移行する。
 
 
@@ -674,12 +697,12 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Changed
 
-- PROJECT_STATUS を v0.1.9 に更新  
-  - Next Action を「CI（e2e.yml）v0.1 の実装」に変更  
+- PROJECT_STATUS を v0.1.9 に更新
+  - Next Action を「CI（e2e.yml）v0.1 の実装」に変更
 
 ### Notes
 
-- 本版により、gov-llm-e2e-testkit の E2E 自動化パイプラインの設計が完成。  
+- 本版により、gov-llm-e2e-testkit の E2E 自動化パイプラインの設計が完成。
   次は CI 実ファイル e2e.yml の GitHub 反映へ進む。
 
 ---
@@ -688,20 +711,20 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **RAG Basic / Advanced pytest implementation v0.1** を追加  
-  - YAML → pytest のマッピング仕様（Design_RAG_Test_v0.1）に準拠  
-  - tests/rag/test_rag_basic_v0.1.py  
-  - tests/rag/test_rag_advanced_v0.1.py  
+- **RAG Basic / Advanced pytest implementation v0.1** を追加
+  - YAML → pytest のマッピング仕様（Design_RAG_Test_v0.1）に準拠
+  - tests/rag/test_rag_basic_v0.1.py
+  - tests/rag/test_rag_advanced_v0.1.py
 
 ### Changed
 
-- PROJECT_STATUS.md を v0.1.8 に更新  
-  - Next Action を CI（e2e.yml）v0.1 設計へ変更  
-  - rag_basic / rag_advanced の物理フォルダを廃止し、data/rag/ 統合構造へ整合  
+- PROJECT_STATUS.md を v0.1.8 に更新
+  - Next Action を CI（e2e.yml）v0.1 設計へ変更
+  - rag_basic / rag_advanced の物理フォルダを廃止し、data/rag/ 統合構造へ整合
 
 ### Notes
 
-- v0.1.8 により RAG テストの **データ → 実装 → pytest 結合** が完了。  
+- v0.1.8 により RAG テストの **データ → 実装 → pytest 結合** が完了。
   CI レイヤに進むための準備が整った。
 
 ---
@@ -710,24 +733,24 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **test_plan_v0.1** を新規追加  
-  - Smoke / Basic RAG / Advanced RAG の3層テスト体系を正式策定  
-  - basic/advanced YAML のスキーマを定義  
-  - INTERNET/LGWAN 実行ポリシーを明文化  
-  - CI（e2e.yml）の基本方針を規定  
-  - UI変動／モデル更新時の再テスト手順を定義  
+- **test_plan_v0.1** を新規追加
+  - Smoke / Basic RAG / Advanced RAG の3層テスト体系を正式策定
+  - basic/advanced YAML のスキーマを定義
+  - INTERNET/LGWAN 実行ポリシーを明文化
+  - CI（e2e.yml）の基本方針を規定
+  - UI変動／モデル更新時の再テスト手順を定義
   → テスト基盤の“最上位仕様”が確立された
 
 ### Changed
 
-- PROJECT_STATUS.md を v0.1.7 に更新  
-  - test_plan 完成を反映  
-  - Next Action を「RAG YAML スキーマ実体化」に変更  
+- PROJECT_STATUS.md を v0.1.7 に更新
+  - test_plan 完成を反映
+  - Next Action を「RAG YAML スキーマ実体化」に変更
   - Backlog を整理
 
 ### Notes
 
-- v0.1.7 は **E2Eテスト体系の全体像が初めて統合された重要マイルストーン** であり、  
+- v0.1.7 は **E2Eテスト体系の全体像が初めて統合された重要マイルストーン** であり、
   RAG 設計・CI 設計へ進むための基盤が整った。
 
 ---
@@ -736,22 +759,22 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **Design_LoginPage_v0.1** を新規追加  
-  - username / password / login ボタンのロケータ設計  
-  - login() / wait_for_login_success() など高レベルAPIを定義  
-  - BasePage / Locator_Guide_v0.2 に基づく UI変動耐性を確保  
+- **Design_LoginPage_v0.1** を新規追加
+  - username / password / login ボタンのロケータ設計
+  - login() / wait_for_login_success() など高レベルAPIを定義
+  - BasePage / Locator_Guide_v0.2 に基づく UI変動耐性を確保
   - LGWAN timeout 対応を明示
 
 ### Changed
 
-- PROJECT_STATUS.md を **v0.1.6** に更新  
-  - ChatPage / LoginPage 設計フェーズ完了を反映  
-  - Next Action を “BasePage 実装” に更新  
+- PROJECT_STATUS.md を **v0.1.6** に更新
+  - ChatPage / LoginPage 設計フェーズ完了を反映
+  - Next Action を “BasePage 実装” に更新
   - Backlog と必須資料リストを整理
 
 ### Notes
 
-- v0.1.6 により主要 Page Object（BasePage + ChatPage + LoginPage）の  
+- v0.1.6 により主要 Page Object（BasePage + ChatPage + LoginPage）の
   **設計段階がすべて完了し、実装フェーズへ移行可能**となった。
 
 ---
@@ -760,22 +783,22 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **Design_BasePage_v0.1** を新規追加  
-  - Page Object 基底クラスの責務・構造を定義  
-  - locator factory / safe actions / LGWAN timeout / loading wait など  
-    共通インターフェースの仕様を確立  
+- **Design_BasePage_v0.1** を新規追加
+  - Page Object 基底クラスの責務・構造を定義
+  - locator factory / safe actions / LGWAN timeout / loading wait など
+    共通インターフェースの仕様を確立
   - Locator_Guide_v0.2 と Design_playwright_v0.1 に正式準拠
 
 ### Changed
 
-- PROJECT_STATUS.md を v0.1.5 に更新  
-  - BasePage 設計書の完成を反映  
-  - Next Action を「ChatPage 設計書 v0.1 作成」に更新  
+- PROJECT_STATUS.md を v0.1.5 に更新
+  - BasePage 設計書の完成を反映
+  - Next Action を「ChatPage 設計書 v0.1 作成」に更新
   - 参照文書体系を最新化
 
 ### Notes
 
-- 本バージョン v0.1.5 により、Page Object 層の“基底構造”が確立され、  
+- 本バージョン v0.1.5 により、Page Object 層の“基底構造”が確立され、
   ChatPage / LoginPage / Smoke Test へ進むための基盤が完成した。
 
 ---
@@ -784,26 +807,26 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **ChatGPT Startup Workflow v3.0** を新規追加  
-  - PROJECT_GRAND_RULES v2.0 / Startup Template v3.0 と整合  
-  - /start 時のブートシーケンスを拡張（参照文書同期・Next Action 単一検証・LGWAN判定など）  
-  - 作業フェーズ（設計→実装→テスト→文書更新）を体系化  
-  - UI変動・モデル更新の検知フローを追加  
-  - LGWAN 実行モード（オフライン動作）の特別ルールを定義  
+- **ChatGPT Startup Workflow v3.0** を新規追加
+  - PROJECT_GRAND_RULES v2.0 / Startup Template v3.0 と整合
+  - /start 時のブートシーケンスを拡張（参照文書同期・Next Action 単一検証・LGWAN判定など）
+  - 作業フェーズ（設計→実装→テスト→文書更新）を体系化
+  - UI変動・モデル更新の検知フローを追加
+  - LGWAN 実行モード（オフライン動作）の特別ルールを定義
 
 ### Changed
 
-- PROJECT_STATUS.md を **v0.1.4** に更新  
-  - Startup Workflow v3.0 の導入を反映  
-  - 現在地／Backlog／Next Action を最新化  
-  - 必須資料に Workflow v3.0 を追加  
-- プロジェクト内部レイヤを再整理  
-  - 「設計（Design）／運転（Startup Template）／行動制御（Workflow）／実行（STATUS）」の4階層構造を明確化  
+- PROJECT_STATUS.md を **v0.1.4** に更新
+  - Startup Workflow v3.0 の導入を反映
+  - 現在地／Backlog／Next Action を最新化
+  - 必須資料に Workflow v3.0 を追加
+- プロジェクト内部レイヤを再整理
+  - 「設計（Design）／運転（Startup Template）／行動制御（Workflow）／実行（STATUS）」の4階層構造を明確化
 
 ### Notes
 
-- 本バージョン v0.1.4 は、  
-  Startup Template（運転層）に加えて **Startup Workflow（行動制御層）が完成した最初の版** であり、  
+- 本バージョン v0.1.4 は、
+  Startup Template（運転層）に加えて **Startup Workflow（行動制御層）が完成した最初の版** であり、
   プロジェクトが「設計駆動で破綻しない統制構造」を正式に獲得した重要バージョンである。
 
 ---
@@ -812,26 +835,26 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **Startup Template v3.0（運転層統合版）** を新規作成  
-  - PROJECT_GRAND_RULES v3.0 と整合した行動規範を統合  
-  - Design_playwright_v0.1 / Locator_Guide_v0.2 への準拠を明文化  
-  - /start 時のブートシーケンスを再定義  
-- PROJECT_STATUS.md を v0.1.3 に更新  
-  - Startup Template v3.0 の運用開始を反映  
+- **Startup Template v3.0（運転層統合版）** を新規作成
+  - PROJECT_GRAND_RULES v3.0 と整合した行動規範を統合
+  - Design_playwright_v0.1 / Locator_Guide_v0.2 への準拠を明文化
+  - /start 時のブートシーケンスを再定義
+- PROJECT_STATUS.md を v0.1.3 に更新
+  - Startup Template v3.0 の運用開始を反映
   - 参照文書・Backlog・Next Action を最新化
 
 ### Changed
 
-- 参照文書体系を最新版に整合  
-  - Startup Template → v3.0 に更新  
-  - STATUS / GRAND_RULES / Locator_Guide との依存関係を整理  
-- STATUS の「プロジェクト目的」「現在地」「未完了タスク」を刷新  
+- 参照文書体系を最新版に整合
+  - Startup Template → v3.0 に更新
+  - STATUS / GRAND_RULES / Locator_Guide との依存関係を整理
+- STATUS の「プロジェクト目的」「現在地」「未完了タスク」を刷新
 - Next Action を **BasePage（Page Object 基底クラス）の作成**として再設定
 
 ### Notes
 
-- 本バージョン v0.1.3 は、プロジェクトの「運転層（Startup Template）」が  
-  統治層（GRAND_RULES）と完全整合した、  
+- 本バージョン v0.1.3 は、プロジェクトの「運転層（Startup Template）」が
+  統治層（GRAND_RULES）と完全整合した、
   **初のフル統合バージョン**である。
 
 ---
@@ -840,18 +863,18 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- **Locator_Guide_v0.2.md（UI識別規範）** を新規作成  
-  - ロケータ優先順位を明確化（Role → Label → aria-label → data-testid → CSS）  
-  - LGWAN 遅延を考慮した timeout 推奨値を追加  
-  - 文言変動に強くする fallback パターンを追加  
-- PROJECT_STATUS.md を v0.1.2 に更新  
-  - UI識別規範作成完了を反映  
-  - Next Action を BasePage 作成へ変更  
+- **Locator_Guide_v0.2.md（UI識別規範）** を新規作成
+  - ロケータ優先順位を明確化（Role → Label → aria-label → data-testid → CSS）
+  - LGWAN 遅延を考慮した timeout 推奨値を追加
+  - 文言変動に強くする fallback パターンを追加
+- PROJECT_STATUS.md を v0.1.2 に更新
+  - UI識別規範作成完了を反映
+  - Next Action を BasePage 作成へ変更
 - Startup Template v1.1 の「参照文書」に Locator_Guide_v0.2 を追加
 
 ### Changed
 
-- STATUS の「未完了タスク」「完了タスク」を最新版に更新  
+- STATUS の「未完了タスク」「完了タスク」を最新版に更新
 - プロジェクト参照文書体系を整備
 
 ---
@@ -860,8 +883,8 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Changed
 
-- プロジェクト名を **qommons-ai-auto-test → gov-llm-e2e-testkit** に正式変更  
-- Startup Template / PROJECT_STATUS / 各設計書の名称を一括更新  
+- プロジェクト名を **qommons-ai-auto-test → gov-llm-e2e-testkit** に正式変更
+- Startup Template / PROJECT_STATUS / 各設計書の名称を一括更新
 - ディレクトリ標準構成のプロジェクト名を差し替え
 
 ---
@@ -870,19 +893,19 @@ E2E テスト基盤（F1–F3）を完全に凍結し、
 
 ### Added
 
-- プロジェクト初期セットアップ  
-  - Startup Template v1.1（行動規範、設計規範、運用ルール）  
-  - PROJECT_STATUS v0.1.0（最初の進行管理表）  
+- プロジェクト初期セットアップ
+  - Startup Template v1.1（行動規範、設計規範、運用ルール）
+  - PROJECT_STATUS v0.1.0（最初の進行管理表）
   - Design_playwright_v0.1.md（Playwrightの基盤設計書）
-- 基本ディレクトリ構成の定義  
+- 基本ディレクトリ構成の定義
   - design/ tests/ data/ logs/ .github/workflows/
 
 ---
 
 ## 📎 運用ルール（再掲）
 
-- すべての更新は PENTA による検討・整理後に実施する  
-- 設計書・ルール・STATUS の変更は必ず CHANGELOG に追記する  
+- すべての更新は PENTA による検討・整理後に実施する
+- 設計書・ルール・STATUS の変更は必ず CHANGELOG に追記する
 - バージョン番号は **プロジェクト全体の進行管理番号** であり、コードとは独立
 - PROJECT_STATUS 更新と CHANGELOG 更新は必ずセット
 - フェーズ遷移は CHANGELOG に必ず記録
