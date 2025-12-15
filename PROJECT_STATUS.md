@@ -1,11 +1,11 @@
-# 📘 PROJECT_STATUS v0.6.0 — E2E基盤完了 / RAG評価フェーズ（v0.1）正式開始
+# 📘 PROJECT_STATUS v0.6.1 — F4運用ルール確定（v0.1.5）/ 手動運用フェーズ固定
 
-**Last Updated:** 2025-12-14
+**Last Updated:** 2025-12-15
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
 
-## 0. フェーズ定義の統一について（重要）
+## 0. フェーズ定義の統一について（再掲・不変）
 
 本プロジェクトのフェーズ定義は、
 **Roadmap v1.1 を唯一の正本**として以下に統一する。
@@ -20,30 +20,25 @@
 | F6 | LGWAN 対応フェーズ |
 | F7 | 運用・保守フェーズ |
 
-以降、本 STATUS では
-**Phase A / B / C といった別系統の呼称は使用しない。**
+※ Phase A / B / C 等の別系統呼称は使用しない。
 
 ---
 
-## 1. Current Focus（現在の主眼）
+## 1. プロジェクトの現在地（要約）
 
-本プロジェクトの最終目的は変わらない。
+本プロジェクトは現在、
 
-> **HTML 形式の例規・文書を RAG に投入する際、
-> Markdown 変換が「容量制約（20GB）下で精度向上に寄与するか」を
-> 自動テストで客観評価できる状態を作ること。**
+> **「RAG 評価をどう自動化するか」ではなく
+> 「RAG の差分をどう“誤解なく”測るか」**
 
-そのために、
+に集中する段階にある。
 
-* 人手評価に依存しない
-* 再現可能で
-* 差分比較ができる
-
-**RAG QA 自動評価基盤**を構築・運用する。
+F1–F3 で構築された E2E 基盤は完全に凍結され、
+F4 においては **評価観点・運用ルール・再現性**が最優先事項となる。
 
 ---
 
-## 2. Completed（完了事項）
+## 2. 完了事項（再確認）
 
 ### ✅ F1–F3：E2E 基盤フェーズ（完全完了・凍結）
 
@@ -51,59 +46,43 @@
 
 #### 設計・構造
 
-* Design_playwright_v0.1（Playwright 利用設計・憲法）
-* Locator_Guide_v0.2
-* Debugging_Principles v0.2
-* PROJECT_GRAND_RULES v4.2
+- Design_playwright_v0.1
+- Locator_Guide_v0.2
+- Debugging_Principles_v0.2
+- PROJECT_GRAND_RULES v4.2
 
 #### 実装
 
-* Environment Layer（env_loader v0.2.3）QA 完了・凍結
-* Page Object（Base / Login / Chat）安定版
-* ChatPage.submit v0.6
-  * UI送信責務のみに限定
-  * submit_id / SubmitReceipt 意味論確定
+- Environment Layer（env_loader v0.2.3）
+- Page Object（Base / Login / Chat）
+- ChatPage.submit v0.6
+  - UI送信責務のみに限定
+  - submit_id / SubmitReceipt 意味論確定
 
 #### Answer Detection
 
-* probe v0.2.1（GraphQL / REST 両対応）
-* submit–probe 相関設計 v0.2
-  * 相関を **アルゴリズムではなく state** として定義
-* pytest-facing Answer Probe API v0.1r 確定
-  * page を受け取る低レベル API 境界を正式採用
+- probe v0.2.1（GraphQL / REST 両対応）
+- submit–probe 相関設計 v0.2
+- pytest-facing Answer Detection API v0.1r
+  - page を受け取る低レベル API 境界を正式採用
 
 #### CI / 可視化
 
-* CI Correlation Summary Presentation Semantics v0.1
-* GitHub Actions summary による **日本語相関サマリー**
-* WARN / INFO を FAIL と誤認しない意味論を保証
+- CI Correlation Summary Presentation Semantics v0.1
+- GitHub Actions summary による日本語相関サマリー
+- WARN / INFO を FAIL と誤認しない意味論を保証
 
-👉 **E2E 基盤としての完成条件をすべて満たした**
-
----
-
-### ✅ F4 事前検証（完了）
-
-* 部署境界が **RAG 検索境界として機能すること**を、
-  固有トークンを用いた **1問プローブ**により検証（OK）
-* F4 において、
-  * 部署方式によるナレッジ切替
-  * アカウント分離方式
-  の **いずれも採用可能**であることを確認
+👉 **E2E 基盤としての完成条件をすべて満たしている**
 
 ---
 
-## 3. F3 補足：今回の学習事項（Lessons Learned）
+## 3. F4 事前検証（完了）
 
-* page を隠蔽した高レベル API は
-  **一次情報欠落・境界不明瞭化のリスクが高い**
-* chat-id は「便利に推測する対象」ではなく
-  **API 境界で明示的に受け取る事実**
-* RAG QA では
-  **FAIL / PASS / SKIPPED（Inconclusive）** の三値判定が必須
-* 「意味的に正しい」と「文字列的に一致」は別問題
+### ✅ 部署境界プローブ（Design_rag_f4_dept_boundary_probe_v0.1）
 
-これらは **設計判断として固定済み**。
+- ナレッジ境界が「部署／アカウント単位」で分離されていることを事前検証
+- F4 本体において、HTML / Markdown の差分が
+  **他ナレッジの混入によって歪まない**ことを確認
 
 ---
 
@@ -111,87 +90,91 @@
 
 ### ▶ F4：RAG 評価基準・比較テストフェーズ（進行中）
 
-本フェーズは **E2E 基盤を変更せず**、
-その上で RAG の品質を測ることに専念する。
+本フェーズでは **E2E 基盤を変更しない**。
+評価対象はあくまで **RAG の振る舞い差分**である。
 
-#### 確定事項
+#### 確定事項（評価基準）
 
-* **RAG 評価基準 v0.1（正式決定）**
-  * Evidence Hit Rate（条例由来語）
-  * Hallucination Rate（無根拠表現）
-  * Answer Stability（再現性）
-* 絶対評価ではなく **差分評価**
-  * HTML 投入 vs Markdown 投入
-* **Golden Question Pool / Golden Ordinance Set は直接使用しない**
-  * 上位基準として保持
-  * F4 ではそこから抽出した **最小3ケース**のみを用いる
-
-#### 状態
-
-* Basic RAG Test 実装完了
-* テストは「基盤不具合」ではなく
-  **評価基準により FAIL / SKIP する段階に到達**
-
-👉 **目的に直結するフェーズへ正式移行**
+- **RAG 評価基準 v0.1（正式決定）**
+  - Evidence Hit Rate（条例由来語）
+  - Hallucination Rate（無根拠表現）
+  - Answer Stability（再現性）
+- 絶対評価ではなく **差分評価のみ**
 
 ---
 
-## 5. Next Actions（次の一手）
+## 5. F4 運用ルールの確定（v0.6.1 での更新点）
 
-### 🎯 F4 内で行うこと（順序固定）
+### 📌 F4 運用ルール v0.1.5 を正式採用
 
-1. HTML / Markdown 両構成での Basic RAG Test 実行
-2. 評価結果の差分整理（Evidence / Hallucination / Stability）
-3. Markdown 変換の費用対効果を定量化
-4. v0.2 以降の評価指標（意味的同義語など）検討材料を得る
+以下を **F4 フェーズにおける固定ルール**として確定した。
 
----
+#### ナレッジ構成
 
-## 6. Out of Scope（本フェーズでは扱わない）
+- HTML 用／Markdown 用ナレッジは **別テストアカウントで管理**
+- 同一アカウント内での
+  - ナレッジ削除
+  - ナレッジ再投入
+  は **v0.1 では行わない**
 
-* 高度な意味理解・同義語判定
-* 自動要約の品質評価
-* モデル間比較
-* **Golden Question Pool / Golden Ordinance Set の消費・改変**
-  *（上位基準として保持）*
+#### Case 運用
 
-※ いずれも **F4 完了後に再検討**
+- F4 は **最小 3 ケース（Case1–3）**のみで評価
+- Case 間でナレッジの差し替えは行わない
+- 質問文は **条例IDを必ず含める**ことで一意化する
 
----
+#### 実行プロファイル
 
-## 7. Risks / Notes（引き続き意識する点）
+- `profile` は **記録・識別用メタデータ**
+- `--f4-profile` は評価結果ログ識別のために使用
+- chat / アカウント / ナレッジの切替は **完全手動**
 
-* LLM 応答の非決定性
-* RAG ナレッジ更新による期待値変動
-* LGWAN 環境での実行制約
+#### ログ運用
 
-→ **いずれも基盤ではなく評価レイヤの課題**
-
----
-
-## 8. Version History
-
-### v0.6.0 — フェーズ定義統一 / RAG評価フェーズ正式開始
-
-* Roadmap v1.1 にフェーズ定義を完全統一
-* F1–F3 を「基盤フェーズ」として明確に凍結
-* RAG 評価基準 v0.1 を STATUS に反映
-* F4 事前検証（部署境界プローブ）完了を明記
-* Golden 資産と F4 最小3ケース設計の関係を明文化
-
-### v0.5.1 — 基盤確認 CI 意味論確定
-
-（省略：内容は前版を踏襲）
+- 結果ログは以下を必須要素とする：
+  - case_id
+  - profile
+  - timestamp
+- HTML / Markdown の結果は **別ファイルとして保存**
 
 ---
 
-## 📌 総括
+## 6. Out of Scope（F4 v0.1 では扱わない）
+
+- chat_name / ナレッジの自動切替
+- ナレッジの自動アップロード・削除
+- CI への統合
+- 意味的同義語・高度な意味理解評価
+
+※ いずれも **v0.2 以降の検討事項**
+
+---
+
+## 7. リスク・注意点（継続認識）
+
+- LLM 応答の非決定性
+- 手動運用に起因する人為ミス
+- ナレッジ更新タイミングの差異
+
+→ これらは **基盤問題ではなく評価フェーズの制約**として扱う。
+
+---
+
+## 8. 総括
 
 本プロジェクトは現在、
 
 > **「テストが動く」段階を完全に通過し、
-> 「テストで価値判断をする」段階に入った**
+> 「評価を誤解なく実施できる」段階に到達した**
 
-という、非常に健全な状態にある。
+状態にある。
+
+F4 v0.1 は、
+**人手でも確実に再現できる評価運用**を完成させることを目的とする。
 
 ---
+
+### 次の判断ポイント
+
+- F4 実測結果が十分に蓄積された時点で
+  F4 v0.2（部分自動化・高度化）へ進むかを判断する。

@@ -1,5 +1,5 @@
 # ==========================================================
-# conftest.py  — v0.4 (ChatSelectPage Integration Fix)
+# conftest.py — v0.5 (F4 profile fixture added)
 # ==========================================================
 
 import os
@@ -19,11 +19,24 @@ CI_DEFAULTS = {
     "QOMMONS_PASSWORD": "dummy",
 }
 
+
 def apply_ci_fallback():
     print("[conftest] Applying CI fallback defaults...")
     for key, value in CI_DEFAULTS.items():
         if not os.getenv(key):
             os.environ[key] = value
+
+
+# ----------------------------------------------------------
+# pytest CLI options
+# ----------------------------------------------------------
+def pytest_addoption(parser):
+    parser.addoption(
+        "--f4-profile",
+        action="store",
+        default=None,
+        help="F4 RAG execution profile (e.g. html / markdown)",
+    )
 
 
 # ----------------------------------------------------------
@@ -39,6 +52,32 @@ def env_config():
         apply_ci_fallback()
         config, options = load_env()
         return config, options
+
+
+# ----------------------------------------------------------
+# resolved_profile Fixture（F4専用・config非汚染）
+# ----------------------------------------------------------
+@pytest.fixture
+def resolved_profile(request, env_config):
+    """
+    Resolve F4 execution profile.
+
+    Priority:
+      1. CLI option --f4-profile
+      2. env.yaml (config["profile"])
+      3. fallback: "html"
+    """
+    config, _ = env_config
+
+    cli_profile = request.config.getoption("--f4-profile")
+    if cli_profile:
+        return cli_profile
+
+    env_profile = config.get("profile")
+    if env_profile:
+        return env_profile
+
+    return "html"
 
 
 # ----------------------------------------------------------
@@ -58,11 +97,7 @@ def case_dirs(tmp_path_factory):
 
 
 # ----------------------------------------------------------
-# ChatPage Fixture (v0.4)
-# 正しいフロー：
-#   Login → /chat (一覧)
-#   ChatSelectPage.open_ai("プライベートナレッジ")
-#   → /chat/<UUID> に遷移 → ChatPage 初期化
+# ChatPage Fixture
 # ----------------------------------------------------------
 @pytest.fixture
 def chat_page(page, env_config):
@@ -78,10 +113,10 @@ def chat_page(page, env_config):
     ai_name = config.get("chat_name", "プライベートナレッジ")
     select_page.open_ai(ai_name)
 
-    # ---- ChatPage 初期化（本物のチャット画面）----
+    # ---- ChatPage 初期化 ----
     chat = ChatPage(page, config)
     return chat
 
 
 def pytest_report_header(config):
-    return "gov-llm-e2e-testkit / pytest configuration active (conftest v0.4)"
+    return "gov-llm-e2e-testkit / pytest configuration active (conftest v0.5)"
