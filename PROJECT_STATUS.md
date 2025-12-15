@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.6.1 — F4運用ルール確定（v0.1.5）/ 手動運用フェーズ固定
+# 📘 PROJECT_STATUS v0.6.2 — F4 フェーズ内設計確定
 
 **Last Updated:** 2025-12-15
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -100,6 +100,20 @@ F4 においては **評価観点・運用ルール・再現性**が最優先事
   - Hallucination Rate（無根拠表現）
   - Answer Stability（再現性）
 - 絶対評価ではなく **差分評価のみ**
+
+#### 確定事項（ログ設計・v0.1.2）
+
+- **Design_pytest_f4_results_writer v0.1.2 を正式採用**
+  - F4 手動運用下における評価結果ログの説明責任を明確化
+  - Execution Context（任意メタデータ）を設計上導入
+- **login_identity の意味論と責務分離を確定**
+  - configured：env.yaml 由来の設定値
+  - observed：機械的に観測できた場合のみ（未確認可）
+  - login_identity の取得・構築は pytest 実行層の責務
+  - writer は取得・推測・検証を行わず、記録専用とする
+
+※ 本更新は F4 フェーズ内の設計確定であり、
+  評価基準・フェーズ区分・手動運用方針自体は変更していない。
 
 ---
 

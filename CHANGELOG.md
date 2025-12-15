@@ -12,6 +12,27 @@
 
 ---
 
+## [v0.6.2] - 2025-12-16
+
+### Clarified
+- F4 RAG 評価フェーズにおける評価結果ログの説明責任を明確化
+- 手動 profile / アカウント切替運用下での
+  実行文脈（Execution Context）の位置づけを整理
+
+### Changed
+- Design_pytest_f4_results_writer を v0.1.2 として確定
+  - `login_identity`（configured / observed）の構造と意味論を正式化
+  - login_identity の取得・構築責務を pytest 実行層に明示的に分離
+  - writer は記録専用とし、取得・推測・検証を行わないことを明文化
+  - observed が取得できない場合を unverified として正当ケース化
+
+### Notes
+- 本更新は設計およびログ仕様の明確化のみであり、
+  テスト基盤（F1–F3）および F4 の手動運用方針自体は変更していない
+- 自動ログイン判定・アカウント切替・CI 統合は引き続き v0.1 系では非対象
+
+---
+
 ## v0.6.1 — F4運用ルール確定（v0.1.5）/ 手動評価フェーズ固定
 
 **Date:** 2025-12-XX
