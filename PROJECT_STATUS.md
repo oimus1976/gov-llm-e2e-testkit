@@ -1,6 +1,6 @@
-# 📘 PROJECT_STATUS v0.6.2 — F4 フェーズ内設計確定
+# 📘 PROJECT_STATUS v0.6.3 — F4 フェーズ内設計確定
 
-**Last Updated:** 2025-12-15
+**Last Updated:** 2025-12-17
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -114,6 +114,19 @@ F4 においては **評価観点・運用ルール・再現性**が最優先事
 
 ※ 本更新は F4 フェーズ内の設計確定であり、
   評価基準・フェーズ区分・手動運用方針自体は変更していない。
+
+**Status:** Completed (v0.6.3)
+
+- Login success detection was revised to use a URL-based readiness check
+  suitable for SPA behavior.
+- F4 test cases reached stable completion with the following results:
+  - Case1: PASS
+  - Case2: PASS
+  - Case3: PASS or SKIP (intentional, depending on answer availability)
+- The full `tests/f4` suite completes without ERROR or FAIL under:
+  - Single-test execution
+  - Sequential execution
+  - Batch file execution (`python -m pytest`)
 
 ---
 

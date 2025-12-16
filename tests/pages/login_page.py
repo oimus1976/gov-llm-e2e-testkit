@@ -49,12 +49,11 @@ class LoginPage(BasePage):
         self.wait_for_login_success(evidence_dir=evidence_dir)
 
     # ------------------------------
-    # 成功判定（SPA のため URL ではなく UI 要素で判断）
+    # 成功判定（URL 遷移で判断）
     # ------------------------------
     def wait_for_login_success(self, *, evidence_dir=None) -> None:
         try:
-            locator = self.page.locator("div[data-slot='card']").first
-            locator.wait_for(state="visible", timeout=self.timeout)
+            self.page.wait_for_function("window.location.href.includes('/chat')", timeout=self.timeout)
         except Exception:
             if evidence_dir:
                 self.collect_evidence(evidence_dir, "login_failed")
