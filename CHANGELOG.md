@@ -12,6 +12,25 @@
 
 ---
 
+## v0.6.3 (2025-12-17)
+
+### Fixed
+- Stabilized SPA login success detection by switching to URL-based readiness check
+  (`page.wait_for_function(window.location.href.includes('/chat'))`).
+- Resolved intermittent E2E failures caused by DOM-based / load-event-based login detection.
+
+### Verified
+- F4 Phase tests completed successfully:
+  - Case1: PASS
+  - Case2: PASS
+  - Case3: PASS or SKIP (by design, depending on answer availability)
+- `tests/f4` runs successfully in all execution modes:
+  - Single test execution
+  - Sequential execution
+  - Batch file execution (`python -m pytest`)
+
+---
+
 ## [v0.6.2] - 2025-12-16
 
 ### Clarified
