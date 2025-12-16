@@ -154,3 +154,8 @@ Thumbs.db
 # VSCode
 #.vscode/
 sandbox/*
+
+# -------------------------------------------------
+# Local execution scripts (credentials included)
+# -------------------------------------------------
+*.local.bat
