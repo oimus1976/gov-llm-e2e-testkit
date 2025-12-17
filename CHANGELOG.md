@@ -14,20 +14,39 @@
 
 ## v0.6.3 (2025-12-17)
 
-### Fixed
-- Stabilized SPA login success detection by switching to URL-based readiness check
-  (`page.wait_for_function(window.location.href.includes('/chat'))`).
-- Resolved intermittent E2E failures caused by DOM-based / load-event-based login detection.
+### 修正（Fixed）
+- SPA 構成に適したログイン成功判定へ切り替え  
+  DOM や load イベント依存を廃し、URL 遷移（`/chat` を含むか）による readiness 判定を採用。
+  - `page.wait_for_function(window.location.href.includes('/chat'))`
+- 上記変更により、DOM 揺らぎや非同期ロード順序に起因する
+  断続的な E2E 失敗を解消。
 
-### Verified
-- F4 Phase tests completed successfully:
-  - Case1: PASS
-  - Case2: PASS
-  - Case3: PASS or SKIP (by design, depending on answer availability)
-- `tests/f4` runs successfully in all execution modes:
-  - Single test execution
-  - Sequential execution
-  - Batch file execution (`python -m pytest`)
+### 検証完了（Verified）
+- F4（RAG 評価フェーズ v0.1）のテストが、設計どおり完走することを確認。
+  - Case1：PASS  
+  - Case2：PASS  
+  - Case3：PASS または SKIP  
+    （回答取得不可時は SKIP とする設計どおりの挙動）
+- `tests/f4` が以下すべての実行形態で ERROR / FAIL なく完了することを確認。
+  - 単体実行
+  - 連続実行
+  - バッチ実行（`python -m pytest`）
+
+### 判断・位置づけ（Decision）
+- F4 v0.1 は以下の点において **設計目的を達成し、完了状態に到達**したと判断する。
+  - HTML / Markdown ナレッジ差分を、誤解なく再現可能に観測できる
+  - 手動運用前提の評価ルール・ログ仕様・責務分離が安定
+- 自動集計、CI 統合、高度な意味評価は **v0.1 の非目標**とし、
+  **F4 v0.2 以降の拡張課題**として切り出す。
+
+### 次フェーズ（Next）
+- F4 v0.2 として、以下の検討・設計に着手する。
+  - 評価結果ログの機械集計
+  - 差分指標の自動比較
+  - CI への段階的統合可否の検討
+
+※ 本リリースは E2E 基盤（F1–F3）および  
+   F4 v0.1 の運用ルールを変更するものではない。
 
 ---
 
