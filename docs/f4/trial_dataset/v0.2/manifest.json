@@ -1,11 +1,9 @@
 {
   "schema_version": "manifest_v0.1",
   "dataset_name": "f4_trial_dataset_v0_2",
-  "created_at": "2025-12-17T10:00:00+09:00",
+  "created_at": "2025-12-17T13:00:00+09:00",
   "cases": [
-    "case01",
-    "case02",
-    "case03"
+    "case01"
   ],
   "knowledge_types": [
     "html",
@@ -15,5 +13,18 @@
     "raw_evidence": "raw_evidence_v0.1",
     "execution_context": "execution_context_v0.1",
     "derived_summary": "derived_summary_v0.1"
+  },
+  "samples": {
+    "description": "Validation-only official samples for schema verification. These samples do not represent evaluation results or conclusions.",
+    "base_path": "samples/",
+    "raw": [
+      "samples/raw/case01_html.json"
+    ],
+    "execution_context": [
+      "samples/context/execution_context.json"
+    ],
+    "derived_summary": [
+      "samples/summary/case01_summary.json"
+    ]
   }
 }
