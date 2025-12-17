@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/oimus1976/gov-llm-e2e-testkit/main/docs/f4/trial_dataset/v0.2/schema/raw_evidence.schema.json",
+  "title": "F4 Raw Evidence Schema v0.1",
+  "description": "Primary evidence layer for F4 v0.2 trial dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "knowledge_type",
+    "question_text",
+    "answer_text_raw",
+    "answer_timestamp",
+    "model_identifier",
+    "test_run_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "raw_evidence_v0.1",
+      "description": "Schema identifier."
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^case(0[1-9]|[1-9][0-9])$",
+      "description": "Case identifier. Fixed to case01–case99 format."
+    },
+    "knowledge_type": {
+      "type": "string",
+      "description": "Knowledge representation format (e.g. html, markdown, plain_text). Enum is intentionally not fixed."
+    },
+    "question_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact question text submitted to the system."
+    },
+    "answer_text_raw": {
+      "type": "string",
+      "description": "Raw answer text returned by the model (primary evidence)."
+    },
+    "answer_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the answer was observed (RFC 3339)."
+    },
+    "model_identifier": {
+      "type": "string",
+      "description": "Identifier of the model used."
+    },
+    "test_run_id": {
+      "type": "string",
+      "description": "Execution unit identifier shared with execution context."
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/oimus1976/gov-llm-e2e-testkit/main/docs/f4/trial_dataset/v0.2/schema/execution_context.schema.json",
+  "title": "F4 Execution Context Schema v0.1",
+  "description": "Execution context layer for F4 v0.2 trial dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_version",
+    "rag_eval_version",
+    "test_run_id",
+    "profile",
+    "login_identity",
+    "knowledge_source_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "execution_context_v0.1",
+      "description": "Schema identifier."
+    },
+    "project_version": {
+      "type": "string",
+      "description": "PROJECT_STATUS version at execution time."
+    },
+    "rag_eval_version": {
+      "type": "string",
+      "description": "RAG evaluation criteria version."
+    },
+    "test_run_id": {
+      "type": "string",
+      "description": "Execution unit identifier shared with raw evidence."
+    },
+    "profile": {
+      "type": "string",
+      "description": "Manual execution profile identifier."
+    },
+    "login_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configured", "observed"],
+      "properties": {
+        "configured": {
+          "type": "string",
+          "description": "Intended login identity from configuration."
+        },
+        "observed": {
+          "type": "string",
+          "description": "Observed login identity. May be empty if not observable."
+        }
+      }
+    },
+    "knowledge_source_id": {
+      "type": "string",
+      "description": "Identifier of the knowledge set used."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about execution context."
+    }
+  }
+}

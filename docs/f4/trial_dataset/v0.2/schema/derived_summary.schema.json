@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/oimus1976/gov-llm-e2e-testkit/main/docs/f4/trial_dataset/v0.2/schema/derived_summary.schema.json",
+  "title": "F4 Derived Summary Schema v0.1",
+  "description": "Derived (reproducible) summary layer for F4 v0.2 trial dataset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "results"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "derived_summary_v0.1",
+      "description": "Schema identifier."
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^case(0[1-9]|[1-9][0-9])$",
+      "description": "Case identifier. Fixed to case01–case99 format."
+    },
+    "results": {
+      "type": "object",
+      "description": "Per-knowledge-type evaluation results.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z0-9_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "evidence_hit_rate",
+            "hallucination_flag",
+            "answer_stability_note"
+          ],
+          "properties": {
+            "evidence_hit_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Evidence hit rate per RAG evaluation v0.1."
+            },
+            "hallucination_flag": {
+              "type": "boolean",
+              "description": "Whether hallucination was observed."
+            },
+            "answer_stability_note": {
+              "type": "string",
+              "description": "Qualitative note about answer stability."
+            },
+            "inconclusive_reason": {
+              "type": "string",
+              "description": "Reason for inconclusive/SKIP if applicable."
+            }
+          }
+        }
+      }
+    },
+    "delta_comment": {
+      "type": "string",
+      "description": "Human-readable observation about differences."
+    }
+  }
+}
