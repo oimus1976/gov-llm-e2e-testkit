@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/oimus1976/gov-llm-e2e-testkit/main/docs/f4/trial_dataset/v0.2/schema/manifest.schema.json",
+  "title": "F4 Trial Dataset Manifest Schema v0.1",
+  "description": "Manifest schema for F4 v0.2 trial dataset (trial data provision milestone).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_name",
+    "created_at",
+    "cases",
+    "knowledge_types",
+    "schema_versions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "manifest_v0.1",
+      "description": "Schema identifier for manifest."
+    },
+    "dataset_name": {
+      "type": "string",
+      "description": "Dataset name (e.g. f4_trial_dataset_v0_2)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Dataset creation timestamp (RFC 3339)."
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^case(0[1-9]|[1-9][0-9])$"
+      },
+      "description": "List of case identifiers included in this dataset."
+    },
+    "knowledge_types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "description": "Knowledge representation formats included (e.g. html, markdown, plain_text). Enum is intentionally not fixed."
+    },
+    "schema_versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_evidence",
+        "execution_context",
+        "derived_summary"
+      ],
+      "properties": {
+        "raw_evidence": {
+          "type": "string",
+          "const": "raw_evidence_v0.1",
+          "description": "Raw evidence schema version."
+        },
+        "execution_context": {
+          "type": "string",
+          "const": "execution_context_v0.1",
+          "description": "Execution context schema version."
+        },
+        "derived_summary": {
+          "type": "string",
+          "const": "derived_summary_v0.1",
+          "description": "Derived summary schema version."
+        }
+      }
+    }
+  }
+}
