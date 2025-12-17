@@ -34,6 +34,10 @@
   既存のテスト基盤（F1–F3）および
   F4 v0.1 の評価基準・運用ルール自体は変更していない。
 
+### Verified
+- F4 v0.2 試金石データ（Raw / Execution Context / Derived Summary）について、
+  JSON Schema Draft 2020-12 によるバリデーションを実施し、すべて VALID を確認。
+
 ---
 
 ## v0.6.3 (2025-12-17)
