@@ -1,0 +1,17 @@
+{
+  "schema_version": "derived_summary_v0.1",
+  "case_id": "case01",
+  "results": {
+    "html": {
+      "evidence_hit_rate": 0.67,
+      "hallucination_flag": false,
+      "answer_stability_note": "HTMLナレッジ投入時は条文番号を含む安定した回答が得られた。"
+    },
+    "markdown": {
+      "evidence_hit_rate": 0.83,
+      "hallucination_flag": false,
+      "answer_stability_note": "Markdownナレッジでは条例由来語の出現頻度が高く、再現性も良好だった。"
+    }
+  },
+  "delta_comment": "Markdown形式の方が条例由来語の明示性が高い傾向が見られた。"
+}

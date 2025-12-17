@@ -1,0 +1,13 @@
+{
+  "schema_version": "execution_context_v0.1",
+  "project_version": "v0.6.4",
+  "rag_eval_version": "v0.1",
+  "test_run_id": "f4-v0.2-run-001",
+  "profile": "manual-html",
+  "login_identity": {
+    "configured": "test-account-html",
+    "observed": "test-account-html"
+  },
+  "knowledge_source_id": "ordinance-html-set-01",
+  "notes": "Manual execution for F4 v0.2 trial dataset (HTML knowledge)."
+}
