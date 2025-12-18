@@ -12,6 +12,21 @@
 
 ---
 
+## [v0.6.8] - 2025-12-19
+
+### Changed
+- Roadmap を v1.3 に更新し、F7 を A/B/C（準備 / 制御付き試行 / 拡張試行）に分割
+- PROJECT_STATUS を v0.6.8 に更新し、現在地を F7-A（運用準備フェーズ）として明確化
+
+### Clarified
+- Golden QA は F7-A/B では「評価・自動化の対象ではない」ことを再明示
+- Gate1（RAG Entry CI）を F7-A の正式成果物として位置づけ
+
+### Fixed
+- Roadmap / PROJECT_STATUS 間でのフェーズ定義参照不整合を解消
+
+---
+
 ## v0.6.6 (2025-12-18)
 
 ### Added
