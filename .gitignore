@@ -165,3 +165,4 @@ _tmp_f4_exec_ctx/
 
 # Local VS Code logs (do not commit)
 docs/vscode_logs/
+scripts/run_f4_test.bat
