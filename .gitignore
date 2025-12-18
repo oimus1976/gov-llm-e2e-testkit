@@ -159,3 +159,9 @@ sandbox/*
 # Local execution scripts (credentials included)
 # -------------------------------------------------
 *.local.bat
+
+# F4 trial execution temporary artifacts
+_tmp_f4_exec_ctx/
+
+# Local VS Code logs (do not commit)
+docs/vscode_logs/
