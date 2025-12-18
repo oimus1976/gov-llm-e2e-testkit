@@ -1,0 +1,91 @@
+name: RAG Entry Check (F7)
+
+on:
+  workflow_dispatch:
+    inputs:
+      rag_profile:
+        description: "RAG profile (html / markdown / plain_text)"
+        required: true
+        default: "markdown"
+      case_set:
+        description: "Case set identifier (e.g. case01-03 / custom)"
+        required: true
+        default: "case01-03"
+      run_mode:
+        description: "Run mode (v0.1 fixed to collect-only)"
+        required: true
+        default: "collect-only"
+
+jobs:
+  # -----------------------------------------------------
+  # Gate 0: Foundation Check
+  # -----------------------------------------------------
+  foundation:
+    name: Gate 0 - Foundation Check (reuse F5 CI)
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+
+  # -----------------------------------------------------
+  # Gate 1: RAG Entry Check
+  # -----------------------------------------------------
+  rag-entry:
+    name: Gate 1 - RAG Entry Check
+    needs: foundation
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------
+      # 1. Checkout
+      # -----------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------
+      # 2. Echo execution context (traceability)
+      # -----------------------------------------------
+      - name: Show entry parameters
+        run: |
+          echo "RAG_PROFILE=${{ inputs.rag_profile }}"
+          echo "CASE_SET=${{ inputs.case_set }}"
+          echo "RUN_MODE=${{ inputs.run_mode }}"
+
+      # -----------------------------------------------
+      # 3. Validate run_mode (fixed in v0.1)
+      # -----------------------------------------------
+      - name: Validate run_mode
+        run: |
+          if [ "${{ inputs.run_mode }}" != "collect-only" ]; then
+            echo "Invalid run_mode: only 'collect-only' is allowed in v0.1"
+            exit 1
+          fi
+
+      # -----------------------------------------------
+      # 4. Schema / asset protection check (placeholder)
+      # -----------------------------------------------
+      - name: RAG entry preflight check
+        run: |
+          echo "Performing RAG entry checks..."
+          echo "- Schema validation (F4 trial dataset structure)"
+          echo "- Execution context availability"
+          echo "- Golden asset protection"
+          # NOTE:
+          # Actual validation logic will be implemented in pytest or script.
+          # In v0.1, this step represents the entry gate contract.
+          echo "RAG entry check passed (v0.1 placeholder)"
+
+      # -----------------------------------------------
+      # 5. Collect raw evidence (placeholder)
+      # -----------------------------------------------
+      - name: Collect raw evidence
+        run: |
+          mkdir -p artifacts/raw_evidence
+          echo "Raw evidence collection placeholder" > artifacts/raw_evidence/README.txt
+
+      # -----------------------------------------------
+      # 6. Upload artifacts
+      # -----------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-entry-artifacts
+          path: artifacts/
