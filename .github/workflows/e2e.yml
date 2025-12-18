@@ -1,3 +1,19 @@
+# この e2e.yml は「最小 CI」として設計されている。
+#
+# ここで言う「最小」とは：
+# - E2E テスト基盤（submit / probe / 相関）が壊れていないかを
+#   機械的に検知するために必要な要素だけを含むこと
+# - RAG の品質・正確性・意味的妥当性は一切評価しないこと
+#
+# ここで言う「基盤の破壊」とは：
+# - UI 送信（ChatPage.submit）が成立しない
+# - Answer Detection（probe）が応答完了を観測できない
+# - submit_id と probe 観測結果の相関が成立しない
+# といった、上位テスト以前にテスト基盤そのものが機能しない状態を指す。
+#
+# 本 CI は「品質を保証する」ものではなく、
+# 「次のフェーズに進める前提条件が壊れていないか」を確認するためのもの。
+
 name: E2E Tests
 
 on:
@@ -8,7 +24,6 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-
 
     steps:
       # -----------------------------------------------------
@@ -39,7 +54,8 @@ jobs:
       # 4. Prepare CI Environment
       #   - env_loader v0.2.3 は .env を読み込む
       #   - PROFILE=internet を指定し、env.yaml の internet プロファイルを使用する
-      #   - QOMMONS_* は GitHub Secrets から注入（Secrets 未設定時は MissingSecretError で明示的に FAIL）
+      #   - QOMMONS_* は GitHub Secrets から注入
+      #   - Secrets 未設定時は MissingSecretError で明示的に FAIL
       # -----------------------------------------------------
       - name: Prepare CI .env
         run: |
@@ -60,27 +76,37 @@ jobs:
       - name: Run Smoke Test
         run: |
           mkdir -p logs
-          export PROBE_CAPTURE_SECONDS=${{ matrix.capture_seconds }}
+          export PROBE_CAPTURE_SECONDS=20
           pytest tests/test_smoke_llm.py -vv --disable-warnings
-      
+
+      # -----------------------------------------------------
+      # 7. Write correlation summary
+      #   - summary.json が存在しない場合は基盤破壊として FAIL
+      # -----------------------------------------------------
       - name: Write correlation summary (from summary.json)
         shell: bash
         run: |
           set -euo pipefail
 
-          SUMMARY_JSON="$(ls -td logs/xhr_probe_* | head -n 1)/summary.json"
+          if ls logs/xhr_probe_*/summary.json >/dev/null 2>&1; then
+            SUMMARY_JSON="$(ls -td logs/xhr_probe_* | head -n 1)/summary.json"
+          else
+            echo "❌ No probe summary found. Foundation is broken."
+            exit 1
+          fi
+
           echo "Using summary: $SUMMARY_JSON"
 
           CORR_STATE=$(python -c "import json;print(json.load(open('$SUMMARY_JSON')).get('correlation_state','Unassessed'))")
           CHAT_ID=$(python -c "import json;print(json.load(open('$SUMMARY_JSON')).get('chat_id','(n/a)'))")
           SUBMIT_ID=$(python -c "import json;print(json.load(open('$SUMMARY_JSON')).get('submit_id','(n/a)'))")
 
-          if [ \"$CORR_STATE\" = \"Established\" ]; then
-            CI_RESULT=\"PASS\"
-          elif [ \"$CORR_STATE\" = \"Not Established\" ]; then
-            CI_RESULT=\"WARN\"
+          if [ "$CORR_STATE" = "Established" ]; then
+            CI_RESULT="PASS"
+          elif [ "$CORR_STATE" = "Not Established" ]; then
+            CI_RESULT="WARN"
           else
-            CI_RESULT=\"INFO\"
+            CI_RESULT="INFO"
           fi
 
           sed \
@@ -91,19 +117,8 @@ jobs:
             docs/ci/summary_template_submit_probe_v0.1.ja.md \
             >> "$GITHUB_STEP_SUMMARY"
 
-
-      # Smoke Test:
-      # - guarantees UI submit works
-      # - guarantees probe observes correlation_state
-      # - does NOT validate semantic correctness
-
-      # NOTE:
-      # RAG tests (ask / semantic evaluation) are intentionally deferred.
-      # They will be re-enabled after submit–probe correlation stabilizes.
-
-
       # -----------------------------------------------------
-      # 9. Artifact Upload（失敗時のみ）
+      # 8. Artifact Upload（失敗時のみ）
       # -----------------------------------------------------
       - name: Upload artifacts (failure only)
         if: ${{ failure() }}
