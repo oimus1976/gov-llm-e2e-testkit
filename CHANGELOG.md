@@ -38,6 +38,11 @@
 - F4 v0.2 試金石データ（Raw / Execution Context / Derived Summary）について、
   JSON Schema Draft 2020-12 によるバリデーションを実施し、すべて VALID を確認。
 
+### Completed
+- F4 v0.2 を完了。
+  試金石データ（Raw / Execution Context / Summary）を構造化し、
+  他プロジェクトが判断材料として直接利用可能な形で提供可能とした。
+
 ---
 
 ## v0.6.3 (2025-12-17)
