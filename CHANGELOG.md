@@ -12,6 +12,23 @@
 
 ---
 
+## v0.6.5 (2025-12-18)
+
+### Changed
+- Current Phase を F5（CI 整備フェーズ）へ移行。
+
+### Clarified
+- CI（e2e.yml）の対象を Smoke Test / Basic RAG Test のみに限定。
+- F4（RAG 評価・試金石データ提供）は CI 非対象であることを明文化。
+- Advanced RAG（multi-turn テスト）は CI 非対象とし、
+  運用・考察用途（F7 以降）に限定する方針を明確化。
+
+### Notes
+- 本更新は CI 整備フェーズへの着手宣言であり、
+  E2E 基盤（F1–F3）および F4 成果物の仕様・挙動は変更していない。
+
+---
+
 ## v0.6.4 (2025-12-17)
 
 ### Clarified
