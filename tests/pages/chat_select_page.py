@@ -40,8 +40,8 @@ class ChatSelectPage(BasePage):
                 timeout=self.timeout,
             )
 
-            # SPA 安定化のために少し待つ
-            self.page.wait_for_load_state("networkidle")
+            # ChatPage の入力欄が操作可能になるまで待つ
+            self.page.locator("#message").wait_for(state="visible", timeout=self.timeout)
             self.page.wait_for_timeout(300)
 
         except Exception:
