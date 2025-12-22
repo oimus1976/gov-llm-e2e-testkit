@@ -16,9 +16,9 @@
   // -----------------------------
   // General editor safety
   // -----------------------------
-  "editor.trimAutoWhitespace": true,
+  "editor.trimAutoWhitespace": false,
   "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
+  "files.trimTrailingWhitespace": false,
 
   // -----------------------------
   // Python tooling
