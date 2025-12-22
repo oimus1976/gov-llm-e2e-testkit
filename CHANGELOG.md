@@ -9,6 +9,27 @@
 - バージョン番号は PROJECT_STATUS と同期する
 - 単なるコード変更ログではなく、
   **「何が確定し、何が前提になったか」**を残す
+---
+
+## [v0.7.0] - 2025-12-22
+
+### Added
+- **Trial_Plan_F7-B_v0.2** を追加
+  - Runbook_F7-B_controlled_trial_v0.1 に従属する試行計画を明文化
+  - frontmatter を追加し、一時的・消耗品文書であることを明示
+  - 成功／失敗の意味論を排除し、「止められるか」の確認に限定
+
+### Changed
+- **Current Phase を F7-B（制御付き実運用試行フェーズ）に確定遷移**
+- **Next Action を「Trial_Plan_F7-B v0.2 に基づき F7-B を開始」に更新**
+- PROJECT_STATUS を v0.7.0 に更新し、上記状態遷移を反映
+
+### Clarified
+- Runbook_F7-B_controlled_trial_v0.1 は非変更（FIX）であることを再明示
+- F7-B においては評価・比較・自動化を行わない方針を再確認
+
+### ToDo
+- **バージョニング規則（r / + 表記含む）の整理を正式 ToDo として登録**
 
 ---
 
