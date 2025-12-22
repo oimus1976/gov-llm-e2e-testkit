@@ -12,6 +12,29 @@
 
 ---
 
+## [v0.7.2] - 2025-12-22
+
+### Completed
+- **F7-C（拡張試行フェーズ）を完了**
+  - Design_F7-C_v0.1 に基づく拡張試行を計3回実施
+  - すべての試行が Runbook_F7-C_operational_v0.1 準拠で完走
+  - 運用破綻・心理的越境・ルール逸脱は発生せず
+  - 試行ログは Trial Record Template v0.1 により自己完結的に記録
+
+### Fixed
+- F7-C 関連成果物を **FIX / Freeze**
+  - Design_F7-C_v0.1
+  - Runbook_F7-C_operational_v0.1
+  - Trial Record Template v0.1
+  - 準Golden質問ガイドライン v0.2
+
+### Notes
+- 本フェーズでは回答品質・正確性・優劣の評価は行っていない
+- モデル挙動の揺れ（条例特定不能時の応答差）は事実として記録するが、
+  評価・改善判断には使用しない
+
+---
+
 ## [v0.7.1] - 2025-12-22
 
 ### Added
