@@ -10,6 +10,7 @@ Responsibilities:
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -166,6 +167,154 @@ def _classify_failure(exc: Exception) -> str:
     return "EXEC_ERROR"
 
 
+def _capture_observation_logs(*, chat_page: ChatPageProtocol, output_dir: Path, label: str) -> None:
+    """
+    Best-effort capture of DOM and page content for investigation.
+
+    Only used on TIMEOUT/NO_ANSWER to avoid altering normal execution.
+    """
+
+    try:
+        page = chat_page.page
+    except Exception:
+        return
+
+    debug_dir = Path(output_dir) / "debug"
+    try:
+        debug_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        return
+
+    try:
+        dom_snapshot = page.evaluate("document.documentElement.outerHTML")
+        (debug_dir / f"{label}_dom_snapshot.html").write_text(str(dom_snapshot), encoding="utf-8")
+    except Exception:
+        pass
+
+    try:
+        page_content = page.content()
+        (debug_dir / f"{label}_page_content.html").write_text(str(page_content), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _capture_raw_answer_block(
+    *, chat_page: ChatPageProtocol, output_dir: Path, selection_rule_version: str = "v1"
+) -> bool:
+    """
+    Best-effort capture of a likely answer block from the rendered DOM.
+
+    Returns True when new raw artifacts are written.
+    """
+
+    try:
+        page = chat_page.page
+    except Exception:
+        return False
+
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        return False
+
+    html_path = Path(output_dir) / "raw_answer.html"
+    text_path = Path(output_dir) / "raw_answer.txt"
+    meta_path = Path(output_dir) / "raw_capture_meta.json"
+
+    # Avoid overwriting any existing artifacts.
+    if html_path.exists() or text_path.exists() or meta_path.exists():
+        return False
+
+    try:
+        capture = page.evaluate(
+            """
+            () => {
+              const elements = Array.from(document.querySelectorAll('article, section, div'));
+              const candidates = [];
+
+              elements.forEach((el, idx) => {
+                const text = (el.innerText || '').trim();
+                if (!text) return;
+
+                const pCount = el.querySelectorAll('p').length;
+                const hCount = el.querySelectorAll('h1,h2,h3,h4,h5,h6').length;
+                const liCount = el.querySelectorAll('li').length;
+                const textLength = text.length;
+                const score = textLength + pCount * 20 + hCount * 30 + liCount * 5;
+
+                candidates.push({
+                  index: idx,
+                  score,
+                  text_length: textLength,
+                  p_count: pCount,
+                  h_count: hCount,
+                  li_count: liCount,
+                  html: el.outerHTML || '',
+                  text,
+                });
+              });
+
+              if (!candidates.length) return null;
+
+              candidates.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.text_length !== a.text_length) return b.text_length - a.text_length;
+                return a.index - b.index;
+              });
+
+              const best = candidates[0];
+              return {
+                candidates_count: candidates.length,
+                selected_index: best.index,
+                metrics: {
+                  text_length: best.text_length,
+                  p_count: best.p_count,
+                  h_count: best.h_count,
+                  li_count: best.li_count,
+                  score: best.score,
+                },
+                html: best.html,
+                text: best.text,
+              };
+            }
+            """
+        )
+    except Exception:
+        return False
+
+    if not capture:
+        return False
+
+    html = capture.get("html")
+    text = capture.get("text")
+    metrics = capture.get("metrics") or {}
+
+    if not html or text is None:
+        return False
+
+    meta = {
+        "candidates_count": capture.get("candidates_count"),
+        "selected_index": capture.get("selected_index"),
+        "metrics": {
+            "text_length": metrics.get("text_length"),
+            "p_count": metrics.get("p_count"),
+            "h_count": metrics.get("h_count"),
+            "li_count": metrics.get("li_count"),
+            "score": metrics.get("score"),
+        },
+        "selection_rule_version": selection_rule_version,
+    }
+
+    try:
+        html_path.write_text(str(html), encoding="utf-8")
+        text_path.write_text(str(text), encoding="utf-8")
+        meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        return False
+
+    return True
+
+
 def _write_single_markdown(
     *,
     question_id: str,
@@ -190,6 +339,7 @@ def _write_single_markdown(
     result_status: str,
     result_reason: Optional[str],
     aborted_run: bool,
+    raw_capture: bool,
 ) -> Path:
     """Create one v0.1r+ Markdown log (no evaluation)."""
 
@@ -219,6 +369,7 @@ def _write_single_markdown(
         f"executed_at: {executed_at.isoformat()}",
         f"result_status: {result_status}",
         f"aborted_run: {aborted_run}",
+        f"raw_capture: {str(raw_capture).lower()}",
     ]
 
     if result_reason:
@@ -356,6 +507,7 @@ def run_f8_set1(
         submit_id: Optional[str] = None
         chat_id: Optional[str] = None
         profile_used = profile
+        raw_capture_saved = False
 
         try:
             result = run_single_question(
@@ -383,9 +535,23 @@ def run_f8_set1(
         except Exception as exc:  # noqa: BLE001 - propagate fact of failure
             result_status = _classify_failure(exc)
             result_reason = str(exc)
+            if result_status in ("TIMEOUT", "NO_ANSWER"):
+                _capture_observation_logs(
+                    chat_page=chat_page,
+                    output_dir=question_dir,
+                    label=result_status.lower(),
+                )
             if _is_execution_context_broken(chat_page):
                 aborted = True
                 fatal_error = result_reason
+
+        try:
+            raw_capture_saved = _capture_raw_answer_block(
+                chat_page=chat_page,
+                output_dir=question_dir,
+            )
+        except Exception:
+            raw_capture_saved = False
         finally:
             try:
                 output_path = _write_single_markdown(
@@ -411,6 +577,7 @@ def run_f8_set1(
                     result_status=result_status,
                     result_reason=result_reason,
                     aborted_run=aborted,
+                    raw_capture=raw_capture_saved,
                 )
             except Exception as write_exc:  # noqa: BLE001
                 result_status = "EXEC_ERROR"
