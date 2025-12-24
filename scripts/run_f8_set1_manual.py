@@ -31,7 +31,7 @@ def main():
     # Fixed manual execution parameters (explicit, no inference)
     # --------------------------------------------------
     run_id = "manual-check-001"
-    output_root = Path("./out/f8")
+    output_root = Path("./f8_runs")
 
     qommons_config = {
         "model": "gpt-5.2",
@@ -89,11 +89,7 @@ def main():
         # --------------------------------------------------
         print("Executed questions:", len(outcomes))
         for o in outcomes:
-            print(
-                o.question_id,
-                "OK" if o.error is None else "ERR",
-                o.error,
-            )
+            print(o.question_id, o.result_status, o.error or "")
 
         context.close()
         browser.close()
