@@ -2,7 +2,7 @@
 doc_type: design
 phase: F7-C
 version: v0.1
-status: draft
+status: fixed
 date: 2025-12-22
 parent: Roadmap_v1.3
 related:

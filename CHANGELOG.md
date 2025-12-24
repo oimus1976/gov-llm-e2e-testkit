@@ -12,6 +12,26 @@
 
 ---
 
+## [v0.7.3] - 2025-12-24
+
+### Changed
+- Current Phase を F8（Markdown 価値判断フェーズ）へ遷移
+- F8 v0.2 の設計合意成立を PROJECT_STATUS に反映
+
+### Added
+- **Design_F8_v0.2_summary_v0.2.md**
+  - F8 v0.1r クローズ後、v0.2 に向けた設計合意事項を整理・固定
+  - continue-on-error を前提とした runner / orchestrator 方針を明文化
+  - failure を状態（taxonomy）として記録する方針を明示
+  - 全質問で 1 レコードを必ず生成する成果物完全性ルールを明文化
+
+### Clarified
+- PROJECT_STATUS における ToDo 表記を Backlog に統一
+- F8 v0.2 は実装・評価フェーズではなく、
+  **「止まらずに事実を取り切るための設計合意フェーズ」**であることを再確認
+
+---
+
 ## [v0.7.2] - 2025-12-22
 
 ### Completed

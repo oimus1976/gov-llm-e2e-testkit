@@ -10,16 +10,15 @@ Non-Goals:
 - Evaluation or comparison of answers
 - Automatic retries or heuristics
 """
-
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-from gov_llm_e2e_testkit.env_loader import load_env
-from gov_llm_e2e_testkit.tests.pages.login_page import LoginPage
-from gov_llm_e2e_testkit.tests.pages.chat_select_page import ChatSelectPage
-from gov_llm_e2e_testkit.tests.pages.chat_page import ChatPage
+from src.env_loader import load_env
+from tests.pages.login_page import LoginPage
+from tests.pages.chat_select_page import ChatSelectPage
+from tests.pages.chat_page import ChatPage
 
-from gov_llm_e2e_testkit.execution.run_f8_set1 import run_f8_set1
+from src.execution.run_f8_set1 import run_f8_set1
 
 
 def main():
