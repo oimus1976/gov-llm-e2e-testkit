@@ -1,7 +1,7 @@
-# 📘 PROJECT_STATUS v0.7.3  
+# 📘 PROJECT_STATUS v0.7.4  
 **— F8（Markdown 価値判断フェーズ）設計合意反映版 —**
 
-**Last Updated:** 2025-12-24  
+**Last Updated:** 2025-12-25  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -22,7 +22,7 @@
 | F7-A | 運用準備フェーズ |
 | F7-B | 制御付き実運用試行フェーズ |
 | F7-C | 拡張試行フェーズ |
-| **F8** | **Markdown 価値判断フェーズ** |
+| **F8** | **材料回収・価値判断準備フェーズ** |
 
 ※ F7 は単一フェーズではなく、A / B / C の段階構造を持つ。
 
@@ -30,7 +30,7 @@
 
 ## 1. Current Phase（現在地）
 
-### **F8：Markdown 価値判断フェーズ**
+### **F8 (材料回収・価値判断準備フェーズ)**
 
 #### 設計合意（v0.2）
 
@@ -46,6 +46,14 @@
 
 - F8 v0.2 は **設計合意フェーズ完了**
 - 実装・詳細設計は未着手
+
+[2025-12-25]
+
+- Design_F8_v0.3_runner を FIX として確定。
+- Answer Detection を「回答完了検出・実行制御専用」と位置づけ、
+  回答テキスト回収は best-effort の Raw Answer Capture 経路として分離。
+- runner は UI 非契約前提（DOM 変更耐性）を設計として内包する世代へ更新。
+- v0.2 系 runner 設計は凍結。
 
 ---
 
@@ -141,7 +149,9 @@
 
 ## 7. Next Action（単一・最優先）
 
-- **F8 v0.2 runner / orchestrator の具体 API 設計に着手**
+- F8 v0.3 runner 実装（raw answer capture を含む最小実装）に着手
+- ローカル実行によるランタイム検証を実施
+- 回収された raw 回答素材を例規HTML変換プロジェクトへ接続
 
 ---
 

@@ -10,6 +10,36 @@
 - 単なるコード変更ログではなく、
   **「何が確定し、何が前提になったか」**を残す
 
+## [v0.7.4] - 2025-12-25
+
+### 🚨 Breaking (Design-level)
+
+- Introduced Design_F8_v0.3_runner.
+- Runner responsibility updated:
+  - Answer Detection is no longer the sole answer recovery path.
+  - Best-effort Raw Answer Capture is now a first-class artifact.
+- answer.md is no longer the only material for downstream processing;
+  raw_answer.html / raw_answer.txt may be produced per question.
+
+### ✨ Added
+
+- Best-effort raw answer capture mechanism independent of Answer Detection.
+- Raw capture artifacts:
+  - raw_answer.html
+  - raw_answer.txt
+  - raw_capture_meta.json
+- Explicit UI non-contract assumption in F8 runner design.
+
+### 🔒 Fixed / Clarified
+
+- Clarified the role of Answer Detection as completion detection and control signal only.
+- Explicitly separated execution record (answer.md) from answer material artifacts.
+- Documented runtime execution constraints for Playwright-based tests.
+
+### 🗂 Deprecated / Frozen
+
+- Design_F8_v0.2_runner is frozen and superseded by v0.3.
+
 ---
 
 ## [v0.7.3] - 2025-12-24
