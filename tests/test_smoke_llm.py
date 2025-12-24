@@ -63,11 +63,16 @@ def test_smoke_llm(page, env_config, case_dirs):
     select = ChatSelectPage(page, config, timeout=30000)
     chat = ChatPage(page, config, timeout=30000)
 
-
     # -----------------------------------------------------
     # 4. Login
     # -----------------------------------------------------
     page.goto(config["url"], wait_until="load")
+
+    # --- CI evidence (temporary) ---
+    page.screenshot(path=str(case_assets_dir / "before_login.png"))
+    html = page.content()
+    (case_assets_dir / "before_login.html").write_text(html, encoding="utf-8")
+    # --- /CI evidence ---
 
     login.login(
         evidence_dir=case_assets_dir,
@@ -125,6 +130,6 @@ def test_smoke_llm(page, env_config, case_dirs):
 
     # Smoke-level assertion:
     # At least some evidence must exist.
-    assert summary["correlation_state"] != "No Evidence", (
-        "No observable correlation evidence was detected"
-    )
+    assert (
+        summary["correlation_state"] != "No Evidence"
+    ), "No observable correlation evidence was detected"
