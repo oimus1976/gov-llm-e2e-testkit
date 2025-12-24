@@ -16,7 +16,7 @@ notes:
   - Introduces best-effort raw answer capture independent of Answer Detection.
 ---
 
-# 📘 Design_F8_v0.3_runner.md（FIX）
+# 📘 Design_F8_v0.3_runner.md（FIX・差し替え全文）
 
 ## 1. Purpose（目的）
 
@@ -181,29 +181,80 @@ Answer Detection は以下を行わない。
 
 ## 8. Raw Answer Capture（best-effort）
 
-### 8.1 目的
+### 8.1 目的と位置づけ
 
 Raw Answer Capture は、Answer Detection とは独立した
 **回答素材回収経路**である。
 
-- UI 上に実際に表示された回答テキストを
-  **評価・判定を行わず** best-effort で保存する
-- UI 変更や検出失敗が発生しても、
+- UI 上に実際に表示された内容を
+  **評価・判定を行わず** best-effort で回収する
+- UI 変更や Answer Detection の失敗が発生しても、
   **後工程へ渡す材料の欠損を最小化**する
+- runner の成否判定・制御・評価には
+  **一切関与しない**
 
 ---
 
-### 8.2 基本方針
+### 8.2 Answer Detection との関係
 
-- DOM 上の複数候補から
-  **量的・構造的指標に基づき 1 つを選択**する
-- この処理は **判定ではなく選択（selection）**とする
-- 選択結果は result_status・制御分岐に影響しない
-- 失敗は例外とせず、黙って握りつぶす
+Answer Detection と Raw Answer Capture は **競合しない**。
+
+- Answer Detection
+  - 設計上想定した UI 構造から
+    回答生成完了を観測するための **センサー**
+- Raw Answer Capture
+  - Answer Detection の成否に関係なく、
+    UI に表示された内容を **素材として回収する経路**
+
+Answer Detection が失敗した場合でも、
+Raw Answer Capture により **素材回収は継続される**。
 
 ---
 
-### 8.3 成果物
+### 8.3 構造選択（スコアリング）の非評価性
+
+Raw Answer Capture では、
+DOM 上の複数候補から **1 つの保存対象を選択**するために
+量的・構造的指標を用いることがある。
+
+この処理は、
+
+* 保存対象を 1 つに限定するための
+  **技術的選択（selection）**
+* 容量・取り扱い単位を安定させるための手段
+
+であり、以下を **一切評価・判定しない**。
+
+* 回答の正しさ
+* 回答の品質
+* 回答としての妥当性
+
+---
+
+### 8.4 raw_capture フラグの定義
+
+`raw_capture` は、以下の事実のみを表す。
+
+> **当該質問実行において、
+> Answer Detection とは独立した raw capture 経路を
+> best-effort で試行したかどうか**
+
+* `raw_capture: true`
+
+  * capture 処理を試行した
+* `raw_capture: false`
+
+  * capture 処理を試行していない（旧 runner 等）
+
+以下は `raw_capture` の意味に **含まれない**。
+
+* raw 成果物が新規保存されたかどうか
+* 既存ファイルが存在したかどうか
+* 保存内容の有無・量・品質
+
+---
+
+### 8.5 成果物
 
 ```text
 <question_id>/
@@ -213,23 +264,12 @@ Raw Answer Capture は、Answer Detection とは独立した
   raw_capture_meta.json  # 選択事実メタデータ
 ```
 
-#### raw_capture_meta.json（例）
+raw 成果物はすべて **観測素材**であり、
 
-```json
-{
-  "candidates_count": 12,
-  "selected_index": 4,
-  "metrics": {
-    "text_length": 3241,
-    "p_count": 18,
-    "h_count": 3,
-    "li_count": 9
-  },
-  "selection_rule_version": "v1"
-}
-```
+* 正本は `answer.md`
+* raw 成果物は **後続工程向けの一次素材**
 
-※ 上記は **評価ではなく観測事実**である。
+と位置づけられる。
 
 ---
 
@@ -258,7 +298,8 @@ f8_runs/
 - result_status: FAILURE TAXONOMY（単一値）
 - result_reason: 事実補足（任意）
 - aborted_run: 全体中断フラグ
-- raw_capture: true / false（取得事実）
+- raw_capture: true / false
+  （Raw Answer Capture 経路を **試行した事実**）
 
 ---
 
@@ -292,7 +333,7 @@ VS Code 上の LLM 実行環境では実行できない。
 - 回答回収経路を **単線から二系統へ分離**し
 - 外部 UI 変更に対する **耐性を設計として内包**する
 
-ことで、後続プロジェクト（例規HTML変換等）に対し
+ことで、後続プロジェクト（例規 HTML 変換等）に対し
 **最大限の自由度と再現可能な素材**を提供する。
 
 ---
@@ -300,5 +341,5 @@ VS Code 上の LLM 実行環境では実行できない。
 ### 裁定（最終）
 
 - **Design_F8_v0.3_runner として FIX**
-- v0.2 系からの設計世代更新
-- 実装着手可能な状態
+- raw capture の非評価性・非判定性を明文化
+- 実装・運用・後工程解釈の混線余地なし
