@@ -68,10 +68,13 @@ def test_smoke_llm(page, env_config, case_dirs):
     # -----------------------------------------------------
     page.goto(config["url"], wait_until="load")
 
+    from pathlib import Path
+
     # --- CI evidence (temporary) ---
-    page.screenshot(path=str(case_assets_dir / "before_login.png"))
+    assets_dir = Path(case_assets_dir)
+    page.screenshot(path=str(assets_dir / "before_login.png"))
     html = page.content()
-    (case_assets_dir / "before_login.html").write_text(html, encoding="utf-8")
+    (assets_dir / "before_login.html").write_text(html, encoding="utf-8")
     # --- /CI evidence ---
 
     login.login(
