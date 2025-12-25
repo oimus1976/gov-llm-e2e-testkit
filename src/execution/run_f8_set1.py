@@ -199,7 +199,7 @@ def _capture_observation_logs(*, chat_page: ChatPageProtocol, output_dir: Path, 
 
 
 def _capture_raw_answer_block(
-    *, chat_page: ChatPageProtocol, output_dir: Path, selection_rule_version: str = "v1"
+    *, chat_page: ChatPageProtocol, output_dir: Path, selection_rule_version: str = "v2"
 ) -> bool:
     """
     Best-effort capture of a likely answer block from the rendered DOM.
@@ -229,52 +229,19 @@ def _capture_raw_answer_block(
         capture = page.evaluate(
             """
             () => {
-              const elements = Array.from(document.querySelectorAll('article, section, div'));
-              const candidates = [];
+              const blocks = Array.from(document.querySelectorAll('div.markdown'));
+              if (!blocks.length) return null;
 
-              elements.forEach((el, idx) => {
-                const text = (el.innerText || '').trim();
-                if (!text) return;
+              const selectedIndex = blocks.length - 1;
+              const el = blocks[selectedIndex];
+              const text = (el.innerText || '').trim();
+              if (!text) return null;
 
-                const pCount = el.querySelectorAll('p').length;
-                const hCount = el.querySelectorAll('h1,h2,h3,h4,h5,h6').length;
-                const liCount = el.querySelectorAll('li').length;
-                const textLength = text.length;
-                const score = textLength + pCount * 20 + hCount * 30 + liCount * 5;
-
-                candidates.push({
-                  index: idx,
-                  score,
-                  text_length: textLength,
-                  p_count: pCount,
-                  h_count: hCount,
-                  li_count: liCount,
-                  html: el.outerHTML || '',
-                  text,
-                });
-              });
-
-              if (!candidates.length) return null;
-
-              candidates.sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                if (b.text_length !== a.text_length) return b.text_length - a.text_length;
-                return a.index - b.index;
-              });
-
-              const best = candidates[0];
               return {
-                candidates_count: candidates.length,
-                selected_index: best.index,
-                metrics: {
-                  text_length: best.text_length,
-                  p_count: best.p_count,
-                  h_count: best.h_count,
-                  li_count: best.li_count,
-                  score: best.score,
-                },
-                html: best.html,
-                text: best.text,
+                block_count: blocks.length,
+                selected_index: selectedIndex,
+                html: el.outerHTML || '',
+                text,
               };
             }
             """
@@ -287,21 +254,13 @@ def _capture_raw_answer_block(
 
     html = capture.get("html")
     text = capture.get("text")
-    metrics = capture.get("metrics") or {}
-
     if not html or text is None:
         return False
 
     meta = {
-        "candidates_count": capture.get("candidates_count"),
+        "selection_rule": "div.markdown:last",
+        "block_count": capture.get("block_count"),
         "selected_index": capture.get("selected_index"),
-        "metrics": {
-            "text_length": metrics.get("text_length"),
-            "p_count": metrics.get("p_count"),
-            "h_count": metrics.get("h_count"),
-            "li_count": metrics.get("li_count"),
-            "score": metrics.get("score"),
-        },
         "selection_rule_version": selection_rule_version,
     }
 
