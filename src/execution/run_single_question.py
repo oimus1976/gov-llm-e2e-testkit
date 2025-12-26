@@ -1,11 +1,12 @@
 # src/execution/run_single_question.py
 """
-Single-question execution engine (UI submit + answer detection).
+Single-question execution engine (UI submit + answer detection + DOM-based answer extraction).
 
 Responsibilities:
 - isolate pytest-independent execution steps used by F4 / F8
-- perform submit → wait_for_answer_text without evaluation
-- return observed facts only
+- perform submit → wait_for_answer_text (probe: completion signal)
+- extract answer text from UI DOM (non-evaluative selection) as canonical answer_text
+- return observed facts only (no evaluation)
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from typing import Any, Optional, Protocol
 from playwright.sync_api import Page
 
 from src.answer_probe import wait_for_answer_text
+from src.execution.answer_dom_extractor import extract_answer_dom
 
 
 class ChatPageProtocol(Protocol):
@@ -24,8 +26,7 @@ class ChatPageProtocol(Protocol):
 
     page: Page
 
-    def submit(self, message: str) -> Any:
-        ...
+    def submit(self, message: str) -> Any: ...
 
 
 @dataclass(frozen=True)
@@ -84,21 +85,44 @@ def run_single_question(
     timeout_sec: int = 60,
 ) -> SingleQuestionResult:
     """
-    Execute one question via UI and probe for an answer.
+    Execute one question via UI and observe answer completion (probe),
+    then extract canonical answer text from UI DOM (non-evaluative selection).
 
     Notes:
     - pytest dependencies are intentionally excluded.
     - No evaluation or formatting is performed here.
+    - probe output is recorded as observed fact (execution_context), not used to decide answer_text.
     """
     submit_receipt = chat_page.submit(question_text)
     submit_id = _extract_submit_id(submit_receipt)
     chat_id = _extract_chat_id(chat_page)
 
-    answer_text = wait_for_answer_text(
+    # Probe: completion signal / observed fact (not canonical answer source)
+    probe_answer_text = wait_for_answer_text(
         page=chat_page.page,
         submit_id=submit_id,
         chat_id=chat_id,
         timeout_sec=timeout_sec,
+    )
+
+    # Canonical: DOM-based extraction (non-evaluative selection)
+    # Best-effort: extractor itself returns a result object and should not raise in normal cases.
+    dom_html = chat_page.page.content()
+    dom_result = extract_answer_dom(dom_html, question_text)
+
+    merged_context = dict(execution_context or {})
+    merged_context.update(
+        {
+            "probe_answer_text": probe_answer_text,
+            "dom_extraction": {
+                "selected": dom_result.selected,
+                "reason": dom_result.reason,
+            },
+        }
+    )
+
+    canonical_answer_text = (
+        dom_result.text if dom_result.selected and dom_result.text else ""
     )
 
     return SingleQuestionResult(
@@ -109,6 +133,6 @@ def run_single_question(
         output_dir=output_dir,
         submit_id=submit_id,
         chat_id=chat_id,
-        answer_text=answer_text,
-        execution_context=execution_context,
+        answer_text=canonical_answer_text,
+        execution_context=merged_context,
     )
