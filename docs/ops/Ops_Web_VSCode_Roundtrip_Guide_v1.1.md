@@ -113,7 +113,93 @@ VS Code 作業要約
 Web版（/critic・裁定）
 ↓
 PROJECT_STATUS / CHANGELOG（公式宣言）
-````
+```
+
+---
+
+### 5.1 Protocol 運用時の実務手順（重要）
+
+本プロジェクトでは、  
+`Protocol_Web_VSCode_Roundtrip_v1.1.md` を用いた  
+**Web版 ↔ VS Code 間の厳密な往復運用**を行う。
+
+以下は、**Protocol を確実に発火させるための最小実務手順**である。
+
+---
+
+#### 5.1.1 VS Code 側：初期拘束宣言
+
+VS Code（Codex）で作業を開始する際、  
+**最初の入力として必ず以下のみを貼り付ける**。
+
+```text
+You must follow Protocol_Web_VSCode_Roundtrip_v1.1.md strictly.
+Do not summarize, do not explain, do not propose alternatives.
+Wait for an IMPLEMENTATION_BRIEF.
+```
+
+- この宣言は **Protocol を正本として拘束するための前提操作**である
+- これを省略した場合、Protocol が正しく適用されないことがある
+
+---
+
+#### 5.1.2 Web版：IMPLEMENTATION_BRIEF の生成
+
+Web版では、Protocol で定義された
+`[IMPLEMENTATION_BRIEF]` セクション **のみ**を生成する。
+
+- 前置き・説明・相談文は一切付与しない
+- フォーマットは Protocol 定義を厳密に守る
+- 生成した内容は **そのまま VS Code に貼り付ける**
+
+---
+
+#### 5.1.3 VS Code 側：Phase2 / Phase3 の実行
+
+VS Code（Codex）は、貼り付けられた
+`[IMPLEMENTATION_BRIEF]` を検知次第、以下を行う。
+
+- Phase2（作業・pytest 実行可否判断）を実施
+- pytest 実行可能な場合は実行
+- 実行不可な場合はその理由を明示し、人間に実行を依頼
+- **必ず Phase3（`[VSCODE_WORK_SUMMARY]`）形式で出力する**
+
+説明文や提案文を付与してはならない。
+
+---
+
+#### 5.1.4 Web版：裁定フェーズ
+
+Web版では、VS Code から返却された
+`[VSCODE_WORK_SUMMARY]` を受け取り、
+
+- `/critic` による事実・判断の精査
+- `[WEB_DECISION]` の発行
+- PROJECT_STATUS / CHANGELOG 反映要否の判断
+
+を行う。
+
+---
+
+#### 5.1.5 Protocol 逸脱時の即時是正
+
+以下のような挙動が見られた場合、**即時是正を行う**。
+
+- Phase3 が出力されない
+- pytest 実行が無視される
+- 説明・提案が混入する
+
+是正時は、Protocol を再提示し、
+`IMPLEMENTATION_BRIEF` からやり直す。
+
+---
+
+#### 5.1.6 補足
+
+- 本手順は **人間向け運用ノウハウ**であり、
+  Protocol 本文を置き換えるものではない
+- 厳密な入出力形式・完了条件は
+  `Protocol_Web_VSCode_Roundtrip_v1.1.md` を正とする
 
 ---
 
