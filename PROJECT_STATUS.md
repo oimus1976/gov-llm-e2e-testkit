@@ -1,7 +1,7 @@
-# 📘 PROJECT_STATUS v0.7.3  
-**— F8（Markdown 価値判断フェーズ）設計合意反映版 —**
+# 📘 PROJECT_STATUS v0.7.4  
+**— Design / Ops / Protocol 実行モデル確定反映版 —**
 
-**Last Updated:** 2025-12-24  
+**Last Updated:** 2025-12-26  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -9,7 +9,7 @@
 ## 0. フェーズ定義の統一（不変）
 
 本プロジェクトのフェーズ定義は、  
-**Roadmap v1.3 を唯一の正本**として以下に統一する。
+**Roadmap v1.4 を唯一の正本**として以下に統一する。
 
 | フェーズ | 内容 |
 |---|---|
@@ -72,46 +72,22 @@
 
 ---
 
-### ✅ F4：試金石データ提供フェーズ（完結・CI 非対象）
+## 4. Design / Ops / Protocol 実行モデル（確定）
 
-- RAG 入力差分影響を観測するための試金石データ提供設計を確立
-- F4 は **意図的に CI 対象外**とする
+以下の 3 文書を、  
+**AI 参加前提の正式な実行モデル定義として確定**した。
 
----
+- **Design_Execution_Model_QommonsAI_TestAutomation_v1.1.md**
+- **Ops_Web_VSCode_Roundtrip_Guide_v1.1.md**
+- **Protocol_Web_VSCode_Roundtrip_v1.1.md**
 
-### ✅ F5：CI（e2e.yml）整備フェーズ（完結）
+確定したポイント：
 
-- Smoke Test のみを対象とした最小 CI が GitHub Actions 上で成立
-- CI の目的は **品質評価ではなく基盤破壊検知**に限定
-- F4 / RAG QA / Golden 評価は CI に含めない設計を固定
-
----
-
-### ✅ F7：運用試行フェーズ（A / B / C 完結）
-
-#### F7-B（制御付き実運用試行）
-
-- 実施回数：**2回**
-- Trial_Plan_F7-B_v0.2 に基づき最大回数を完了
-- Runbook 逸脱・中断判断の誤作動は発生していない
-
-#### F7-C（拡張試行）
-
-- 実施回数：**3回**
-- Design_F7-C_v0.1 に基づきすべて完走
-- 試行ログは Trial Record Template v0.1 により自己完結的に記録
-
-※ 上記はいずれも **運用耐久性の事実確認**に留まり、  
-　 回答品質・有用性・正確性の評価を意味しない。
-
----
-
-## 4. F7-C 確定成果物（完結）
-
-- **Design_F7-C_v0.1**
-- **Runbook_F7-C_operational_v0.1**
-- **Trial Record Template v0.1**
-- **準Golden質問ガイドライン v0.2**
+- AI（Codex）を **正式メンバーとして参加させる前提**を明文化
+- pytest 実行を **必須ルール**として設計に昇格
+- 実行主体（Codex / 人間）の責務分離を固定
+- Web版 / VS Code / Codex の裁定構造を三層分離
+- Protocol を **AI拘束用の最下位正本**として定義
 
 ---
 
@@ -126,7 +102,6 @@
 - Citations 構造化の可否
 - 成果物配置・命名規約の正式 FIX
 - frontmatter メタデータ既定値ポリシー
-
 ---
 
 ## 6. 運用上の前提（評価・判断と無関係）
@@ -136,7 +111,6 @@
 - LLM 応答の非決定性
 - UI 変更によるロケータ破壊
 - 外部サービス起因の一時的失敗
-
 ---
 
 ## 7. Next Action（単一・最優先）
@@ -159,6 +133,4 @@
 
 - 本 STATUS は **「現在地の唯一の正本」**である
 - 設計・裁定・フェーズ判断は、  
-  本文書と Roadmap / CHANGELOG の整合をもって行う
-
----
+  本文書と **Roadmap v1.4 / CHANGELOG** の整合をもって行う

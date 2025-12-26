@@ -12,6 +12,28 @@
 
 ---
 
+## [v0.7.4] - 2025-12-26
+
+### Added
+- Design / Ops / Protocol の三層構造による **AI 参加前提の実行モデルを正式反映**
+  - Design_Execution_Model_QommonsAI_TestAutomation_v1.1
+  - Ops_Web_VSCode_Roundtrip_Guide_v1.1
+  - Protocol_Web_VSCode_Roundtrip_v1.1
+- pytest 実行を **必須ルールとして設計レベルに昇格**
+- Codex / 人間の pytest 実行責務分離を明文化
+- Web版 / VS Code / Codex 間の裁定・実装・拘束関係を固定
+
+### Changed
+- PROJECT_STATUS を v0.7.4 に更新
+  - **Roadmap v1.4 を正本として明示**
+  - F8 フェーズ移行状態との整合を反映
+
+### Notes
+- 本変更は **参照正本（Roadmap v1.4）の明示是正**を含む
+- フェーズ定義・進行状況・評価基準自体に変更はない
+
+---
+
 ## [v0.7.3] - 2025-12-24
 
 ### Changed
