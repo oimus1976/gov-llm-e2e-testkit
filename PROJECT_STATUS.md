@@ -1,7 +1,7 @@
-# 📘 PROJECT_STATUS v0.7.4  
-**— Design / Ops / Protocol 実行モデル確定反映版 —**
+# 📘 PROJECT_STATUS v0.7.5  
+**— F8（Markdown 価値判断フェーズ）実装・観測成立反映版 —**
 
-**Last Updated:** 2025-12-26  
+**Last Updated:** 2025-12-27  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -32,20 +32,33 @@
 
 ### **F8：Markdown 価値判断フェーズ**
 
-#### 設計合意（v0.2）
+#### 設計・実装の確定状況
 
-- **F8 v0.2 設計合意サマリーを確定**
-  - continue-on-error を前提とした runner / orchestrator 方針を合意
-  - failure handling を二値ではなく状態（taxonomy）として扱う方針を合意
-  - 全質問について成功・失敗を問わず **1 レコード必ず生成**する成果物完全性ルールを合意
-- v0.1r で確定した単一質問 I/F（run_single_question）および  
-  submit / probe / Answer Detection の責務分離は  
-  **非改変・再利用前提**とすることを再確認
+- **F8 v0.2 設計合意を前提に、実装・観測が成立**
+- runner / orchestrator / single-question I/F を含む  
+  **F8 実行パスが end-to-end で動作確認済み**
+- Q01–Q18 を通じて、以下を満たすことを確認：
+  - continue-on-error による全件記録
+  - SUCCESS / NO_ANSWER / TIMEOUT 等の状態保持
+  - answer.md が常に生成される成果物完全性
+
+#### DOM 抽出に関する確定事項（重要）
+
+- **Answer (Extracted)**  
+  - UI DOM 上の `div.markdown`（markdown-n）を対象に  
+    **最新・偶数 index を優先選択する非評価ロジックを確定**
+  - 書式情報は保持しない（text 抽出）
+- **Answer (Raw)**  
+  - UI DOM（main/body）をそのまま保存する観測用スナップショット
+  - UI 文言・サイドバー混入は **設計どおり許容**
+
+- 抽出成否・理由・文字数は  
+  **Metadata（Observed）として明示的に記録**
 
 #### 状態
 
-- F8 v0.2 は **設計合意フェーズ完了**
-- 実装・詳細設計は未着手
+- **F8 は「設計 → 実装 → 観測成立」まで完了**
+- 品質評価・価値判断（F9 以降）は未着手
 
 ---
 
@@ -54,54 +67,52 @@
 本プロジェクトは現在、
 
 > **再現可能な E2E テスト基盤（F1–F3）**  
-> **判断材料として利用可能な試金石データ（F4）**  
-> **基盤破壊を即時検知する最小 CI（F5）**  
-> がすべて成立・完結した状態で、  
-> **F7-C（拡張試行フェーズ）を完結**し、  
-> F8（Markdown 価値判断フェーズ）へ移行している。
+> **差分影響を測定可能な試行データ（F4）**  
+> **基盤破壊を検知する最小 CI（F5）**  
+> **制御付き実運用試行（F7-C）**  
+> **Markdown 価値判断の技術的成立（F8）**  
+
+がすべて **同一 main ブランチ上で整合した状態**に到達している。
 
 ---
 
 ## 3. 完了済み成果（完結）
 
-### ✅ F1–F3：E2E 基盤フェーズ（完全完結）
+### ✅ F1–F3：E2E 基盤フェーズ
 
 - Playwright ベースの E2E テスト基盤を確立
-- Page Object / Answer Detection / pytest Execution Layer の責務境界を固定
-- UI 変動・モデル更新に対して再現可能な観測が可能な状態に到達
+- Page Object / Answer Detection / Execution Layer の責務境界を固定
+
+### ✅ F7-C：拡張試行フェーズ
+
+- 実運用相当条件下での制御付き試行を完結
+- Golden Question / Ordinance を保持したまま次フェーズへ移行
+
+### ✅ F8：Markdown 価値判断フェーズ（技術成立）
+
+- DOM-based Answer 抽出の成立
+- answer.md 正本生成ルールの確定
+- 非評価・観測モデルの実装固定
 
 ---
 
 ## 4. Design / Ops / Protocol 実行モデル（確定）
 
-以下の 3 文書を、  
+以下の文書を、  
 **AI 参加前提の正式な実行モデル定義として確定**した。
 
 - **Design_Execution_Model_QommonsAI_TestAutomation_v1.1.md**
 - **Ops_Web_VSCode_Roundtrip_Guide_v1.1.md**
 - **Protocol_Web_VSCode_Roundtrip_v1.1.md**
 
-確定したポイント：
-
-- AI（Codex）を **正式メンバーとして参加させる前提**を明文化
-- pytest 実行を **必須ルール**として設計に昇格
-- 実行主体（Codex / 人間）の責務分離を固定
-- Web版 / VS Code / Codex の裁定構造を三層分離
-- Protocol を **AI拘束用の最下位正本**として定義
-
 ---
 
-## 5. F8（単一質問 I/F）に関する確定事項
+## 5. F8 単一質問 I/F に関する確定事項
 
-- F8 v0.1r+ は runner 実装完了をもって **FIX**
-- UI 表示どおりの回答テキストを保存する
-- Citations は独立セクションとして扱わない
+- run_single_question は **非評価・観測専用 I/F として FIX**
+- probe（完了検知）と DOM 抽出は責務分離を維持
+- status 判定は runner 側の観測事実にのみ依存
 
-以下は **v0.2 以降の検討対象（Backlog）**とする：
-
-- Citations 構造化の可否
-- 成果物配置・命名規約の正式 FIX
-- frontmatter メタデータ既定値ポリシー
 ---
 
 ## 6. 運用上の前提（評価・判断と無関係）
@@ -109,23 +120,22 @@
 以下は **品質評価・フェーズ進行判断の材料とはしない**。
 
 - LLM 応答の非決定性
-- UI 変更によるロケータ破壊
+- UI 構造変更・文言変化
 - 外部サービス起因の一時的失敗
+
 ---
 
 ## 7. Next Action（単一・最優先）
 
-- **F8 v0.2 runner / orchestrator の具体 API 設計に着手**
+- **F9（Markdown 価値評価・比較指標定義フェーズ）構想整理**
 
 ---
 
 ## 8. Backlog（正式登録）
 
-- **バージョニング規則の整理**
-  - r / + 表記の採否
-  - 採用する場合の意味論
-  - 採用しない場合の禁止明文化
-  - 影響範囲（Design / Docs / PROJECT_STATUS / CHANGELOG）
+- DOM 構造変化検知ルールの将来検討
+- Answer (Extracted) の書式保持可否
+- バージョニング規則（r / + 表記）の整理
 
 ---
 
