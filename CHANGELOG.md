@@ -12,9 +12,30 @@
 
 ---
 
+## v0.7.5 — 2025-12-27
+
+### Added
+
+- F8（Markdown 価値判断フェーズ）の実装・観測成立を反映
+- DOM-based Answer 抽出（markdown-n even-max ルール）を正式採用
+- answer.md に DOM 抽出メタデータ（selected / reason / text_len）を記録
+
+### Fixed
+
+- Q01 / Q18 における DOM 抽出端点問題を一般ルールで解消
+- continue-on-error 条件下で answer.md が出力されないケースを解消
+
+### Notes
+
+- Answer (Raw) に UI 文言が混在する挙動は設計どおり
+- 回答品質・妥当性の評価は本バージョンの対象外
+
+---
+
 ## [v0.7.4] - 2025-12-26
 
 ### Added
+
 - Design / Ops / Protocol の三層構造による **AI 参加前提の実行モデルを正式反映**
   - Design_Execution_Model_QommonsAI_TestAutomation_v1.1
   - Ops_Web_VSCode_Roundtrip_Guide_v1.1
@@ -24,11 +45,13 @@
 - Web版 / VS Code / Codex 間の裁定・実装・拘束関係を固定
 
 ### Changed
+
 - PROJECT_STATUS を v0.7.4 に更新
   - **Roadmap v1.4 を正本として明示**
   - F8 フェーズ移行状態との整合を反映
 
 ### Notes
+
 - 本変更は **参照正本（Roadmap v1.4）の明示是正**を含む
 - フェーズ定義・進行状況・評価基準自体に変更はない
 
@@ -37,10 +60,12 @@
 ## [v0.7.3] - 2025-12-24
 
 ### Changed
+
 - Current Phase を F8（Markdown 価値判断フェーズ）へ遷移
 - F8 v0.2 の設計合意成立を PROJECT_STATUS に反映
 
 ### Added
+
 - **Design_F8_v0.2_summary_v0.2.md**
   - F8 v0.1r クローズ後、v0.2 に向けた設計合意事項を整理・固定
   - continue-on-error を前提とした runner / orchestrator 方針を明文化
@@ -48,6 +73,7 @@
   - 全質問で 1 レコードを必ず生成する成果物完全性ルールを明文化
 
 ### Clarified
+
 - PROJECT_STATUS における ToDo 表記を Backlog に統一
 - F8 v0.2 は実装・評価フェーズではなく、
   **「止まらずに事実を取り切るための設計合意フェーズ」**であることを再確認
@@ -57,6 +83,7 @@
 ## [v0.7.2] - 2025-12-22
 
 ### Completed
+
 - **F7-C（拡張試行フェーズ）を完了**
   - Design_F7-C_v0.1 に基づく拡張試行を計3回実施
   - すべての試行が Runbook_F7-C_operational_v0.1 準拠で完走
@@ -64,6 +91,7 @@
   - 試行ログは Trial Record Template v0.1 により自己完結的に記録
 
 ### Fixed
+
 - F7-C 関連成果物を **FIX / Freeze**
   - Design_F7-C_v0.1
   - Runbook_F7-C_operational_v0.1
@@ -71,6 +99,7 @@
   - 準Golden質問ガイドライン v0.2
 
 ### Notes
+
 - 本フェーズでは回答品質・正確性・優劣の評価は行っていない
 - モデル挙動の揺れ（条例特定不能時の応答差）は事実として記録するが、
   評価・改善判断には使用しない
@@ -80,6 +109,7 @@
 ## [v0.7.1] - 2025-12-22
 
 ### Added
+
 - **Design_F7-C_v0.1（FIX）** を追加
   - F7-C（拡張試行フェーズ）の運用設計を正式化
   - F7-B にて成立した制御付き実運用を前提とし、
@@ -90,6 +120,7 @@
     回答品質評価・指標算出・CI 恒久化は非目標として固定
 
 ### Clarified
+
 - F7-C は「評価フェーズ」ではなく、
   **人判断を前提とした拡張試行フェーズ**であることを再確認
 
@@ -98,21 +129,25 @@
 ## [v0.7.0] - 2025-12-22
 
 ### Added
+
 - **Trial_Plan_F7-B_v0.2** を追加
   - Runbook_F7-B_controlled_trial_v0.1 に従属する試行計画を明文化
   - frontmatter を追加し、一時的・消耗品文書であることを明示
   - 成功／失敗の意味論を排除し、「止められるか」の確認に限定
 
 ### Changed
+
 - **Current Phase を F7-B（制御付き実運用試行フェーズ）に確定遷移**
 - **Next Action を「Trial_Plan_F7-B v0.2 に基づき F7-B を開始」に更新**
 - PROJECT_STATUS を v0.7.0 に更新し、上記状態遷移を反映
 
 ### Clarified
+
 - Runbook_F7-B_controlled_trial_v0.1 は非変更（FIX）であることを再明示
 - F7-B においては評価・比較・自動化を行わない方針を再確認
 
 ### ToDo
+
 - **バージョニング規則（r / + 表記含む）の整理を正式 ToDo として登録**
 
 ---
@@ -120,14 +155,17 @@
 ## [v0.6.9] - 2025-12-19
 
 ### Changed
+
 - PROJECT_STATUS を v0.6.9 に更新し、Current Phase を F7-B（制御付き実運用試行）へ移行
 - F7-B 初回試行の実施事実と、その位置づけを明文化
 
 ### Added
+
 - F7-B における実行回数上限（最大3回）と運用ルールを明示
 - F7-C（拡張試行）への遷移条件を、暗黙移行禁止の前提で明文化
 
 ### Clarified
+
 - F7-B は品質評価・自動化・比較を目的としないことを再強調
 - F7-B の成果は「正しい回答」ではなく「逸脱せずに終われた事実」である点を明確化
 
@@ -136,14 +174,17 @@
 ## [v0.6.8] - 2025-12-19
 
 ### Changed
+
 - Roadmap を v1.3 に更新し、F7 を A/B/C（準備 / 制御付き試行 / 拡張試行）に分割
 - PROJECT_STATUS を v0.6.8 に更新し、現在地を F7-A（運用準備フェーズ）として明確化
 
 ### Clarified
+
 - Golden QA は F7-A/B では「評価・自動化の対象ではない」ことを再明示
 - Gate1（RAG Entry CI）を F7-A の正式成果物として位置づけ
 
 ### Fixed
+
 - Roadmap / PROJECT_STATUS 間でのフェーズ定義参照不整合を解消
 
 ---
@@ -151,6 +192,7 @@
 ## v0.6.6 (2025-12-18)
 
 ### Added
+
 - 最小 CI（e2e.yml）を正式に F5 完了条件として明文化。
 - **Design_ci_rag_entry_v0.1** を追加。
   - F7（運用・保守フェーズ）における **RAG QA 入口検証専用 CI 設計** を正式定義。
@@ -158,6 +200,7 @@
     **RAG QA に入る前提条件（基盤成立・入力妥当性・資産保護）のみを検証**する。
 
 ### Clarified
+
 - F5 CI の対象は Smoke Test のみであることを再定義。
 - 「最小 CI」「基盤の破壊」の定義を PROJECT_STATUS に固定。
 - RAG QA を CI に統合することと、
@@ -165,8 +208,8 @@
 - F7 における CI の役割は、
   **入口遮断（Gate）までに限定される**ことを設計書レベルで固定。
 
-
 ### Notes
+
 - 本更新は CI 実装完了の状態整理であり、
   テスト基盤（F1–F3）および F4 成果物の仕様変更は行っていない。
 - 本追加は **F5 基盤 CI（e2e.yml）を一切変更しない**。
@@ -192,15 +235,18 @@
 ## v0.6.5 (2025-12-18)
 
 ### Changed
+
 - Current Phase を F5（CI 整備フェーズ）へ移行。
 
 ### Clarified
+
 - CI（e2e.yml）の対象を Smoke Test / Basic RAG Test のみに限定。
 - F4（RAG 評価・試金石データ提供）は CI 非対象であることを明文化。
 - Advanced RAG（multi-turn テスト）は CI 非対象とし、
   運用・考察用途（F7 以降）に限定する方針を明確化。
 
 ### Notes
+
 - 本更新は CI 整備フェーズへの着手宣言であり、
   E2E 基盤（F1–F3）および F4 成果物の仕様・挙動は変更していない。
 
@@ -209,6 +255,7 @@
 ## v0.6.4 (2025-12-17)
 
 ### Clarified
+
 - F4 フェーズの責務を
   「RAG 前処理（HTML→Markdown）の是非を判断する」から
   **「他プロジェクトが判断に利用可能な試験データ（試金石）を提供する」**
@@ -218,26 +265,31 @@
   として位置づけを明文化。
 
 ### Changed
+
 - Roadmap を v1.2 として更新。
   - F4 を「入力差分影響の観測・試験データ提供フェーズ」と再定義。
   - F6（LGWAN 対応）を
     サービス事業者提供待ちの **保留（Blocked）フェーズ**として明示。
 
 ### Notes
+
 - 本更新は責務・位置づけの是正のみであり、
   既存のテスト基盤（F1–F3）および
   F4 v0.1 の評価基準・運用ルール自体は変更していない。
 
 ### Verified
+
 - F4 v0.2 試金石データ（Raw / Execution Context / Derived Summary）について、
   JSON Schema Draft 2020-12 によるバリデーションを実施し、すべて VALID を確認。
 
 ### Completed
+
 - F4 v0.2 を完了。
   試金石データ（Raw / Execution Context / Summary）を構造化し、
   他プロジェクトが判断材料として直接利用可能な形で提供可能とした。
 
 ### Added
+
 - Web版 ↔ VS Code 往復運用ガイド v1.0r+ を公式運用ドキュメントとして追加。
 
 ---
@@ -245,6 +297,7 @@
 ## v0.6.3 (2025-12-17)
 
 ### 修正（Fixed）
+
 - SPA 構成に適したログイン成功判定へ切り替え
   DOM や load イベント依存を廃し、URL 遷移（`/chat` を含むか）による readiness 判定を採用。
   - `page.wait_for_function(window.location.href.includes('/chat'))`
@@ -252,6 +305,7 @@
   断続的な E2E 失敗を解消。
 
 ### 検証完了（Verified）
+
 - F4（RAG 評価フェーズ v0.1）のテストが、設計どおり完走することを確認。
   - Case1：PASS
   - Case2：PASS
@@ -263,6 +317,7 @@
   - バッチ実行（`python -m pytest`）
 
 ### 判断・位置づけ（Decision）
+
 - F4 v0.1 は以下の点において **設計目的を達成し、完了状態に到達**したと判断する。
   - HTML / Markdown ナレッジ差分を、誤解なく再現可能に観測できる
   - 手動運用前提の評価ルール・ログ仕様・責務分離が安定
@@ -270,6 +325,7 @@
   **F4 v0.2 以降の拡張課題**として切り出す。
 
 ### 次フェーズ（Next）
+
 - F4 v0.2 として、以下の検討・設計に着手する。
   - 評価結果ログの機械集計
   - 差分指標の自動比較
@@ -279,6 +335,7 @@
    F4 v0.1 の運用ルールを変更するものではない。
 
 ### Clarified
+
 - F4 フェーズの責務を整理し、
   本プロジェクトは「HTML→Markdown 変換の是非を判断する」のではなく、
   他プロジェクトが判断に利用可能な
@@ -301,6 +358,7 @@
   実行文脈（Execution Context）の位置づけを整理
 
 ### Changed
+
 - Design_pytest_f4_results_writer を v0.1.2 として確定
   - `login_identity`（configured / observed）の構造と意味論を正式化
   - login_identity の取得・構築責務を pytest 実行層に明示的に分離
@@ -308,6 +366,7 @@
   - observed が取得できない場合を unverified として正当ケース化
 
 ### Notes
+
 - 本更新は設計およびログ仕様の明確化のみであり、
   テスト基盤（F1–F3）および F4 の手動運用方針自体は変更していない
 - 自動ログイン判定・アカウント切替・CI 統合は引き続き v0.1 系では非対象
@@ -319,7 +378,6 @@
   - Execution セクションでの再掲を行わない実装に整理
 - 上記変更に伴い、後方互換性を確認する pytest を実行し、
   既存 Case1 実行結果に影響がないことを確認
-
 
 ---
 
@@ -434,29 +492,26 @@ RAG 回答に与える影響を、
 
 ### 🔧 Changed（変更）
 
-* **フェーズ定義を Roadmap v1.1 に完全統一**
-
-  * Phase A / B / C 等の暫定呼称を廃止
-  * F1–F7 のみを正式フェーズとする
-* PROJECT_STATUS を v0.6.0 に更新
-
-  * F1–F3 を「基盤フェーズ」として明示的に凍結
-  * F4（RAG 評価フェーズ）を Current Phase として明文化
-  * F4 が **Golden 資産を直接消費せず、最小 3 ケースで評価する**
+- **フェーズ定義を Roadmap v1.1 に完全統一**
+  - Phase A / B / C 等の暫定呼称を廃止
+  - F1–F7 のみを正式フェーズとする
+- PROJECT_STATUS を v0.6.0 に更新
+  - F1–F3 を「基盤フェーズ」として明示的に凍結
+  - F4（RAG 評価フェーズ）を Current Phase として明文化
+  - F4 が **Golden 資産を直接消費せず、最小 3 ケースで評価する**
     ことを明記
-* RAG テストにおける判定モデルを三値化
-
-  * PASS / FAIL / SKIPPED（Inconclusive）
+- RAG テストにおける判定モデルを三値化
+  - PASS / FAIL / SKIPPED（Inconclusive）
 
 ---
 
 ### 🧠 Fixed（確定・凍結された判断）
 
-* chat-id は推測対象ではなく **API 境界で明示的に受け取る事実**
-* submit–probe 相関はアルゴリズムではなく **state**
-* 「意味的に正しい」と「文字列的に一致」は別問題
-* 高レベル API による page 隠蔽は採用しない
-* Golden Question Pool / Ordinance Set は
+- chat-id は推測対象ではなく **API 境界で明示的に受け取る事実**
+- submit–probe 相関はアルゴリズムではなく **state**
+- 「意味的に正しい」と「文字列的に一致」は別問題
+- 高レベル API による page 隠蔽は採用しない
+- Golden Question Pool / Ordinance Set は
   **上位基準資産として保持し、F4では消費しない**
 
 これらは **設計判断として固定**され、
@@ -466,10 +521,10 @@ RAG 回答に与える影響を、
 
 ### 🚫 Out of Scope（意図的にやらないこと）
 
-* 意味的同義語判定
-* モデル間性能比較
-* 高度な自然言語理解評価
-* Golden 資産の改変・消費
+- 意味的同義語判定
+- モデル間性能比較
+- 高度な自然言語理解評価
+- Golden 資産の改変・消費
 
 ※ いずれも v0.2 以降の検討事項とする。
 
@@ -477,10 +532,10 @@ RAG 回答に与える影響を、
 
 ### 📌 Impact（この変更で可能になったこと）
 
-* HTML → Markdown 変換の **費用対効果を定量比較**できる
-* 容量制約（20GB）下での RAG 最適化判断が可能
-* 人手レビューに依存しない RAG QA が成立
-* 差分評価・能力評価・将来 CI を
+- HTML → Markdown 変換の **費用対効果を定量比較**できる
+- 容量制約（20GB）下での RAG 最適化判断が可能
+- 人手レビューに依存しない RAG QA が成立
+- 差分評価・能力評価・将来 CI を
   **同一基盤・同一資産体系で段階的に拡張可能**
 
 ---
@@ -751,6 +806,7 @@ RAG 回答に与える影響を、
   - recursive / list placeholder などの特殊ケース解決
 
 ### Notes
+
 - Environment Layer（env_loader）は v0.2 系と完全互換であり、
   本バージョンでは **実装のレビューと設計書 v0.2.3 との整合確認のみを目的とした非破壊更新** である。
 
@@ -762,21 +818,21 @@ RAG 回答に与える影響を、
 
 #### Added
 
-* Schema Integrity Rule（スキーマ不変ルール）を追加
-* AI Prohibitions を拡張（key rename / schema drift 禁止を明文化）
-* Annotated Diff セクションを設計書に追加し、文書追跡性を向上
-* Minimal Binding Example を binding として固定化
+- Schema Integrity Rule（スキーマ不変ルール）を追加
+- AI Prohibitions を拡張（key rename / schema drift 禁止を明文化）
+- Annotated Diff セクションを設計書に追加し、文書追跡性を向上
+- Minimal Binding Example を binding として固定化
 
 #### Changed
 
-* Non-functional Requirements に schema freeze を正式に組み込み
-* env_loader と CI/LGWAN の責務境界をより明確化
-* 日本語補助文と英語拘束文の対訳構造を正式に標準化（今後の設計書もこの形式へ統一可能）
+- Non-functional Requirements に schema freeze を正式に組み込み
+- env_loader と CI/LGWAN の責務境界をより明確化
+- 日本語補助文と英語拘束文の対訳構造を正式に標準化（今後の設計書もこの形式へ統一可能）
 
 #### Notes
 
-* 本更新は **non-breaking（非破壊）** であり、runtime 挙動は v0.2 / v0.2.2 と完全互換
-* 今後は env_loader の整合レビューに進む
+- 本更新は **non-breaking（非破壊）** であり、runtime 挙動は v0.2 / v0.2.2 と完全互換
+- 今後は env_loader の整合レビューに進む
 
 ---
 
@@ -786,27 +842,28 @@ RAG 回答に与える影響を、
 
 #### Added
 
-* PROJECT_GRAND_RULES v4.2 を正式採用
-* AI Compliance Rules v1.0（C2仕様）を導入
-* Language Binding Rule（英語拘束／日本語補助）を新設
-* Documentation Standards / QA / Prohibition Sections を整理・拡張
+- PROJECT_GRAND_RULES v4.2 を正式採用
+- AI Compliance Rules v1.0（C2仕様）を導入
+- Language Binding Rule（英語拘束／日本語補助）を新設
+- Documentation Standards / QA / Prohibition Sections を整理・拡張
 
 #### Changed
 
-* 旧 v4.0 の AI行動規範を全面刷新し、拘束力を強化
-* Rule Hierarchy の順序と拘束力を明確化
-* PENTA 出動条件の厳格化
+- 旧 v4.0 の AI行動規範を全面刷新し、拘束力を強化
+- Rule Hierarchy の順序と拘束力を明確化
+- PENTA 出動条件の厳格化
 
 #### Notes
 
-* 今後の設計書・CI・環境設定は **すべて v4.2 の拘束ルール下で生成される必要がある**。
-* env_loader・CI の見直し（v0.3 準備）は次アクション。
+- 今後の設計書・CI・環境設定は **すべて v4.2 の拘束ルール下で生成される必要がある**。
+- env_loader・CI の見直し（v0.3 準備）は次アクション。
 
 ---
 
 ## v0.4.0 (2025-12-10)
 
 ### Added
+
 - PROJECT_GRAND_RULES v4.0 を全面更新
   - Debugging_Principles_v0.2 を統治層へ統合
   - PageObject 4層構造（Base / Login / ChatSelect / Chat）を正式採用
@@ -817,11 +874,13 @@ RAG 回答に与える影響を、
   - test_smoke_llm での依存が解消し、構造が整合
 
 ### Changed
+
 - PROJECT_STATUS を v0.4.0 へ更新
   - Next Action を「CI headless 安定化」に一本化
   - 最新成果・課題・リスクを再整理
 
 ### Notes
+
 - 今後、PageObject 全体のバージョン統一（v0.6 系）へ移行予定
 - CI での Smoke 成功率向上が最優先タスク
 
@@ -830,6 +889,7 @@ RAG 回答に与える影響を、
 ## v0.3.0 (2025-12-10)
 
 ### Added
+
 - **ChatPage v0.5 を正式実装（DOM 完全対応版）**
   - 最新 DOM 解析に基づき、入力欄・送信ボタン・メッセージ要素のロケータを刷新。
   - 入力欄を `#message`、送信ボタンを `#chat-send-button` として安定化。
@@ -841,6 +901,7 @@ RAG 回答に与える影響を、
   - gov-llm-e2e-testkit におけるチャット画面自動化の標準仕様を定義。
 
 ### Changed
+
 - **Smoke Test v0.3 の仕様をアップデート**
   - ChatPage v0.5 に合わせて応答取得方式を刷新。
   - 旧 data-testid ベースのロケータに依存しない構造へ変更。
@@ -851,6 +912,7 @@ RAG 回答に与える影響を、
     Smoke Test には必須でないことを明確化。
 
 ### Fixed
+
 - **chat-input が DOM に存在しない問題を修正**
   - 旧ロケータ `data-testid="chat-input"` を完全廃止し、
     最新 DOM に基づく `#message` を採用。
@@ -859,6 +921,7 @@ RAG 回答に与える影響を、
   - `data-testid="chat-send-button"` 廃止に対応し、`#chat-send-button` へ移行。
 
 ### Notes
+
 - ChatPage v0.5 は Qommons.AI（2025年12月時点）の DOM に完全準拠した安定版。
 - UI 変更に強いロケータ構造（id・prefix-based search）を採用しており、
   CI / ローカル双方で動作が安定。
@@ -920,7 +983,9 @@ RAG 回答に与える影響を、
 ---
 
 ## v0.1.17 (2025-12-08)
+
 ### pytest Execution Layer v0.2
+
 - ADD: conftest.py に `case_dirs` fixture を追加し、テストケース単位で evidence_dir を生成
 - ADD: Smoke / Basic / Advanced の全テストを v0.2 構造に全面改修
 - ADD: PageObject v0.2 の evidence_dir 機能と統合
@@ -931,6 +996,7 @@ RAG 回答に与える影響を、
 - IMPROVE: latest エントリーポイント `Design_pytest.md` を統一フォーマットへ刷新
 
 ### Documentation
+
 - IMPROVE: Design_BasePage.md / Design_ChatPage.md / Design_pytest.md を統一スタイルへ整理
 
 ---
@@ -938,14 +1004,17 @@ RAG 回答に与える影響を、
 ## v0.1.16 (2025-12-09)
 
 ### Added
+
 - Design_BasePage.md（最新版を参照する固定ファイル）を追加
 - 設計書バージョニング方式（全バージョン保持＋latest ラッパー方式）を正式採用
 
 ### Changed
+
 - Design_BasePage_v0.2.md を最新仕様として確定し、v0.1 を supersede
 - PROJECT_STATUS.md に設計書管理ポリシーを反映
 
 ### Notes
+
 - 今後の設計書（LoginPage / ChatPage / Playwright / CI / Logging など）も同じ方式に統一予定。
 
 ---
@@ -954,18 +1023,18 @@ RAG 回答に与える影響を、
 
 ### Added
 
-* `test_smoke_llm.py`、`test_rag_basic_v0.1.py`、`test_rag_advanced_v0.1.py` に
+- `test_smoke_llm.py`、`test_rag_basic_v0.1.py`、`test_rag_advanced_v0.1.py` に
   **log_writer v0.1 を正式統合**
-* multi-turn advanced ログ仕様に基づく詳細ログ（details）生成を追加
+- multi-turn advanced ログ仕様に基づく詳細ログ（details）生成を追加
 
 ### Changed
 
-* `tests/conftest.py` を v0.1.15 仕様に書き換え（env_config tuple 化・timeout 正常化）
-* Basic / Advanced 判定ロジックを設計書の通り統一
+- `tests/conftest.py` を v0.1.15 仕様に書き換え（env_config tuple 化・timeout 正常化）
+- Basic / Advanced 判定ロジックを設計書の通り統一
 
 ### Notes
 
-* これにより E2E testkit の全レイヤが一貫し、
+- これにより E2E testkit の全レイヤが一貫し、
   CI artifacts も公式仕様どおりに整う v0.1 系の最終安定版となった。
 
 ---
@@ -1013,11 +1082,13 @@ RAG 回答に与える影響を、
 ## [v0.1.12] - 2025-12-07
 
 ### Added
+
 - Responsibility_Map_v0.1.md を新規追加（全レイヤの責務境界を正式定義）
 - Design_pytest_env_v0.1.md を追加（pytest Execution Layer の正式設計）
 - conftest.py v0.1 の設計仕様を正式確立（browser/context/page生成・timeout適用・env_loader連携）
 
 ### Changed
+
 - PROJECT_STATUS を v0.1.12 に更新
   - Responsibility Map / pytest Execution Layer 追加を反映
   - Next Action を「ロギング仕様 v0.1」に変更
@@ -1027,10 +1098,12 @@ RAG 回答に与える影響を、
 ## [v0.1.11] - 2025-12-07
 
 ### Added
+
 - env_loader.py v0.1 を追加（env.yaml の正式ローダー）
 - BasePage / pytest への env 連携を統一
 
 ### Changed
+
 - PROJECT_STATUS を v0.1.11 に更新
   - env.yaml ローダー実装完了を反映
   - Next Action を「ロギング仕様 v0.1」策定に変更
