@@ -1,15 +1,14 @@
 ---
 doc_type: roadmap
 project: gov-llm-e2e-testkit
-version: v1.5
+version: v1.4
 status: active
-date: 2025-12-27
-previous_version: v1.4
+date: 2025-12-22
+previous_version: v1.3
 update_reason:
-  - add F9 phase as a formal responsibility sink for post-F8 unresolved issues
-  - rename F8 to clarify it is verification, not evaluation
-  - rename F9 to clarify stable evaluable data delivery, not evaluation itself
-  - extend Roadmap × Design_playwright correspondence to post-F7 phases
+  - add F8 phase for Markdown value judgment
+  - clarify that HTML→Markdown automation is a prerequisite, not a goal
+  - resolve responsibility boundary between F7-C and value judgment work
 parent_design:
   - Design_playwright_v0.1
 related_docs:
@@ -17,34 +16,30 @@ related_docs:
   - CHANGELOG
 notes:
   - This roadmap defines phase responsibility and decision points only.
-  - Answer evaluation, scoring, and optimization remain explicitly out of scope.
+  - Evaluation, CI expansion, and optimization are explicitly out of scope unless stated.
 ---
 
-# gov-llm-e2e-testkit Roadmap v1.5
+# gov-llm-e2e-testkit Roadmap v1.4（F8：Markdown 価値判断フェーズ追加・全文差し替え版）
 
-**（F9：評価可能データ安定提供フェーズ新設・全文差し替え版）**
-
-最終更新: **2025-12-27**
-
+最終更新: **2025-12-22**
 更新理由:
 
-- **F8 で顕在化したが扱えなかった論点を、正式フェーズ F9 として収容**
-- **F8 を「Markdown変換検証」、F9 を「評価可能データ安定提供」と明確に再定義**
-- README / PROJECT_STATUS / CHANGELOG に責務が分散しないよう  
-  **Roadmap を裁定台帳として明示**
-- 上記責務整理を反映するため **v1.4 → v1.5** として更新
+- **HTML→Markdown 変換を前提とした Private Knowledge 活用の「価値判断」を、正式なフェーズとして定義**
+- **Markdown 化そのものを目的化せず、「変換コストに見合う価値があるか」を判断対象として明確化**
+- **F7-C（拡張試行）と本命タスクとの責務衝突を解消**
+- 上記は Roadmap の意味論を拡張するため、**v1.3 → v1.4** として更新
 
 ---
 
 ## 0. 本ロードマップの位置づけ（重要・不変）
 
-本ロードマップは、  
-**Design_playwright_v0.1 に定義された Playwright 利用設計を  
+本ロードマップは、
+**Design_playwright_v0.1 に定義された Playwright 利用設計を
 「技術的前提（アーキテクチャ憲法）」として進行する。**
 
-- Playwright の責務・抽象化方針・環境分離（INTERNET / LGWAN）は  
+- Playwright の責務・抽象化方針・環境分離（INTERNET / LGWAN）は
   **Design_playwright_v0.1 を唯一の正本**とする
-- 本ロードマップは、それを  
+- 本ロードマップは、それを
   **どの順序で・どこまで構築・検証・提供・判断するか**を示す進行図である
 
 ---
@@ -58,12 +53,12 @@ notes:
 3. **行動制御層**：Startup Workflow
 4. **実行層**：PROJECT_STATUS（現在地の唯一の正本）
 
-この構造により、  
+この構造により、
 設計 → 実装 → テスト → CI → 運用 → 判断 が破綻しない体制を維持する。
 
 ---
 
-## 2. フェーズ構造（Master Timeline｜責務確定版）
+## 2. フェーズ構造（Master Timeline｜責務是正後）
 
 ### フェーズ一覧
 
@@ -72,13 +67,14 @@ notes:
 3. **F3：Answer Detection & テスト基盤構築フェーズ（完了）**
 4. **F4：RAG 入力差分影響の観測・試験データ提供フェーズ**
 5. **F5：CI（e2e.yml）整備フェーズ**
-6. **F6：LGWAN 対応フェーズ（保留）**
+6. **F6：LGWAN 対応フェーズ（保留｜サービス提供待ち）**
 7. **F7：運用・保守フェーズ（A/B/C 分割・完了）**
-8. **F8：Markdown変換検証フェーズ**
-9. **F9：評価可能データ安定提供フェーズ（新設）**
+8. **F8：Markdown 価値判断フェーズ（新設）**
 
-- F8 は **検証フェーズ**であり、評価・採点・優劣判断を行わない
-- F9 は **評価を行わず、評価可能なデータを安定的に提供するフェーズ**である
+- F4 は RAG 前処理の是非を判断するフェーズではなく、
+  他プロジェクトが判断に利用可能な
+  **再現可能な試験データを提供するフェーズ**と位置づける。
+- F8 は **評価・自動化・CI フェーズではない**。
 
 ---
 
@@ -300,121 +296,83 @@ F7-C は **運用安全性確認の最終フェーズ**であり、
 
 ---
 
-## 10. F8：Markdown変換検証フェーズ
+## 10. F8：Markdown 価値判断フェーズ（新設・本命）
 
 ### 10.1 フェーズの目的（唯一）
 
 F8 の目的は、
 
-> **HTML 形式の条例を Markdown に変換し、Private Knowledge 登録した場合、  
-> QA を自動で実行可能か技術的に検証すること**
+> **HTML 形式の条例を Markdown に変換してまで
+> Private Knowledge に登録する価値があるかを判断すること**
 
 である。
 
-- Markdown 化そのものを目的化しない（別プロジェクトで実施）
-- 評価・優劣判断を行わない（別プロジェクトで実施）
-- **「実行 → 記録」が成立するか**のみを確認する（本プロジェクトの目的）
+Markdown 化は目的ではなく、
+**価値判断を成立させるための前提作業**として位置づける。
 
 ---
 
-### 10.2 主な内容
+### 10.2 主な内容（やること）
 
-- Markdown ナレッジ登録（手動）
-- 定義済み質問セット（全18問）の一括実行
-- Raw / Extracted Answer の **全件記録**
-- continue-on-error による **完全実行保証**（エラーになっても完走する）
+- HTML→Markdown 変換作業を **自動化**する
+
+  - 完全性・美しさは要求しない
+  - 再実行可能であることを重視する
+- 一定量の条例を Markdown 化し、Private Knowledge に登録する
+- 各条例に対して **定義済みの 18 問の質問**を実行する
+- 回答を **すべて記録**する（Raw Answer）
+- 得られた記録をもとに、
+  **Markdown 化というコストに見合う価値があるかを判断**する
 
 ---
 
 ### 10.3 明示的 Non-Goals（やらないこと）
 
-- 回答内容の評価・正確性判断
-- スコアリング・指標算出
-- CI 連携・自動合否判定
-- Markdown 品質改善
+- 回答品質・正確性・優劣の評価
+- 指標算出・スコアリング
+- CI への統合
+- 自動合否判定
+- Markdown 変換精度そのものの最適化
 
 ---
 
-### 10.4 フェーズの出口
+### 10.4 フェーズの出口（判断）
 
-- 技術的に成立 → F9 へ進行
-- 成立しない → 中断・撤退判断
-- 追加検証が必要 → 保留
+F8 の出口は、以下のいずれかである。
 
----
+- **価値あり**：Markdown 化を前提とした次プロジェクトへ進行
+- **価値なし**：変換コストに見合わないと判断し、終了
+- **保留**：追加材料が必要と判断
 
-## 11. F9：評価可能データ安定提供フェーズ（新設）
-
-### 11.1 フェーズの目的（唯一）
-
-F9 の目的は、
-
-> **F8 で収集された回答データ一式を、
-> 回答内容に介入することなく、
-> 他プロジェクトへ「評価可能な入力データ」として
-> 安定的・再現的に提供できる状態を成立させること**
-
-である。
+※ 結論は Yes / No に限られない。
 
 ---
 
-### 11.2 主な対象論点（正式責務）
+## 11. Roadmap × Design_playwright 対応表（参考）
 
-- 複数条例ナレッジ下での質問文曖昧性整理
-- HTML / Markdown 二系統実行条件の明文化
-- answer.md 引き渡し仕様の確定
-- Raw / Extracted 二層構造の合意確認
-- 書式消失・UI混入の仕様／実装切り分け
-- F8 成果物バージョン番号の意味定義
-- archive / 履歴ファイル運用ルール確定
-
----
-
-### 11.3 明示的 Non-Goals（やらないこと）
-
-- 回答内容の評価・採点
-- HTML vs Markdown の優劣判断
-- 新規評価指標の設計
-- CI 拡張・自動評価
+| Roadmap フェーズ | Design_playwright 節            |
+| ------------ | ------------------------------ |
+| F2           | 3.1 / 5（Page Object / Locator） |
+| F3           | 2 / 6（Test Level / Wait 設計）    |
+| F4           | 7 / 8（Test Data / Log）         |
+| F5           | 9（CI）                          |
+| F6           | 4（LGWAN）                       |
 
 ---
 
-### 11.4 フェーズ完了条件
-
-- F8 成果物が **評価可能な入力データとして第三者に引き渡せる**
-- 評価を行わずに **評価可否の判断が可能**
-- 責務境界が Roadmap / README / PROJECT_STATUS 上で一貫
-
----
-
-## 12. Roadmap × Design_playwright 対応表（更新）
-
-|Roadmap フェーズ|Design_playwright 節|
-|---|---|
-|F2|3.1 / 5（Page Object / Locator）|
-|F3|2 / 6（Test Level / Wait 設計）|
-|F4|7 / 8（Test Data / Log）|
-|F5|9（CI）|
-|F6|4（LGWAN）|
-|F7|10（運用時制約 / 手動実行前提）|
-|F8|11（実行オーケストレーション / ログ完全性）|
-|F9|12（成果物境界 / データ引き渡し責務）|
-
----
-
-## 📌 総括（v1.5）
+## 📌 総括（v1.4）
 
 - F7-C までで **運用安全性の検証は完了**
-- F8：**Markdown変換が成立するかを検証**
-- F9：**評価可能なデータを安定的に提供**
-- 評価そのものは **本プロジェクトの責務外**
+- F8 を **「Markdown 化の価値判断」に特化した単独フェーズとして新設**
+- 自動化は **判断の前提作業として限定的に位置づけ**
+- 評価・CI・最適化を持ち込まないことで、目的の純度を維持
 
-本 Roadmap v1.5 により、
+本 Roadmap v1.4 は、
 
-> 「やらないと決めたこと」  
-> 「今はやらないが、必ずやること」  
-> 「永久にやらないこと」
+> **HTML→Markdown 変換というコストを払う価値があるかを、
+> 実運用に近い QA 利用ログを通じて判断する**
 
-が、初めて **フェーズ構造として完全に分離・明文化**された。
+という本プロジェクトの真の目的を、
+**初めて正確に包含したロードマップ**である。
 
 ---
