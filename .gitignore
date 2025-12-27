@@ -173,3 +173,7 @@ out/
 # execution / probe logs (may contain secrets)
 docs/archive/runs/logs/
 sandbox/
+
+**/runs/**
+**/logs/**
+**/*.jsonl
