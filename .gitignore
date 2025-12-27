@@ -169,3 +169,7 @@ scripts/run_f4_test.bat
 
 # execution artifacts
 out/
+
+# execution / probe logs (may contain secrets)
+docs/archive/runs/logs/
+sandbox/
