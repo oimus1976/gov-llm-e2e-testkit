@@ -1,0 +1,61 @@
+diff --git a/tests/conftest.py b/tests/conftest.py
+index 3c2b1a7..f4e92d1 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -1,6 +1,7 @@
+ import os
+ import pytest
+
++from typing import Optional
+ from src.env_loader import load_env, MissingSecretError
+ from tests.pages.login_page import LoginPage
+ from tests.pages.chat_select_page import ChatSelectPage
+@@ -38,6 +39,18 @@ def apply_ci_fallback():
+         if not os.getenv(key):
+             os.environ[key] = value
+
++
++# ----------------------------------------------------------
++# pytest option: --profile
++# ----------------------------------------------------------
++def pytest_addoption(parser):
++    parser.addoption(
++        "--profile",
++        action="store",
++        default=None,
++        help="Execution profile for F4 RAG evaluation (e.g. html, markdown)",
++    )
++
+
+ # ----------------------------------------------------------
+ # env_config Fixture
+@@ -46,14 +59,30 @@ def apply_ci_fallback():
+ @pytest.fixture(scope="session")
+-def env_config():
++def env_config(request):
+     try:
+-        config, options = load_env()
+-        return config, options
++        config, options = load_env()
+     except MissingSecretError as e:
+         print("[conftest] MissingSecretError detected:", e)
+         apply_ci_fallback()
+-        config, options = load_env()
+-        return config, options
++        config, options = load_env()
++
++    # ------------------------------------------------------
++    # profile resolution (manual, v0.1 rule)
++    # ------------------------------------------------------
++    cli_profile: Optional[str] = request.config.getoption("--profile")
++
++    if cli_profile:
++        resolved_profile = cli_profile
++    else:
++        # fallback to env.yaml (or default)
++        resolved_profile = config.get("profile", "default")
++
++    # expose resolved profile
++    config["resolved_profile"] = resolved_profile
++
++    return config, options
