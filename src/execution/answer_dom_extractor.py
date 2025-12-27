@@ -2,38 +2,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import re
 
 from bs4 import BeautifulSoup
 
 
-# ====== Tunables (暫定) ======
-MIN_TEXT_LENGTH = 200
-MIN_ACCEPTABLE_LENGTH = 120
-UI_TOKEN_EXCLUDE_THRESHOLD = 6
-QUESTION_PREFIX_LEN = 20
-
-UI_TOKENS = [
-    "Toggle Sidebar",
-    "コピー",
-    "音声",
-    "AIモデル",
-    "Web検索",
-    "ナレッジ",
-    "チャットAI選択",
-    "国内リージョン",
-]
+MARKDOWN_ID_PATTERN = re.compile(r"^markdown-(\d+)$")
 
 
-# ====== Data ======
 @dataclass
-class Candidate:
-    div_index: int  # DOM 全体 index（main 配下）
+class MarkdownCandidate:
+    n: int
     text: str
-    length: int
-    ui_token_count: int
-    contains_question: bool
 
 
 @dataclass
@@ -43,111 +24,69 @@ class ExtractionResult:
     reason: Optional[str] = None
 
 
-# ====== Utils ======
-def normalize_text(s: str) -> str:
-    if not s:
-        return ""
-    # 連続空白の正規化＋前後トリム
-    s = re.sub(r"\s+", " ", s)
-    return s.strip()
-
-
-def text_is_empty(s: str) -> bool:
-    return not s or not s.strip()
-
-
-def count_ui_tokens(text: str) -> int:
-    cnt = 0
-    for tok in UI_TOKENS:
-        if tok in text:
-            cnt += 1
-    return cnt
-
-
-# ====== Core ======
-def enumerate_candidates(html: str, question_text: str) -> List[Candidate]:
+def parse_markdown_candidates(html: str) -> List[MarkdownCandidate]:
     soup = BeautifulSoup(html, "html.parser")
-    main = soup.find("main")
-    if main is None:
-        return []
+    candidates: List[MarkdownCandidate] = []
 
-    # DOM 全体 index を確定（S4 の根拠）
-    all_divs = list(main.find_all("div"))
-    div_index_map = {div: idx for idx, div in enumerate(all_divs)}
-
-    # Primary Path
-    primary_divs = main.select('div[class~="message"], div[class~="markdown"]')
-    target_divs = primary_divs if primary_divs else all_divs
-
-    q_key = normalize_text(question_text)[:QUESTION_PREFIX_LEN]
-
-    candidates: List[Candidate] = []
-    for div in target_divs:
-        raw = div.get_text(separator=" ", strip=True)
-        text = normalize_text(raw)
-
-        if text_is_empty(text):
-            continue
-        if len(text) < MIN_TEXT_LENGTH:
+    for div in soup.select("div.markdown"):
+        raw_id = div.get("id")
+        if not isinstance(raw_id, str):
             continue
 
-        contains_question = q_key in text if q_key else False
-        ui_token_count = count_ui_tokens(text)
-
-        if ui_token_count >= UI_TOKEN_EXCLUDE_THRESHOLD:
+        match = MARKDOWN_ID_PATTERN.fullmatch(raw_id.strip())
+        if not match:
             continue
 
-        candidates.append(
-            Candidate(
-                div_index=div_index_map.get(div, -1),
-                text=text,
-                length=len(text),
-                ui_token_count=ui_token_count,
-                contains_question=contains_question,
-            )
-        )
+        n = int(match.group(1))
+        text = div.get_text(separator=" ", strip=True) or ""
+        candidates.append(MarkdownCandidate(n=n, text=text))
 
     return candidates
 
 
-def select_best_candidate(candidates: List[Candidate]) -> Optional[Candidate]:
+def select_latest_even(
+    candidates: List[MarkdownCandidate],
+) -> Optional[Tuple[MarkdownCandidate, str]]:
     if not candidates:
         return None
 
-    # S1
-    non_question = [c for c in candidates if not c.contains_question]
-    pool = non_question if non_question else candidates
+    sorted_desc = sorted(candidates, key=lambda c: c.n, reverse=True)
+    max_n = sorted_desc[0].n
 
-    # S2 / S3 / S4
-    pool_sorted = sorted(
-        pool,
-        key=lambda c: (
-            c.ui_token_count,  # 少ないほど良い
-            -c.length,  # 長いほど良い
-            -c.div_index,  # 後方ほど良い
-        ),
-    )
+    for candidate in sorted_desc:
+        if candidate.n % 2 == 0:
+            parity_note = "even-max" if candidate.n == max_n else "fallback-to-even"
+            return candidate, parity_note
 
-    best = pool_sorted[0]
-    if best.length < MIN_ACCEPTABLE_LENGTH:
-        return None
-
-    return best
+    return None
 
 
 def extract_answer_dom(html: str, question_text: str) -> ExtractionResult:
-    candidates = enumerate_candidates(html, question_text)
-    best = select_best_candidate(candidates)
-
-    if best is None:
+    candidates = parse_markdown_candidates(html)
+    if not candidates:
         return ExtractionResult(
             selected=False,
-            reason="no suitable dom candidate found",
+            reason="no markdown-n candidates",
+        )
+
+    selection = select_latest_even(candidates)
+    if selection is None:
+        return ExtractionResult(
+            selected=False,
+            reason="no even markdown-n candidates",
+        )
+
+    candidate, parity_note = selection
+    if not candidate.text.strip():
+        return ExtractionResult(
+            selected=False,
+            reason="selected markdown is empty",
         )
 
     return ExtractionResult(
         selected=True,
-        text=best.text,
+        text=candidate.text,
+        reason=f"selected markdown-{candidate.n} ({parity_note})",
     )
 
 

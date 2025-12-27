@@ -43,33 +43,23 @@ class SingleQuestionResult:
 
 
 def _extract_submit_id(submit_result: Any) -> str:
-    """
-    Derive submit_id from SubmitReceipt or dict.
-    Falls back to 'N/A' when unavailable (no guessing).
-    """
     if hasattr(submit_result, "submit_id"):
         value = getattr(submit_result, "submit_id")
         if isinstance(value, str):
             return value
-
     if isinstance(submit_result, dict):
         value = submit_result.get("submit_id")
         if isinstance(value, str):
             return value
-
     return "N/A"
 
 
 def _extract_chat_id(chat_page: ChatPageProtocol) -> str:
-    """Extract chat_id from page URL; fall back to N/A on failure."""
     try:
         url = chat_page.page.url
     except Exception:
         return "N/A"
-
     parts = str(url).split("/")
-    if not parts:
-        return "N/A"
     return parts[-1] or "N/A"
 
 
@@ -84,20 +74,14 @@ def run_single_question(
     execution_context: Optional[dict] = None,
     timeout_sec: int = 60,
 ) -> SingleQuestionResult:
-    """
-    Execute one question via UI and observe answer completion (probe),
-    then extract canonical answer text from UI DOM (non-evaluative selection).
+    # TEMP: UI readiness stabilization (remove after confirmation)
+    chat_page.page.wait_for_timeout(1000)
 
-    Notes:
-    - pytest dependencies are intentionally excluded.
-    - No evaluation or formatting is performed here.
-    - probe output is recorded as observed fact (execution_context), not used to decide answer_text.
-    """
     submit_receipt = chat_page.submit(question_text)
     submit_id = _extract_submit_id(submit_receipt)
     chat_id = _extract_chat_id(chat_page)
 
-    # Probe: completion signal / observed fact (not canonical answer source)
+    # Probe (observation only)
     probe_answer_text = wait_for_answer_text(
         page=chat_page.page,
         submit_id=submit_id,
@@ -105,10 +89,12 @@ def run_single_question(
         timeout_sec=timeout_sec,
     )
 
-    # Canonical: DOM-based extraction (non-evaluative selection)
-    # Best-effort: extractor itself returns a result object and should not raise in normal cases.
+    # DOM-based canonical extraction
     dom_html = chat_page.page.content()
     dom_result = extract_answer_dom(dom_html, question_text)
+
+    # --- Observed facts (no evaluation, no print) ---
+    dom_text_len = len(dom_result.text or "")
 
     merged_context = dict(execution_context or {})
     merged_context.update(
@@ -117,6 +103,7 @@ def run_single_question(
             "dom_extraction": {
                 "selected": dom_result.selected,
                 "reason": dom_result.reason,
+                "text_len": dom_text_len,
             },
         }
     )
