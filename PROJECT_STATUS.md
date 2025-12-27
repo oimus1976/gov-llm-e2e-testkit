@@ -1,7 +1,8 @@
-# 📘 PROJECT_STATUS v0.7.5  
-**— F8（Markdown 価値判断フェーズ）実装・観測成立反映版 —**
+# 📘 PROJECT_STATUS v0.7.6（追記反映案）
 
-**Last Updated:** 2025-12-27  
+**— F8（Markdown 価値判断フェーズ）実装・観測成立 + Docs 構造確定版 —**
+
+**Last Updated:** 2025-12-27
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -32,106 +33,107 @@
 
 ### **F8：Markdown 価値判断フェーズ**
 
-#### 設計・実装の確定状況
-
-- **F8 v0.2 設計合意を前提に、実装・観測が成立**
-- runner / orchestrator / single-question I/F を含む  
-  **F8 実行パスが end-to-end で動作確認済み**
-- Q01–Q18 を通じて、以下を満たすことを確認：
-  - continue-on-error による全件記録
-  - SUCCESS / NO_ANSWER / TIMEOUT 等の状態保持
-  - answer.md が常に生成される成果物完全性
-
-#### DOM 抽出に関する確定事項（重要）
-
-- **Answer (Extracted)**  
-  - UI DOM 上の `div.markdown`（markdown-n）を対象に  
-    **最新・偶数 index を優先選択する非評価ロジックを確定**
-  - 書式情報は保持しない（text 抽出）
-- **Answer (Raw)**  
-  - UI DOM（main/body）をそのまま保存する観測用スナップショット
-  - UI 文言・サイドバー混入は **設計どおり許容**
-
-- 抽出成否・理由・文字数は  
-  **Metadata（Observed）として明示的に記録**
-
-#### 状態
+#### 設計・実装・運用状態
 
 - **F8 は「設計 → 実装 → 観測成立」まで完了**
-- 品質評価・価値判断（F9 以降）は未着手
+- runner / orchestrator / single-question I/F を含む
+  **F8 実行パスは end-to-end で成立**
+- Q01–Q18 を通じて、以下を確認：
+  - continue-on-error による全件記録
+  - SUCCESS / NO_ANSWER / TIMEOUT 等の状態保持
+  - answer.md が必ず生成される成果物完全性
+
+#### 回答素材（answer.md）に関する確定事項
+
+- Answer (Extracted)
+  - UI DOM 上の `div.markdown` を対象とした **非評価・best-effort 抽出**
+  - 書式は保持しない（text 抽出）
+- Answer (Raw)
+  - UI DOM 全体を保存する **観測用スナップショット**
+- 抽出結果・成否・理由・文字数は  
+  **Metadata（Observed）として明示的に記録**
 
 ---
 
-## 2. プロジェクトの到達点（要約）
+## 2. ドキュメント構造整理（v0.7.6 反映事項）
 
-本プロジェクトは現在、
+### 概要
 
-> **再現可能な E2E テスト基盤（F1–F3）**  
-> **差分影響を測定可能な試行データ（F4）**  
-> **基盤破壊を検知する最小 CI（F5）**  
-> **制御付き実運用試行（F7-C）**  
-> **Markdown 価値判断の技術的成立（F8）**  
+- docs 配下のディレクトリ構造を整理し、  
+  **入口文書／設計／運用／規約／アーカイブの責務を明確化**
+- **内容・設計意味論の変更は一切行っていない**
+- 移動のみ（move-only）による整理を実施
 
-がすべて **同一 main ブランチ上で整合した状態**に到達している。
+### 正本配置ルール（確定）
+
+- **リポジトリ直下**
+  - README.md
+  - CHANGELOG.md
+  - PROJECT_STATUS.md
+- **docs 直下（不変・横断ルール）**
+  - PROJECT_GRAND_RULES.md
+  - Debugging_Principles.md
+  - Roadmap.md
+- **docs 配下**
+  - design / operation / protocol / runbook / guidelines / spec / test_plan
+- **docs/archive**
+  - 旧版設計
+  - 思考過程・検討メモ
+  - 観測ログ・完了済みフェーズ成果物
+
+この構造は **README.md に正式反映済み**。
 
 ---
 
-## 3. 完了済み成果（完結）
+## 3. プロジェクトの到達点（更新）
 
-### ✅ F1–F3：E2E 基盤フェーズ
+本プロジェクトは現在、以下が **同一 main ブランチ上で整合した状態**に到達している。
 
-- Playwright ベースの E2E テスト基盤を確立
-- Page Object / Answer Detection / Execution Layer の責務境界を固定
+- 再現可能な E2E テスト基盤（F1–F3）
+- RAG 入力差分影響の試行データ生成（F4）
+- 基盤破壊を検知する最小 CI（F5）
+- 制御付き実運用試行（F7-C）
+- **回答素材収集基盤としての F8 技術成立**
+- **ドキュメント構造の確定（v0.7.6）**
 
-### ✅ F7-C：拡張試行フェーズ
+---
 
-- 実運用相当条件下での制御付き試行を完結
-- Golden Question / Ordinance を保持したまま次フェーズへ移行
+## 4. 完了済み成果（完結）
 
 ### ✅ F8：Markdown 価値判断フェーズ（技術成立）
 
-- DOM-based Answer 抽出の成立
-- answer.md 正本生成ルールの確定
-- 非評価・観測モデルの実装固定
+- DOM-based Answer 抽出ロジックの確定
+- answer.md 正本生成ルールの固定
+- 非評価・観測モデルの実装完了
+
+### ✅ Docs 構造整理（v0.7.6）
+
+- OSS として第三者可読な構造に整理
+- 正本／旧版／参照資料の区別を明確化
+- README によるプロジェクト定義の明文化
 
 ---
 
-## 4. Design / Ops / Protocol 実行モデル（確定）
+## 5. 評価・判断に関する前提（不変）
 
-以下の文書を、  
-**AI 参加前提の正式な実行モデル定義として確定**した。
+以下は **本プロジェクトでは扱わない**。
 
-- **Design_Execution_Model_QommonsAI_TestAutomation_v1.1.md**
-- **Ops_Web_VSCode_Roundtrip_Guide_v1.1.md**
-- **Protocol_Web_VSCode_Roundtrip_v1.1.md**
+- 回答の正誤・品質・有用性の評価
+- Markdown / HTML の価値判断そのもの
+- UI 構造の安定化保証
 
----
-
-## 5. F8 単一質問 I/F に関する確定事項
-
-- run_single_question は **非評価・観測専用 I/F として FIX**
-- probe（完了検知）と DOM 抽出は責務分離を維持
-- status 判定は runner 側の観測事実にのみ依存
+これらは **後続プロジェクトで扱う前提**とする。
 
 ---
 
-## 6. 運用上の前提（評価・判断と無関係）
+## 6. Next Action（更新）
 
-以下は **品質評価・フェーズ進行判断の材料とはしない**。
-
-- LLM 応答の非決定性
-- UI 構造変更・文言変化
-- 外部サービス起因の一時的失敗
+- **F9（Markdown 価値評価・比較指標定義フェーズ）の構想整理**
+  - 本リポジトリでは実装しない可能性を含めて検討
 
 ---
 
-## 7. Next Action（単一・最優先）
-
-- **F9（Markdown 価値評価・比較指標定義フェーズ）構想整理**
-
----
-
-## 8. Backlog（正式登録）
+## 7. Backlog（正式登録）
 
 - DOM 構造変化検知ルールの将来検討
 - Answer (Extracted) の書式保持可否
@@ -139,8 +141,17 @@
 
 ---
 
-## 9. 注記（不変）
+## 8. 注記（不変）
 
-- 本 STATUS は **「現在地の唯一の正本」**である
-- 設計・裁定・フェーズ判断は、  
-  本文書と **Roadmap v1.4 / CHANGELOG** の整合をもって行う
+- 本 STATUS は **現在地の唯一の正本**
+- CHANGELOG / Roadmap との整合をもって更新とみなす
+
+---
+
+## 付記：v0.7.6 の位置づけ
+
+- 機能追加なし
+- 設計意味論変更なし
+- **F8 成果を引き渡すための「整理完了スナップショット」**
+
+---
