@@ -27,7 +27,6 @@ from src.answer_probe import (
     AnswerTimeoutError,
     ProbeExecutionError,
 )
-from src.execution.answer_dom_extractor import extract_answer_dom
 from src.execution.run_single_question import (
     ChatPageProtocol,
     run_single_question,
@@ -142,22 +141,6 @@ def _default_capture_raw_answer(
     )
 
 
-def _fallback_dom_extraction(
-    *,
-    raw_capture: RawCapture,
-    question_text: str,
-):
-    try:
-        html_content = raw_capture.html_path.read_text(encoding="utf-8")
-    except Exception:
-        return None
-
-    try:
-        return extract_answer_dom(html_content, question_text)
-    except Exception:
-        return None
-
-
 def _write_answer_markdown(
     *,
     question_dir: Path,
@@ -183,6 +166,7 @@ def _write_answer_markdown(
     observation_notes: Optional[Sequence[str]],
     submit_id: str,
     chat_id: str,
+    extracted_status: str,
 ) -> Path:
     _validate_required_keys(
         qommons_config,
@@ -205,6 +189,7 @@ def _write_answer_markdown(
         "schema_version: v0.1r+",
         f"run_id: {run_id}",
         f"executed_at: {executed_at.isoformat()}",
+        f"extracted_status: {extracted_status if extracted_status in {'VALID', 'INVALID'} else 'INVALID'}",
         f"result_status: {result_status.value}",
         f"result_reason: {result_reason or ''}",
         f"aborted_run: {aborted_run}",
@@ -303,6 +288,10 @@ def _write_answer_markdown(
             f"- dom_selected: {dom.get('selected', 'N/A')}",
             f"- dom_reason: {dom.get('reason', 'N/A')}",
             f"- dom_text_len: {dom_text_len}",
+            f"- dom_selected_n: {dom.get('selected_n', 'N/A')}",
+            f"- dom_parity: {dom.get('parity', 'N/A')}",
+            f"- dom_candidates: {dom.get('candidates', 'N/A')}",
+            f"- dom_errors: {dom.get('errors', [])}",
             f"- raw_answer_html: {raw_capture.html_path if raw_capture else 'N/A'}",
             f"- raw_answer_txt: {raw_capture.text_path if raw_capture else 'N/A'}",
             f"- raw_capture_meta: {raw_capture.meta_path if raw_capture else 'N/A'}",
@@ -360,6 +349,7 @@ def run_f8_collection(
             submit_id = "N/A"
             chat_id = "N/A"
             extracted_answer_text = ""
+            extracted_status = "INVALID"
             execution_context: Optional[dict] = None
 
             try:
@@ -379,6 +369,7 @@ def run_f8_collection(
                     submit_id = result.submit_id
                     chat_id = result.chat_id
                     extracted_answer_text = result.answer_text
+                    extracted_status = result.extracted_status
                     execution_context = result.execution_context or {}
                     status = ResultStatus.SUCCESS
                 except AnswerTimeoutError as exc:
@@ -440,21 +431,6 @@ def run_f8_collection(
                     execution_context = dict(execution_context)
 
                 dom_extraction = execution_context.get("dom_extraction")
-                if dom_extraction is None and raw_capture is not None:
-                    fallback_dom = _fallback_dom_extraction(
-                        raw_capture=raw_capture,
-                        question_text=question.question_text,
-                    )
-                    if fallback_dom is not None:
-                        dom_extraction = {
-                            "selected": fallback_dom.selected,
-                            "reason": fallback_dom.reason,
-                            "text_len": len(fallback_dom.text or ""),
-                        }
-                        execution_context["dom_extraction"] = dom_extraction
-                        if not extracted_answer_text and fallback_dom.selected:
-                            extracted_answer_text = fallback_dom.text or ""
-
                 if dom_extraction is None:
                     execution_context["dom_extraction"] = {
                         "selected": False,
@@ -462,6 +438,11 @@ def run_f8_collection(
                         "text_len": len(extracted_answer_text)
                         if extracted_answer_text
                         else 0,
+                        "errors": ["dom extraction unavailable"],
+                        "extracted_status": extracted_status,
+                        "candidates": [],
+                        "selected_n": None,
+                        "parity": None,
                     }
 
                 # --- TEMP DEBUG: before writing answer.md ---
@@ -497,6 +478,7 @@ def run_f8_collection(
                     observation_notes=observation_notes,
                     submit_id=submit_id,
                     chat_id=chat_id,
+                    extracted_status=extracted_status,
                 )
             except Exception as exc:
                 print("[DEBUG] answer.md write failed:", exc)
