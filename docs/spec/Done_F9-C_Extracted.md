@@ -89,10 +89,10 @@ Extracted は以下を満たす。
 Extracted には以下のいずれかの状態が  
 **Metadata として必ず付与**される。
 
-| State   | 意味                                   |
-| ------- | -------------------------------------- |
-| VALID   | 仕様どおり Extracted が取得できている |
-| INVALID | 抽出失敗または仕様違反が発生している |
+| State    | 意味                                       |
+| -------- | ------------------------------------------ |
+| VALID    | 仕様どおり Extracted が取得できている      |
+| INVALID  | 抽出失敗または仕様違反が発生している       |
 
 INVALID の場合は、  
 原因（例：`ui_noise`, `extraction_error`, `structure_violation` 等）を  
