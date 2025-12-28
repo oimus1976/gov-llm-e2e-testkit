@@ -152,6 +152,7 @@ def run_single_question(
     dom_candidates_path = output_dir / "dom_candidates.json"
     after_submit_html = ""
     after_ready_html = ""
+    dom_html = ""
 
     # TEMP: UI readiness stabilization (remove after confirmation)
     chat_page.page.wait_for_timeout(1000)
@@ -166,20 +167,40 @@ def run_single_question(
     )
 
     probe_answer_text = ""
-    dom_result = None
-    dom_result_observation: Optional[dict] = None
-    dom_html = ""
     probe_exception: Optional[Exception] = None
 
+    dom_result = None
+    dom_result_observation: Optional[dict] = None
+
+    merged_context = dict(execution_context or {})
+
+    # ------------------------------------------------------------
+    # Probe phase (observation only) — must not block DOM extraction
+    # ------------------------------------------------------------
     try:
-        # Probe (observation only)
         probe_answer_text = wait_for_answer_text(
             page=chat_page.page,
             submit_id=submit_id,
             chat_id=chat_id,
             timeout_sec=timeout_sec,
         )
+    except Exception as exc:
+        probe_exception = exc
+        merged_context["probe_exception"] = {
+            "type": type(exc).__name__,
+            "message": str(exc),
+        }
 
+        # TEMP/VERIFY: capture root exception from probe
+        _safe_write_text(
+            output_dir / "verify_dom_exception.txt",
+            f"{type(exc).__name__}: {exc}",
+        )
+
+    # ------------------------------------------------------------
+    # DOM snapshot + extraction phase (always)
+    # ------------------------------------------------------------
+    try:
         after_ready_html = _capture_html_snapshot(
             chat_page.page, after_ready_html_path, "after_answer_ready", snapshot_errors
         )
@@ -188,74 +209,71 @@ def run_single_question(
         )
 
         dom_html = after_ready_html or chat_page.page.content()
+
         # TEMP/VERIFY: capture pre-extraction state
         _safe_write_text(
             output_dir / "verify_reached_extract.txt",
             "before extract_answer_dom",
         )
-        # ------------------------------------------
+
         dom_result = extract_answer_dom(dom_html, question_text)
+
         # TEMP/VERIFY: capture post-extraction state
         _safe_write_text(
             output_dir / "verify_after_extract.txt",
             f"dom_result is None = {dom_result is None}",
         )
-        # ------------------------------------------
-        dom_result_observation = {
-            "candidates": dom_result.observation.candidates,
-            "selected": dom_result.observation.selected,
-            "selected_n": dom_result.observation.selected_n,
-            "parity": dom_result.observation.parity,
-            "reason": dom_result.observation.reason,
-            "text_len": dom_result.observation.text_len,
-            "errors": dom_result.observation.errors,
-            "extracted_status": dom_result.extracted_status,
-        }
-    except Exception as exc:
-        probe_exception = exc
 
-        # TEMP/VERIFY: capture root exception causing dom_result_observation=None
-        _safe_write_text(
-            output_dir / "verify_dom_exception.txt",
-            f"{type(exc).__name__}: {exc}",
-        )
-        # -------------------------------------------------------------------------
+        if dom_result is not None:
+            dom_result_observation = {
+                "candidates": dom_result.observation.candidates,
+                "selected": dom_result.observation.selected,
+                "selected_n": dom_result.observation.selected_n,
+                "parity": dom_result.observation.parity,
+                "reason": dom_result.observation.reason,
+                "text_len": dom_result.observation.text_len,
+                "errors": dom_result.observation.errors,
+                "extracted_status": dom_result.extracted_status,
+            }
+    except Exception as exc:
+        # DOM extraction failure must not block overall execution.
+        snapshot_errors.append(f"dom extraction failed: {type(exc).__name__}: {exc}")
+
         if not after_ready_html:
             after_ready_html = _capture_html_snapshot(
                 chat_page.page,
                 after_ready_html_path,
-                "after_answer_ready-on-error",
+                "after_answer_ready-on-dom-error",
                 snapshot_errors,
             )
         _capture_screenshot(
             chat_page.page,
             after_ready_png_path,
-            "after_answer_ready-on-error",
+            "after_answer_ready-on-dom-error",
             snapshot_errors,
         )
         if not dom_html:
             dom_html = after_ready_html
-    finally:
-        if not after_ready_html:
-            # Ensure a DOM snapshot exists even if capture failed earlier.
-            after_ready_html = _capture_html_snapshot(
-                chat_page.page,
-                after_ready_html_path,
-                "after_answer_ready-finalize",
-                snapshot_errors,
-            )
 
-        _write_dom_candidates_file(
-            path=dom_candidates_path,
-            html=dom_html or after_ready_html or after_submit_html,
-            submit_id=submit_id,
-            chat_id=chat_id,
-            observation=dom_result_observation,
-            errors=snapshot_errors,
+    # ------------------------------------------------------------
+    # Finalize: ensure snapshot + candidates are saved
+    # ------------------------------------------------------------
+    if not after_ready_html:
+        after_ready_html = _capture_html_snapshot(
+            chat_page.page,
+            after_ready_html_path,
+            "after_answer_ready-finalize",
+            snapshot_errors,
         )
 
-    if probe_exception is not None:
-        raise probe_exception
+    _write_dom_candidates_file(
+        path=dom_candidates_path,
+        html=dom_html or after_ready_html or after_submit_html,
+        submit_id=submit_id,
+        chat_id=chat_id,
+        observation=dom_result_observation,
+        errors=snapshot_errors,
+    )
 
     # --- Observed facts (no evaluation, no print) ---
     dom_observation = dom_result_observation or {
@@ -268,9 +286,7 @@ def run_single_question(
         "errors": ["dom extraction unavailable"],
         "extracted_status": "INVALID",
     }
-    dom_text_len = dom_observation["text_len"]
 
-    merged_context = dict(execution_context or {})
     merged_context.update(
         {
             "probe_answer_text": probe_answer_text,
@@ -289,6 +305,7 @@ def run_single_question(
         if dom_result is not None and extracted_status == "VALID" and dom_result.text
         else ""
     )
+
     # TEMP/VERIFY: diagnose extraction result
     _safe_write_text(
         output_dir / "verify_extraction_state.txt",
@@ -301,6 +318,11 @@ def run_single_question(
                 ),
                 "final_extracted_status": extracted_status,
                 "canonical_answer_len": len(canonical_answer_text),
+                "probe_exception_type": (
+                    type(probe_exception).__name__
+                    if probe_exception is not None
+                    else None
+                ),
             },
             ensure_ascii=False,
             indent=2,
