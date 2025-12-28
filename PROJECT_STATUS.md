@@ -48,6 +48,11 @@
 - answer.md を **評価入力として完成形に確定**することを目的とする
 - 回答の評価・採点・品質判断は **一切行わない**
 
+※ F9-C（Extracted 正本化）の完了条件は、  
+`docs/spec/Done_F9-C_Extracted.md` に定義された  
+**Done Definition を正本として判定する**。
+
+
 ---
 
 ## 2. ドキュメント構造整理（v0.7.6 反映事項・不変）
@@ -150,9 +155,14 @@
 ### C. Extracted の正本化（最重要）
 
 - [ ] Extracted を評価入力の正本と定義する
-- [ ] Extracted を常に取得可能とする DOM 抽出ルールを確定する
-- [ ] 取得不能時の状態分類（VALID / INVALID 等）を定義する
-- [ ] 書式保持方針を仕様化する
+- [ ] Extracted を原則として取得可能とする DOM 抽出ルールを確定する
+- [ ] Extracted が取得できない場合の状態分類（VALID / INVALID）を定義する
+- [ ] Extracted の状態（VALID / INVALID）を Metadata に明示的に記録する仕様を定義する
+- [ ] 書式（改行・箇条書き・強調等）を保持し、再実行時に構造が破壊されない抽出方針を仕様化する
+
+※ 本項目の Done 判定は、  
+`docs/spec/Done_F9-C_Extracted.md` に定義された  
+Done Definition に完全準拠する。
 
 ### D. Raw の位置づけ整理
 
