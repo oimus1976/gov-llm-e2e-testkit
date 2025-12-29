@@ -59,6 +59,7 @@ Breaking Change: YES（F9-C 前提）
 - UI 操作  
 - RAG 検証ロジック  
 - pytest 実行順序の制御
+
 ---
 
 ### 2.2 Execution Layer  
@@ -88,7 +89,7 @@ Breaking Change: YES（F9-C 前提）
 
 ---
 
-#### BasePage の責務：
+#### BasePage の責務
 
 - locator strategies（role/label/testid/css）  
 - wait / click / find / fill などの共通関数  
@@ -104,7 +105,7 @@ Breaking Change: YES（F9-C 前提）
 
 ---
 
-#### LoginPage の責務：
+#### LoginPage の責務
 
 - ログインフォーム操作（ユーザー名/パスワード入力）  
 - ログイン開始・ログイン完了の検知  
@@ -117,7 +118,7 @@ Breaking Change: YES（F9-C 前提）
 
 ---
 
-#### ChatPage の責務：
+#### ChatPage の責務
 
 - チャット送信 / 返信取得  
 - 送信ボタンの locator 選択  
@@ -163,11 +164,11 @@ Breaking Change: YES（F9-C 前提）
 
 **成果物（契約）**
 
-成果物                | 必須性    | 備考                        |
-| ------------------ | ------ | ------------------------- |
-| Answer (Extracted) | **必須** | 評価入力の唯一の正本（HTML 非変換）      |
-| Metadata.status    | **必須** | VALID / INVALID           |
-| Answer (Raw)       | 条件付き任意 | status=INVALID の場合 **必須** |
+|成果物|必須性|備考|
+|---|---|---|
+|Answer (Extracted)|**必須**|評価入力の唯一の正本（HTML 非変換）|
+|Metadata.status|**必須**|VALID / INVALID|
+|Answer (Raw)|条件付き任意|status=INVALID の場合 **必須**|
 
 ---
 
@@ -218,8 +219,97 @@ Breaking Change: YES（F9-C 前提）
 
 ---
 
+### 2.6 F8 / F9 出力ディレクトリの正規形（Normative）
+
+#### 目的
+
+F8 実行結果および F9 dataset 構築において、  
+**出力ディレクトリ構造の意味を一意に固定**し、  
+後段処理がディレクトリ階層を解釈・推測する必要を
+なくすことを目的とする。
+
+本セクションで定義する構造は **正規形（Normative）** であり、  
+後続フェーズ（F9-D 以降）は本正規形を前提として実装される。
+
+---
+
+#### F8 run 出力ディレクトリ（正規形）
+
+```text
+<OUTPUT_ROOT>/
+ └─ f8_runs/
+     └─ <run_id>/
+         ├─ meta.yaml
+         └─ entries/
+             └─ Qxx/
+                 └─ answer.md
+```
+
+#### 各要素の意味
+
+- `<OUTPUT_ROOT>`
+  - ユーザーが指定する出力ルート
+  - 実装上は設定可能とする（デフォルトはプロジェクトルート）
+
+- `<run_id>`
+  - **F8 の 1 回の実行単位を一意に識別する ID**
+  - 日付・時刻・実行モード等の情報は **この run_id にのみ含める**
+  - 同一 run_id 配下の成果物は、同一条件下で得られた観測結果とみなす
+
+- `entries/Qxx/answer.md`
+  - 1 質問（Qxx）= 1 rag_entry の物理表現
+  - answer.md は **run_f8 実行時点で確定済み**
+  - 後段処理で再生成・再解釈してはならない
+
+---
+
+#### 禁止事項（設計拘束）
+
+以下は **正規形として禁止**する。
+
+- 日付・用途名・テスト名を
+  - ディレクトリ階層として重複させること
+- 出力ディレクトリ構造から
+  - 実行条件や意味を推測させる設計
+- 後段処理が
+  - ディレクトリ構造の違いを吸収・解釈する実装
+
+---
+
+#### 暫定実装（Legacy Layout）について
+
+現行の orchestrator 実装では、
+本セクションで定義した正規形と異なる
+出力ディレクトリ構造を生成する場合がある。
+
+これらは **暫定実装（Legacy Layout）** と位置づける。
+
+- F9-D 以降の実装は **正規形のみを前提**とする
+- Legacy Layout を自動的に吸収・解釈する責務は持たない
+- 必要な場合は、ユーザーまたは別ツールにより  
+  正規形への移行を行う
+
+---
+
+#### F9 dataset 構築との関係
+
+F9 dataset 構築（例：build_dataset_from_f8.py）は、
+
+- 正規形の f8_runs 配下を入力とし
+- すでに確定した rag_entry（answer.md）を  
+  **再解釈せず束ねるだけ**
+
+とする。
+
+dataset 構築処理は、
+F8 run の実行方式や Legacy Layout の差異に
+影響されてはならない。
+
+---
+
 ## 3. 各レイヤ間の責務境界図（ASCII）
 
+```text
 [ env.yaml ] ---> [ env_loader ]
                      |
                      | provides config
@@ -257,6 +347,7 @@ Breaking Change: YES（F9-C 前提）
 | - schema                                      |
 | - NO judgment                                 |
 -------------------------------------------------
+```
 
 ## 4. 原則（拘束）
 
@@ -288,7 +379,7 @@ Breaking Change: YES（F9-C 前提）
 
 ## Appendix A. トレース例（v0.2）
 
-**— RAG Basic 実行時の責務フロー（観測フェーズ）—**
+### RAG Basic 実行時の責務フロー（観測フェーズ）
 
 > 本節は、Responsibility_Map v0.2 に定義された
 > 各レイヤの責務が、実行時にどのような順序で関与するかを
