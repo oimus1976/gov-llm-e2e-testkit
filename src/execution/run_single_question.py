@@ -45,7 +45,22 @@ class SingleQuestionResult:
     chat_id: str
     answer_text: str
     extracted_status: str
+    raw_capture: Optional["RawCapture"]
+    raw_capture_attempted: bool
+    anchor_dom_selector: Optional[str]
     execution_context: Optional[dict]
+
+
+@dataclass(frozen=True)
+class RawCapture:
+    raw_html: str
+    raw_text: str
+    html_path: Path
+    text_path: Path
+    meta_path: Path
+    anchor_dom_selector: Optional[str]
+    selection_reason: str
+    extracted_status: str
 
 
 def _extract_submit_id(submit_result: Any) -> str:
@@ -92,6 +107,50 @@ def _capture_screenshot(page: Page, path: Path, label: str, errors: List[str]) -
         page.screenshot(path=str(path), full_page=True)
     except Exception as exc:
         errors.append(f"{label} screenshot failed: {exc}")
+
+
+def _persist_raw_capture(
+    *,
+    output_dir: Path,
+    raw_html: str,
+    raw_text: str,
+    anchor_dom_selector: Optional[str],
+    selection_reason: str,
+    extracted_status: str,
+    errors: List[str],
+) -> Optional[RawCapture]:
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        html_path = output_dir / "raw_answer.html"
+        text_path = output_dir / "raw_answer.txt"
+        meta_path = output_dir / "raw_capture_meta.json"
+
+        _safe_write_text(html_path, raw_html or "")
+        _safe_write_text(text_path, raw_text or "")
+
+        meta = {
+            "captured_at": datetime.now(timezone.utc).isoformat(),
+            "source": "answer_dom_extractor",
+            "anchor_dom_selector": anchor_dom_selector,
+            "selection_reason": selection_reason,
+            "extracted_status": extracted_status,
+            "lengths": {"html": len(raw_html or ""), "text": len(raw_text or "")},
+        }
+        _safe_write_text(meta_path, json.dumps(meta, ensure_ascii=False, indent=2))
+
+        return RawCapture(
+            raw_html=raw_html or "",
+            raw_text=raw_text or "",
+            html_path=html_path,
+            text_path=text_path,
+            meta_path=meta_path,
+            anchor_dom_selector=anchor_dom_selector,
+            selection_reason=selection_reason,
+            extracted_status=extracted_status,
+        )
+    except Exception as exc:  # pragma: no cover - forensics best-effort
+        errors.append(f"raw capture persist failed: {exc}")
+        return None
 
 
 def _write_dom_candidates_file(
@@ -171,6 +230,8 @@ def run_single_question(
 
     dom_result = None
     dom_result_observation: Optional[dict] = None
+    raw_capture_attempted = False
+    raw_capture: Optional[RawCapture] = None
 
     merged_context = dict(execution_context or {})
 
@@ -234,7 +295,19 @@ def run_single_question(
                 "text_len": dom_result.observation.text_len,
                 "errors": dom_result.observation.errors,
                 "extracted_status": dom_result.extracted_status,
+                "anchor_dom_selector": dom_result.anchor_dom_selector,
             }
+
+            raw_capture_attempted = True
+            raw_capture = _persist_raw_capture(
+                output_dir=output_dir,
+                raw_html=dom_result.raw_html,
+                raw_text=dom_result.raw_text,
+                anchor_dom_selector=dom_result.anchor_dom_selector,
+                selection_reason=dom_result.observation.reason,
+                extracted_status=dom_result.extracted_status,
+                errors=snapshot_errors,
+            )
     except Exception as exc:
         # DOM extraction failure must not block overall execution.
         snapshot_errors.append(f"dom extraction failed: {type(exc).__name__}: {exc}")
@@ -281,6 +354,7 @@ def run_single_question(
         "selected": False,
         "selected_n": None,
         "parity": None,
+        "anchor_dom_selector": None,
         "reason": "dom extraction unavailable",
         "text_len": 0,
         "errors": ["dom extraction unavailable"],
@@ -339,5 +413,8 @@ def run_single_question(
         chat_id=chat_id,
         answer_text=canonical_answer_text,
         extracted_status=extracted_status,
+        raw_capture=raw_capture,
+        raw_capture_attempted=raw_capture_attempted,
+        anchor_dom_selector=dom_observation.get("anchor_dom_selector"),
         execution_context=merged_context,
     )

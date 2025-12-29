@@ -13,7 +13,6 @@ Non-goals:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
@@ -29,6 +28,7 @@ from src.answer_probe import (
 )
 from src.execution.run_single_question import (
     ChatPageProtocol,
+    RawCapture,
     run_single_question,
 )
 
@@ -65,14 +65,6 @@ class RunSummary:
     fatal_error: Optional[str]
 
 
-@dataclass(frozen=True)
-class RawCapture:
-    selected_text: str
-    html_path: Path
-    text_path: Path
-    meta_path: Path
-
-
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
@@ -90,55 +82,6 @@ def _validate_required_keys(
     missing = [key for key in keys if key not in data]
     if missing:
         raise KeyError(f"{label} missing required keys: {', '.join(missing)}")
-
-
-def _default_capture_raw_answer(
-    chat_page: ChatPageProtocol, capture_dir: Path
-) -> RawCapture:
-    """
-    Capture UI DOM as raw answer source.
-
-    Selection is non-heuristic: prefer <main>, otherwise fallback to <body>.
-    """
-    _ensure_dir(capture_dir)
-
-    html_path = capture_dir / "raw_answer.html"
-    text_path = capture_dir / "raw_answer.txt"
-    meta_path = capture_dir / "raw_capture_meta.json"
-
-    selector = "main"
-    try:
-        if chat_page.page.query_selector(selector) is None:
-            selector = "body"
-    except Exception:
-        selector = "body"
-
-    html_content = chat_page.page.inner_html(selector)
-
-    try:
-        selected_text = chat_page.page.inner_text(selector)
-    except Exception:
-        selected_text = ""
-
-    html_path.write_text(html_content, encoding="utf-8")
-    text_path.write_text(selected_text, encoding="utf-8")
-
-    meta = {
-        "captured_at": datetime.now(timezone.utc).isoformat(),
-        "selector": selector,
-        "source": "ui_dom_capture",
-        "lengths": {"text": len(selected_text), "html": len(html_content)},
-    }
-    meta_path.write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-
-    return RawCapture(
-        selected_text=selected_text,
-        html_path=html_path,
-        text_path=text_path,
-        meta_path=meta_path,
-    )
 
 
 def _write_answer_markdown(
@@ -238,7 +181,7 @@ def _write_answer_markdown(
             "## Answer (Raw)",
             "",
             "```text",
-            raw_capture.selected_text if raw_capture is not None else "",
+            raw_capture.raw_html if raw_capture is not None else "",
             "```",
             "",
             "## Citations (As Displayed)",
@@ -287,6 +230,7 @@ def _write_answer_markdown(
             f"- output_dir: {question_dir}",
             f"- dom_selected: {dom.get('selected', 'N/A')}",
             f"- dom_reason: {dom.get('reason', 'N/A')}",
+            f"- anchor_dom_selector: {dom.get('anchor_dom_selector', 'N/A')}",
             f"- dom_text_len: {dom_text_len}",
             f"- dom_selected_n: {dom.get('selected_n', 'N/A')}",
             f"- dom_parity: {dom.get('parity', 'N/A')}",
@@ -319,7 +263,6 @@ def run_f8_collection(
     citations_fetcher: Optional[Callable[[ChatPageProtocol], Iterable[str]]] = None,
     observation_notes: Optional[Sequence[str]] = None,
     timeout_sec: int = 60,
-    capture_raw_answer: Optional[Callable[[ChatPageProtocol, Path], RawCapture]] = None,
 ) -> RunSummary:
     """
     Canonical orchestrator for F8 (DOM-based capture).
@@ -327,7 +270,6 @@ def run_f8_collection(
     Control is continue-on-error. Abort only when browser/page is unusable.
     """
     executed_at = datetime.now(timezone.utc)
-    capture_func = capture_raw_answer or _default_capture_raw_answer
 
     aborted = False
     fatal_error: Optional[str] = None
@@ -371,6 +313,8 @@ def run_f8_collection(
                     extracted_answer_text = result.answer_text
                     extracted_status = result.extracted_status
                     execution_context = result.execution_context or {}
+                    raw_capture = result.raw_capture
+                    raw_capture_attempted = result.raw_capture_attempted
                     status = ResultStatus.SUCCESS
                 except AnswerTimeoutError as exc:
                     status = ResultStatus.TIMEOUT
@@ -391,15 +335,6 @@ def run_f8_collection(
                     status = ResultStatus.EXEC_ERROR
                     reason = str(exc)
 
-                # Raw capture is best-effort and independent of SUCCESS/FAIL status.
-                try:
-                    raw_capture = capture_func(chat_page, question_dir)
-                    raw_capture_attempted = True
-                except Exception as exc:
-                    raw_capture_attempted = True
-                    reason = reason or f"raw capture failed: {exc}"
-                    raw_capture = None
-
             except Exception as exc:
                 # Defensive catch-all to keep continue-on-error contract.
                 status = ResultStatus.EXEC_ERROR
@@ -412,16 +347,7 @@ def run_f8_collection(
                 except Exception:
                     citations = []
 
-            if not raw_capture_attempted and not aborted:
-                try:
-                    raw_capture = capture_func(chat_page, question_dir)
-                    raw_capture_attempted = True
-                except Exception as exc:
-                    raw_capture_attempted = True
-                    reason = reason or f"raw capture failed: {exc}"
-                    raw_capture = None
-
-            if raw_capture is None and reason is None:
+            if raw_capture_attempted and raw_capture is None and reason is None:
                 reason = "raw capture unavailable"
 
             try:
