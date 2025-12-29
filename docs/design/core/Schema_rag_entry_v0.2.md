@@ -21,10 +21,10 @@ breaking_change: YES (F9-C 前提)
 
 ## 1. rag_entry の定義（拘束・設計用）
 
-> **rag_entry とは、
-> ある質問を、特定の実行条件で 1 回送信した結果として、
-> UI 上で実際に観測された回答 DOM とその取得成否を、
-> 後続フェーズで比較・検証できる形に構造化した
+> **rag_entry とは、  
+> ある質問を、特定の実行条件で 1 回送信した結果として、  
+> UI 上で実際に観測された回答 DOM とその取得成否を、  
+> 後続フェーズで比較・検証できる形に構造化した  
 > 1 件分の論理データ単位である。**
 
 ### 拘束点
@@ -32,7 +32,7 @@ breaking_change: YES (F9-C 前提)
 - rag_entry は **1 回の質問実行につき 1 件**生成される
 - 含まれるのは **観測された事実のみ**である
 - 回答の正誤・品質・有用性の判断は **一切含まれない**
-- 後続フェーズ（F4 以降）は rag_entry を
+- 後続フェーズ（F4 以降）は rag_entry を  
   **最小の比較・検証単位**として扱う
 
 ---
@@ -51,7 +51,7 @@ breaking_change: YES (F9-C 前提)
 
 ### 2.2 「観測された事実」とは
 
-rag_entry に含まれるのは、
+rag_entry に含まれるのは、  
 **Playwright を通じて UI 上で実際に確認できた事実のみ**。
 
 含まれる例：
@@ -59,6 +59,7 @@ rag_entry に含まれるのは、
 - 回答として表示された DOM の存在
 - Extracted の取得可否
 - 取得結果の状態（VALID / INVALID）
+- 回答中に表示された参照文言（条文名等）
 
 含まれない例：
 
@@ -73,12 +74,44 @@ rag_entry に含まれるのは、
 
 本プロジェクトにおける「評価可能」とは、
 
-- 人が良し悪しを判断できる
+- 人が良し悪しを判断できる  
   ではなく、
-- **同一質問を異なる条件で実行した結果を
+- **同一質問を異なる条件で実行した結果を  
   機械的に比較・検証できる**
 
 という意味である。
+そのために：
+
+- Extracted が必須
+- VALID / INVALID が明示
+- 実行条件（profile 等）が記録される
+
+---
+
+### 2.4 「構造化」とは何を指すか
+
+- answer.md に文章として残っているだけではなく、
+- どの項目が
+- 必須か任意か
+- 欠けたら仕様違反か
+
+が明確な状態。
+
+👉 **後からコードで扱える形に整理されていること**
+
+---
+
+### 2.5 「論理データ単位」とは何か
+
+- rag_entry はファイルではない
+- 実装クラスでもない
+- しかし「1 件」として数えられる
+
+関係性で言うと：
+
+- answer.md：物理ファイル
+- rag_entry：その中身から切り出した **1 件分の意味的データ**
+- dataset：rag_entry の集合
 
 ---
 
@@ -97,6 +130,8 @@ rag_entry:
   answer:
     extracted: string
     raw: string | null
+  references:
+    observed_texts: string[] | null
   metadata:
     status: VALID | INVALID
     reason: string | null
@@ -200,7 +235,34 @@ rag_entry:
 
 ---
 
-### 4.5 metadata
+### 4.5 references（任意）
+
+#### references.observed_texts
+
+- 型：string[] | null
+- 内容：
+  - 回答表示 DOM から **機械的に観測された参照文言**
+- 例：
+  - `〇〇条例第5条`
+  - `地方自治法第14条`
+- ルール（拘束）：
+  - DOM 出現順を保持する
+  - 重複は除去しない
+  - Extracted / Raw から **そのまま文字列を取得する**
+- 明確な禁止事項：
+  - 条例 ID への解決
+  - 正規化（条→条文 等）
+  - 推測による補完
+  - 正誤・妥当性の判断
+- 備考：
+  - Extracted が INVALID の場合でも  
+    観測できた事実として保持してよい
+  - references の有無・内容によって  
+    metadata.status を変更してはならない
+
+---
+
+### 4.6 metadata
 
 #### metadata.status（必須）
 
@@ -238,6 +300,7 @@ rag_entry:
 | execution.timestamp | 必須 | ISO 8601 |
 | answer.extracted | 必須 | HTML 非変換 |
 | answer.raw | 条件付き | INVALID 時必須 |
+| references.observed_texts | 任意 | 観測補助情報 |
 | metadata.status | 必須 | VALID / INVALID |
 | metadata.reason | 任意 | INVALID 時推奨 |
 
@@ -250,6 +313,7 @@ rag_entry:
 - Raw と Extracted を統合してはならない
 - writer / dataset が status を再判定してはならない
 - question.text を自動生成・補完してはならない
+- references を解釈・正規化・評価してはならない
 - 回答内容の評価・要約・正規化を行ってはならない
 
 ---
@@ -270,7 +334,7 @@ rag_entry:
 ### 本 v0.2 で FIX するもの
 
 - rag_entry の論理構造
-- Extracted / Raw / status の必須性
+- Extracted / Raw / references / status の必須性・位置づけ
 - 下流による再解釈の禁止
 
 ### 本 v0.2 で扱わないもの
@@ -278,6 +342,7 @@ rag_entry:
 - dataset schema の詳細
 - entry_id の生成規則
 - 質問文の外部ファイル形式・管理方法
+- 条例 ID 解決・意味解釈ロジック
 
 ---
 
