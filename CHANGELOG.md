@@ -12,6 +12,26 @@
 
 ---
 
+## [v0.7.10] - 2025-12-29
+
+### Added
+
+- F9-C（Extracted 正本化）完了を PROJECT_STATUS に明記
+- DOM スコープ規則（Spec_F9-C_DOM_Scope_Rules_v0.2.md）を正式仕様として確定
+
+### Changed
+
+- Raw capture を Anchor DOM 一本化設計に移行
+- Extracted 不取得時は必ず INVALID と判定する安全設計を明文化
+- Raw をデバッグ／再現確認用途に限定する位置づけを明確化
+
+### Notes
+
+- Playwright / CI 環境要因による pytest エラーは本バージョンの対象外
+- 下流フェーズ（F4 / rag_entry）の追従修正は次フェーズ（F9-D）で実施予定
+
+---
+
 ## [v0.7.9] - 2025-12-29
 
 ### Added
