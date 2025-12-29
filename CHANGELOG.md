@@ -24,6 +24,28 @@
 - Raw capture を Anchor DOM 一本化設計に移行
 - Extracted 不取得時は必ず INVALID と判定する安全設計を明文化
 - Raw をデバッグ／再現確認用途に限定する位置づけを明確化
+- Responsibility_Map を v0.2 に更新し、F9-C（Extracted 正本化）の設計判断を正式反映
+- Answer Extraction Layer を責務レイヤとして明示し、回答の意味確定点を上流に固定
+- Answer (Extracted) を HTML 非変換の評価入力正本として明文化
+- Answer (Raw) を補助・証拠用途に限定し、評価用途から除外
+
+### Fixed
+
+### Fixed
+
+- F4 writer / rag_entry / dataset schema における暗黙前提の混在について、  
+  是正方針および責務境界を設計として確定
+- writer が判断・補完・解釈を行わない（dumb component）設計を拘束条件として明示
+
+### Breaking Changes
+
+- Responsibility_Map v0.1 前提の実装・schema・運用とは非互換
+- v0.1 を archive に移行（設計巻き戻し禁止）
+
+### Docs
+
+- docs/design/core/Responsibility_Map_v0.2.md を正式採用
+- docs/archive/design/core/ に Responsibility_Map_v0.1.md を移行
 
 ### Notes
 
