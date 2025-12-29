@@ -12,7 +12,22 @@
 
 ---
 
-## v0.7.8 (2025-12-29)
+## [v0.7.9] - 2025-12-29
+
+### Added
+
+- Spec_F9-C_DOM_Scope_Rules_v0.2.md
+  - Defined Answer DOM scope rules for F9-C
+  - Clarified Raw / Extracted role separation
+  - Formalized UI noise exclusion responsibility
+
+### Changed
+
+- PROJECT_STATUS updated to reflect F9-C DOM scope rule confirmation
+
+---
+
+## [v0.7.8] (2025-12-29)
 
 ### Added
 

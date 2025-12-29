@@ -1,6 +1,10 @@
-# 📘 PROJECT_STATUS v0.7.8
+# 📘 PROJECT_STATUS v0.7.9
 
-**— F8 完了 / F9 着手（Backlog確定）反映版 —**
+**— F9-C DOM Scope Rules 確定反映版 —**
+
+**Last Updated:** 2025-12-29
+**Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
+
 
 **Last Updated:** 2025-12-29
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -95,6 +99,8 @@
 - 制御付き実運用試行（F7-C）
 - **回答素材収集基盤としての F8 技術成立**
 - **F9 着手に必要な Backlog・運用ルールの確定**
+
+- **F9-C（Extracted 正本化）における DOM スコープ規則を仕様として確定**
 
 ---
 
@@ -193,18 +199,14 @@
 
 ### C. Extracted の正本化（最重要）
 
-- [ ] Extracted を評価入力の正本と定義する
-- [ ] Extracted を原則として取得可能とする DOM 抽出ルールを確定する
-- [ ] Extracted が取得できない場合の状態分類（VALID / INVALID）を定義する
-- [ ] Extracted の状態（VALID / INVALID）を Metadata に明示的に記録する仕様を定義する
-- [ ] 書式（改行・箇条書き・強調等）を保持し、再実行時に構造が破壊されない抽出方針を仕様化する
+- [x] Extracted を評価入力の正本と定義する
+- [x] Extracted を原則として取得可能とする DOM 抽出ルールを確定する
+- [x] Extracted が取得できない場合の状態分類（VALID / INVALID）を定義する
+- [x] Extracted の状態（VALID / INVALID）を Metadata に明示的に記録する仕様を定義する
+- [x] 書式（改行・箇条書き・強調等）を保持し、再実行時に構造が破壊されない抽出方針を仕様化する
 
-※ 本項目の Done 判定は、  
-`docs/spec/Done_F9-C_Extracted.md` に定義された  
-Done Definition に完全準拠する。
-
-了解。方向性は合っているので、**これまでの議論（HTML保持／DOMスコープ共有／Raw=証拠）を正確に反映**した形に、**言い切りの粒度だけ調整**するね。
-※チェックリスト性は維持、責務の混線が起きない表現に直している。
+※ 上記は  
+`docs/spec/Spec_F9-C_DOM_Scope_Rules_v0.2.md` を正本として確定。
 
 ---
 
@@ -250,12 +252,20 @@ Done Definition に完全準拠する。
 
 - [ ] 新版確定時に旧版を archive に移動する運用を明文化する
 
+### 📌 Backlog / Deferred Decisions
+
+- **Spec / Design ドキュメントにおける frontmatter テンプレート差分を明文化する**
+  - F9-C では実施しない
+  - ドキュメント増加フェーズで再検討する
+
 ---
 
 ## 9. Next Action（更新）
 
-- **F9 Backlog の順次解決に着手**
-  - 特に C（Extracted 正本化）を最優先とする
+- **F9 Backlog の順次解決を継続**
+  - C（Extracted 正本化）については、確定した仕様に基づき  
+    実装反映および検証を進める
+  - D（Raw の位置づけ整理）以降の Backlog に着手する
 - 必要に応じて  
   PROJECT_STATUS / CHANGELOG を更新する
 
@@ -270,11 +280,12 @@ Done Definition に完全準拠する。
 
 ---
 
-## 付記：v0.7.8 の位置づけ
+## 付記：v0.7.9 の位置づけ
 
-- ナレッジ形式（HTML / Markdown）に関する責務境界の確定
-- 本プロジェクトにおける「評価」の定義を明文化
-- F9 Backlog を解釈可能にする前提条件の固定
-- **F9 作業単位が意味論的に確定したスナップショット**
+- ナレッジ形式（HTML / Markdown）に関する責務境界の継続適用
+- 本プロジェクトにおける「評価」の定義を維持
+- F9 Backlog を解釈・運用する前提条件を維持
+- **F9-C（Extracted 正本化）における DOM スコープ規則を仕様として確定**
+- **F9-C の仕様確定を受け、実装反映・検証フェーズへ移行したスナップショット**
 
 ---
