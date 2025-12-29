@@ -12,6 +12,35 @@
 
 ---
 
+## [v0.7.11] - 2025-12-29
+
+### Added
+
+- Schema_dataset_v0.1 を新設し、rag_entry の論理集合単位を定義
+- rag_entry ↔ dataset ↔ answer.md の対応関係を明文化
+
+### Changed
+
+- Responsibility_Map を v0.2 に更新し、Answer Extraction Layer を意味確定点として固定
+- writer / rag_entry / dataset を「事実記録専用（非判断）」構造に是正
+- F9-D（下流フェーズ整合）を正式に着手フェーズとして位置づけ
+
+### Fixed
+
+- F4 / rag_entry / dataset 間の暗黙前提を排除する責務境界を確定
+
+### Breaking Changes
+
+- Responsibility_Map v0.1 前提の設計・運用との非互換を正式確定
+
+### Docs
+
+- Schema_rag_entry_v0.2 を FIX
+- Schema_dataset_v0.1 を追加
+- F9-D 設計判断を PROJECT_STATUS に反映
+
+---
+
 ## [v0.7.10] - 2025-12-29
 
 ### Added
