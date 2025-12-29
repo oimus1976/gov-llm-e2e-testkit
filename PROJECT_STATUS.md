@@ -1,8 +1,8 @@
-# 📘 PROJECT_STATUS v0.7.12
+# 📘 PROJECT_STATUS v0.7.13
 
 **— F9-D（下流整合）設計固定・dataset 構築着手宣言版 —**
 
-**Last Updated:** 2025-12-29  
+**Last Updated:** 2025-12-30  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
@@ -13,7 +13,7 @@
 **Roadmap を唯一の正本**として以下に統一する。
 
 | フェーズ | 内容 |
-| -------- | ------ |
+| -------- | ---- |
 | F1 | 設計フェーズ |
 | F2 | Page Object 実装フェーズ |
 | F3 | Answer Detection & テスト基盤構築フェーズ |
@@ -57,11 +57,9 @@
 - DOM スコープ規則を仕様として確定
 - Extracted を評価入力の正本と定義
 - Raw / Extracted の起点 DOM を単一 Anchor に統一
-- 空欄成功・暗黙前提を排除し、  
-  **Extracted 不取得時は必ず INVALID と判定する安全設計を確立**
+- Extracted 不取得時は必ず INVALID と判定する安全設計を確立
 
-※ 完了判定正本：  
-`docs/spec/Spec_F9-C_DOM_Scope_Rules_v0.2.md`
+※ 正本：`docs/spec/Spec_F9-C_DOM_Scope_Rules_v0.2.md`
 
 ---
 
@@ -69,37 +67,31 @@
 
 **目的：**
 
-- F9-C で確定した  
-  Raw / Extracted / Metadata.status を前提として、
-- 下流フェーズ（F4 / rag_entry / dataset / writer）が  
+- F9-C で確定した Raw / Extracted / Metadata.status を前提として、
+- 下流（F4 / rag_entry / dataset / writer）が  
   **意味を持たずに追従できる構造へ是正する**
 
 ---
 
-## 2. 設計・構造面での更新点（v0.7.12）
+## 2. 設計・構造面での更新点（v0.7.13）
 
-- **Responsibility_Map v0.2 を正式採用**
-  - F8 / F9 出力ディレクトリの正規形（Normative）を追加定義
-  - 現行 orchestrator 出力を Legacy Layout と位置づけ
-- **Schema_rag_entry_v0.2 を確定**
-  - 1 回の質問実行＝1 rag_entry という論理単位を明文化
-- **Schema_dataset_v0.1 を確定**
-  - 確定済み rag_entry を再解釈せず束ねる dataset 単位を定義
-- **dataset 構築処理（build_dataset_from_f8）の責務を設計上明文化**
+- **Responsibility_Map v0.2 正式採用**
+  - F8 / F9 出力ディレクトリ正規形（Normative）を定義
+- **Schema_rag_entry_v0.2 確定**
+- **Schema_dataset_v0.1 確定**
+- **dataset 構築処理（build_dataset_from_f8）を責務上分離**
 
 ---
 
 ## 3. プロジェクトの到達点（更新）
 
-現在、以下が **同一 main ブランチ上で設計・ドキュメント整合した状態**にある。
-
-- 再現可能な E2E テスト基盤（F1–F3）
-- RAG 入力差分影響の試行データ生成（F4）
-- 基盤破壊を検知する最小 CI（F5）
-- 制御付き実運用試行（F7-C）
-- **F8：回答素材収集基盤としての技術成立**
-- **F9-C：Extracted 正本化の設計・仕様・実装整合**
-- **F9-D：下流データ構造（rag_entry / dataset）の設計確定**
+- F1–F3：再現可能な E2E テスト基盤
+- F4：RAG 入力差分影響の観測データ生成
+- F5：最小 CI
+- F7-C：制御付き実運用試行
+- **F8：回答素材収集基盤の技術成立**
+- **F9-C：Extracted 正本化 完了**
+- **F9-D：下流データ構造・dataset 構築成立**
 
 ---
 
@@ -119,13 +111,12 @@
 - Extracted 不取得時に INVALID と判定する安全設計を実装
 - Raw を **デバッグ／再現確認専用の補助成果物**として再定義
 
-### ✅ F9-D（設計面・部分完了）
+### ✅ F9-D（部分完了）
 
-- Responsibility_Map v0.2 FIX（出力ディレクトリ正規形追加）
-- Schema_rag_entry_v0.2 FIX
-- Schema_dataset_v0.1 FIX
-- answer.md ↔ rag_entry ↔ dataset の対応関係を明文化
-- **dataset 構築を「束ね専用処理」として分離**
+- 出力ディレクトリ正規形確定
+- answer.md → rag_entry → dataset の関係を固定
+- **build_dataset_from_f8 による dataset 生成を実証**
+- f8_runs と datasets の diff 一致を確認（再解釈ゼロ）
 
 ---
 
@@ -192,7 +183,7 @@
 
 ---
 
-## 8. Backlog（F9：評価可能データ安定提供フェーズ）（更新）
+## 8. Backlog（F9）（更新）
 
 以下は、**評価フェーズにそのまま投入可能な answer.md を確定させるための作業バックログ**である。
 
@@ -276,17 +267,17 @@
 
 ---
 
-### I. dataset 構築（F9-D 新規・進行中）
+### I. dataset 構築（F9-D）
 
 - [x] dataset の論理単位（rag_entry 集合）を定義する
 - [x] build_dataset_from_f8 の責務を設計として明文化する
-- [ ] build_dataset_from_f8 の最小実装を追加する
+- [x] build_dataset_from_f8 の最小実装を追加する
 - [ ] dataset.yaml の必須項目を確定する
-- [ ] dataset サンプルを 1 件生成する
+- [x] dataset サンプルを 1 件生成する
 
 ---
 
-### J. CLI インターフェース設計（新規追加・Deferred）
+### J. CLI インターフェース設計（Deferred）
 
 - [ ] CLI 実行モデル（pip / entrypoint / script）の選択肢を整理する
 - [ ] 質問セット指定方法（file / dir）を定義する
@@ -307,11 +298,13 @@
 
 ## 9. Next Action
 
-- **F9-D 実装追従**
-  - build_dataset_from_f8 の最小実装
-  - dataset 出力サンプル作成
-- CLI インターフェース案は **設計バックログとして保持**
-- CI / Playwright 環境要因は **F5 として切り離し対応**
+- F9-D 実装継続
+  - dataset.yaml 仕様 FIX
+  - build_dataset_from_f8.py 強化（後回し可）
+    - latest
+    - dry-run
+    - verify-diff（今回の for ループを内蔵）
+- CLI は設計バックログとして保持
 
 ---
 
@@ -323,10 +316,9 @@
 
 ---
 
-## 付記：v0.7.12 の位置づけ
+## 付記：v0.7.13 の位置づけ
 
-- **F9-D を「実装フェーズ」として開始できる設計固定版**
-- 出力ディレクトリ正規形・dataset 単位が確定
-- 実装は「束ねるだけ」に集中できる状態を宣言
+- **dataset を「束ねるだけ」で成立させた初版**
+- 再実行不要な評価基盤の成立を宣言する版
 
 ---

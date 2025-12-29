@@ -270,18 +270,14 @@ def run_f8_collection(
     Control is continue-on-error. Abort only when browser/page is unusable.
     """
     executed_at = datetime.now(timezone.utc)
+    run_root = Path(output_root) / "f8_runs" / run_id
 
     aborted = False
     fatal_error: Optional[str] = None
 
     for ordinance in ordinances:
         for question in questions:
-            question_dir = (
-                Path(output_root)
-                / executed_at.strftime("%Y%m%d")
-                / ordinance.ordinance_id
-                / question.question_id
-            )
+            question_dir = run_root / "entries" / question.question_id
 
             status = ResultStatus.EXEC_ERROR
             reason: Optional[str] = None

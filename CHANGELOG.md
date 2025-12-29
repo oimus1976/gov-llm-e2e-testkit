@@ -12,6 +12,30 @@
 
 ---
 
+## v0.7.13 (2025-12-30)
+
+### Added
+
+- build_dataset_from_f8 による dataset 構築フローを追加
+- out/f8_runs → out/datasets の正規ディレクトリ構造を確定
+
+### Changed
+
+- Responsibility_Map v0.2 を正式採用
+- F9-D（下流整合）を実装フェーズとして開始
+- dataset を「rag_entry の再解釈なし束ね」と定義
+
+### Verified
+
+- f8_runs と datasets の answer.md が全件 diff 一致することを確認
+- dataset 構築時に意味変換・再判断が発生しないことを実証
+
+### Notes
+
+- CLI インターフェース設計は Deferred（F9-D 後半で実施）
+
+---
+
 ## v0.7.12 (2025-12-29)
 
 ### Added
