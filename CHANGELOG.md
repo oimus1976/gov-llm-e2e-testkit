@@ -12,6 +12,25 @@
 
 ---
 
+## v0.7.12 (2025-12-29)
+
+### Added
+
+- Defined normative F8/F9 output directory layout in Responsibility_Map v0.2
+- Added dataset construction model (rag_entry aggregation) as F9-D responsibility
+- Introduced dataset build backlog (build_dataset_from_f8)
+
+### Changed
+
+- Clarified current orchestrator output paths as legacy layout
+- Fixed downstream processing to rely on normalized f8_runs layout
+
+### Backlog
+
+- Added CLI interface design as deferred backlog (post F9-D)
+
+---
+
 ## [v0.7.11] - 2025-12-29
 
 ### Added

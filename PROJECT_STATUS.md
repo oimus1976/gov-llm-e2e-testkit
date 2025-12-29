@@ -1,6 +1,6 @@
-# 📘 PROJECT_STATUS v0.7.11
+# 📘 PROJECT_STATUS v0.7.12
 
-**— F9-C 完了後、F9-D（下流整合）設計着手版 —**
+**— F9-D（下流整合）設計固定・dataset 構築着手宣言版 —**
 
 **Last Updated:** 2025-12-29  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -34,10 +34,10 @@
 
 ### **F8：Markdown変換検証フェーズ（完了）**
 
-- HTML→Markdown 変換を前提とした回答収集が技術的に成立
+- HTML→Markdown 変換を前提とした回答収集の技術的検証が完了
 - 全質問について answer.md（Raw / Extracted / Metadata）が必ず生成されることを確認
 - 回答の評価・優劣判断を行わない非評価モデルを維持
-- **次フェーズに引き渡し可能な観測データ一式を確保**
+- **F9 に引き渡し可能な観測データ一式を確保**
 - F8 の責務は **すべて完了**
 
 ---
@@ -65,7 +65,7 @@
 
 ---
 
-#### **F9-D：下流フェーズ整合（着手）**
+#### **F9-D：下流フェーズ整合（進行中）**
 
 **目的：**
 
@@ -76,15 +76,16 @@
 
 ---
 
-## 2. 設計・構造面での更新点（v0.7.11）
+## 2. 設計・構造面での更新点（v0.7.12）
 
 - **Responsibility_Map v0.2 を正式採用**
-  - Answer Extraction Layer を責務上の意味確定点として固定
-  - writer / rag_entry / dataset を「事実記録専用」に縮退
+  - F8 / F9 出力ディレクトリの正規形（Normative）を追加定義
+  - 現行 orchestrator 出力を Legacy Layout と位置づけ
 - **Schema_rag_entry_v0.2 を確定**
   - 1 回の質問実行＝1 rag_entry という論理単位を明文化
-- **Schema_dataset_v0.1 を新設**
-  - rag_entry を再解釈せず束ねる論理集合単位を定義
+- **Schema_dataset_v0.1 を確定**
+  - 確定済み rag_entry を再解釈せず束ねる dataset 単位を定義
+- **dataset 構築処理（build_dataset_from_f8）の責務を設計上明文化**
 
 ---
 
@@ -120,10 +121,11 @@
 
 ### ✅ F9-D（設計面・部分完了）
 
-- Responsibility_Map v0.2 FIX
+- Responsibility_Map v0.2 FIX（出力ディレクトリ正規形追加）
 - Schema_rag_entry_v0.2 FIX
 - Schema_dataset_v0.1 FIX
 - answer.md ↔ rag_entry ↔ dataset の対応関係を明文化
+- **dataset 構築を「束ね専用処理」として分離**
 
 ---
 
@@ -253,18 +255,48 @@
 
 - [ ] UI 補助要素を除外する DOM 抽出仕様を確定し、混入時は仕様違反として扱う
 
+---
+
 ### F. 成果物インターフェース確定
 
 - [ ] answer.md の必須／任意セクションを確定する
 - [ ] frontmatter の必須項目と欠落時の扱いを定義する
 
+---
+
 ### G. メタ情報・バージョニング
 
 - [ ] answer.md に付与する version を semver として定義する
 
+---
+
 ### H. archive 運用
 
 - [ ] 新版確定時に旧版を archive に移動する運用を明文化する
+
+---
+
+### I. dataset 構築（F9-D 新規・進行中）
+
+- [x] dataset の論理単位（rag_entry 集合）を定義する
+- [x] build_dataset_from_f8 の責務を設計として明文化する
+- [ ] build_dataset_from_f8 の最小実装を追加する
+- [ ] dataset.yaml の必須項目を確定する
+- [ ] dataset サンプルを 1 件生成する
+
+---
+
+### J. CLI インターフェース設計（新規追加・Deferred）
+
+- [ ] CLI 実行モデル（pip / entrypoint / script）の選択肢を整理する
+- [ ] 質問セット指定方法（file / dir）を定義する
+- [ ] アカウント情報指定方法（env / file）を定義する
+- [ ] 出力先指定（OUTPUT_ROOT）の仕様を定義する
+- [ ] 最小 CLI インターフェース案を設計文書として確定する
+
+※ 実装は F9-D 完了後に着手する。
+
+---
 
 ### 📌 Backlog / Deferred Decisions
 
@@ -275,9 +307,10 @@
 
 ## 9. Next Action
 
-- **F9-D（実装追従）に着手**
-  - F4 writer / rag_entry writer の実装是正
-  - dataset 出力サンプルの作成
+- **F9-D 実装追従**
+  - build_dataset_from_f8 の最小実装
+  - dataset 出力サンプル作成
+- CLI インターフェース案は **設計バックログとして保持**
 - CI / Playwright 環境要因は **F5 として切り離し対応**
 
 ---
@@ -290,10 +323,10 @@
 
 ---
 
-## 付記：v0.7.11 の位置づけ
+## 付記：v0.7.12 の位置づけ
 
-- F9-C 完了後、**下流設計（F9-D）を確定させた最初の版**
-- データ単位（rag_entry / dataset）が設計的に固定されたマイルストーン
-- **後戻りせず実装を進められる状態を宣言**
+- **F9-D を「実装フェーズ」として開始できる設計固定版**
+- 出力ディレクトリ正規形・dataset 単位が確定
+- 実装は「束ねるだけ」に集中できる状態を宣言
 
 ---
