@@ -1,6 +1,6 @@
-# 📘 PROJECT_STATUS v0.7.13
+# 📘 PROJECT_STATUS v0.7.14
 
-**— F9-D（下流整合）設計固定・dataset 構築着手宣言版 —**
+**— F9-D（下流整合）運用成立・検証手段確定版 —**
 
 **Last Updated:** 2025-12-30  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -73,13 +73,14 @@
 
 ---
 
-## 2. 設計・構造面での更新点（v0.7.13）
+## 2. 設計・構造面での更新点（v0.7.14）
 
 - **Responsibility_Map v0.2 正式採用**
   - F8 / F9 出力ディレクトリ正規形（Normative）を定義
 - **Schema_rag_entry_v0.2 確定**
 - **Schema_dataset_v0.1 確定**
 - **dataset 構築処理（build_dataset_from_f8）を責務上分離**
+- **dataset 構築に対する人間実行前提のテストケース文書を追加**
 
 ---
 
@@ -91,7 +92,7 @@
 - F7-C：制御付き実運用試行
 - **F8：回答素材収集基盤の技術成立**
 - **F9-C：Extracted 正本化 完了**
-- **F9-D：下流データ構造・dataset 構築成立**
+- **F9-D：dataset 構築・検証手段の成立**
 
 ---
 
@@ -111,12 +112,13 @@
 - Extracted 不取得時に INVALID と判定する安全設計を実装
 - Raw を **デバッグ／再現確認専用の補助成果物**として再定義
 
-### ✅ F9-D（部分完了）
+### ✅ F9-D（部分完了・更新）
 
 - 出力ディレクトリ正規形確定
 - answer.md → rag_entry → dataset の関係を固定
-- **build_dataset_from_f8 による dataset 生成を実証**
-- f8_runs と datasets の diff 一致を確認（再解釈ゼロ）
+- build_dataset_from_f8 による dataset 生成を実証
+- f8_runs と datasets の diff 一致を確認
+- **dataset 構築に対する手動テストケースを整備**
 
 ---
 
@@ -274,6 +276,7 @@
 - [x] build_dataset_from_f8 の最小実装を追加する
 - [ ] dataset.yaml の必須項目を確定する
 - [x] dataset サンプルを 1 件生成する
+- [x] **dataset 構築に対するテストケース文書を作成する**
 
 ---
 
@@ -300,10 +303,6 @@
 
 - F9-D 実装継続
   - dataset.yaml 仕様 FIX
-  - build_dataset_from_f8.py 強化（後回し可）
-    - latest
-    - dry-run
-    - verify-diff（今回の for ループを内蔵）
 - CLI は設計バックログとして保持
 
 ---
@@ -316,9 +315,7 @@
 
 ---
 
-## 付記：v0.7.13 の位置づけ
+## 付記：v0.7.14 の位置づけ
 
-- **dataset を「束ねるだけ」で成立させた初版**
-- 再実行不要な評価基盤の成立を宣言する版
-
----
+- **dataset 構築が「設計・実装・検証」の三点で成立したことを宣言する版**
+- pytest 非依存でも人間が安全に検証できる段階に到達
