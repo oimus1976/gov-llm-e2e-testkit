@@ -1,6 +1,6 @@
-# 📘 PROJECT_STATUS v0.7.15（差し替え全文）
+# 📘 PROJECT_STATUS v0.7.16（差し替え全文）
 
-**— F9-D（下流整合）完了・dataset.yaml v0.2 実体成立版 —**
+**— F9-D（下流整合）完了・Raw / answer.md I/F 最終確定版 —**
 
 **Last Updated:** 2025-12-30
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
@@ -77,19 +77,21 @@
 - build_dataset_from_f8 による構築を実証
 - verify-diff により **コピー完全性（差分なし）を実証**
 - pytest 非依存・人間実行前提で検証可能な運用を成立させた
+- **Raw / answer.md の I/F を最終仕様として FIX**
+
+※ 正本： `docs/spec/Spec_F9-D_Raw_and_Answer_Interface_v0.1r.md`
 
 ---
 
-## 2. 設計・構造面での更新（v0.7.15）
+## 2. 設計・構造面での更新（v0.7.16）
 
-- **Schema_dataset_v0.2（FIX）**
-  - 必須 / 任意 / 禁止フィールドを明文化
-  - dataset を「意味を持たない束ね単位」として拘束
-- **dataset.yaml v0.2 の実体生成を確認**
-  - schema_version / generated_at（JST）を含む
-- **build_dataset_from_f8 の生成側責務を補強**
-  - entries が空の場合は人間向けエラーで停止
-- **verify-diff により f8_runs → datasets の完全一致を実証**
+- **Spec_F9-D_Raw_and_Answer_Interface_v0.1r（FIX）**
+  - Raw の出力条件（VALID 時省略可 / INVALID 時必須）を確定
+  - UI ノイズ混入を DOM 抽出仕様違反として定義
+  - answer.md の必須／任意セクションを最終確定
+  - frontmatter を「論理必須情報」として抽象定義
+  - Metadata.reason を状態分類コードに限定（自由記述禁止）
+- **F9 Backlog D / E / F を完了としてクローズ**
 
 ---
 
@@ -101,7 +103,7 @@
 - F7-C：制御付き実運用試行
 - **F8：回答素材収集基盤の技術成立**
 - **F9-C：Extracted 正本化 完了**
-- **F9-D：dataset 構築・検証手段の成立**
+- **F9-D：dataset 構築・Raw / answer.md I/F の最終確定**
 
 ---
 
@@ -114,6 +116,7 @@
 - build_dataset_from_f8 による dataset 構築を実証
 - verify-diff により answer.md の完全一致を確認
 - dataset が評価・意味・実行条件を一切持たないことを実体で確認
+- Raw / answer.md の I/F を **仕様として最終固定**
 
 ---
 
@@ -186,16 +189,14 @@
 
 ### A. 条例参照・質問意味の一意化
 
-- [ ] 質問文と条例 ID を 1:1 で対応づけるルールを定義する
-- [ ] 指示語（この条例 等）を条例 ID に機械的に解決する仕組みを仕様化する
-- [ ] 条文参照（第○条 等）を条例構造と突合する前提条件を明文化する
+* [ ]（未着手、変更なし）
 
 ### B. 実行条件の固定（HTML / Markdown）
 
 - [ ] 差分要因を **アカウントのみ**に限定する条件を明文化する
 - [ ] 出力ディレクトリ構造を profile 別比較前提として確定する
 
-### C. Extracted の正本化（最重要）
+### C. Extracted の正本化
 
 - [x] Extracted を評価入力の正本と定義する
 - [x] Extracted を原則として取得可能とする DOM 抽出ルールを確定する
@@ -209,7 +210,7 @@
 
 ---
 
-### D. Raw の位置づけ整理（F9-D 対象）
+### D. Raw の位置づけ整理
 
 ※ 本セクションは F9-C で確定した仕様を前提とし、  
    出力条件・運用・下流連携は F9-D で最終確定する。
@@ -233,24 +234,22 @@
   Raw の出力を **省略可能**とする運用ルールを定義する
 - [ ] **Answer (Extracted) が INVALID の場合**、  
   **原因分析・再現確認のため Raw を必ず出力する**仕様を定義する
-- [ ] Raw 出力条件（VALID 時省略可 / INVALID 時必須）の最終確定
-- [ ] debug profile 限定運用の明文化
-- [ ] F4 writer / rag_entry との I/F 最終確定
+- [x] Raw 出力条件（VALID 時省略可 / INVALID 時必須）の最終確定
+- [x] debug profile 限定運用の明文化
+- [x] F4 writer / rag_entry との I/F 最終確定
 
 ---
 
 ### E. UI ノイズ・混入対策
 
-- [ ] UI 補助要素を除外する DOM 抽出仕様を確定し、混入時は仕様違反として扱う
+* [x] UI ノイズ混入を仕様違反として定義
 
 ---
 
 ### F. 成果物インターフェース確定
 
-- [ ] answer.md の必須／任意セクションを確定する
-- [ ] frontmatter の必須項目と欠落時の扱いを定義する
-
----
+* [x] answer.md の必須／任意セクションを確定
+* [x] frontmatter 必須情報と欠落時の扱いを定義
 
 ### G. メタ情報・バージョニング
 
@@ -299,9 +298,9 @@
 
 ## 9. Next Action（更新）
 
-- **F9-D 完了**
-- 次フェーズ（F9 後続 Backlog）に基づく整理を継続
-- CLI 設計は Deferred のまま保持
+* **F9-D 完了**
+* F9 後続 Backlog（A / B / G / H）の整理を継続
+* CLI 設計は Deferred のまま保持
 
 ---
 

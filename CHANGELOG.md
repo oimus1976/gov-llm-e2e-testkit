@@ -12,6 +12,30 @@
 
 ---
 
+## v0.7.16 — 2025-12-30
+
+### Fixed
+
+- Spec_F9-D_Raw_and_Answer_Interface_v0.1r を FIX として確定
+  - Raw の出力条件（VALID 時省略可 / INVALID 時必須）を最終確定
+  - UI ノイズ混入を DOM 抽出仕様違反として定義
+  - answer.md の必須／任意セクションを最終確定
+  - frontmatter を論理必須情報として抽象定義
+  - Metadata.reason を状態分類コードに限定（自由記述禁止）
+
+### Changed
+
+- PROJECT_STATUS を v0.7.16 に更新
+  - F9 Backlog D / E / F を完了としてクローズ
+  - F9-D を Raw / answer.md I/F 最終確定フェーズとして完了扱いに更新
+
+### Notes
+
+- 本更新は仕様確定のみを目的とし、実装変更は含まない
+- F4 以降は、本仕様に準拠した answer.md のみを前提として進行可能
+
+---
+
 ## v0.7.15 — 2025-12-30
 
 ### Added
