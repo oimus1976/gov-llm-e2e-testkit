@@ -67,6 +67,15 @@ def build_dataset_from_f8(
             }
         )
 
+    # --- FIX: entries 空は schema では想定しない（生成側責務） ---
+    if not entries:
+        raise RuntimeError(
+            "dataset build failed: no entries were collected.\n"
+            "No answer.md files were found under the specified F8 run directory.\n"
+            "This situation is not expected by Schema_dataset_v0.2.\n"
+            "Please check the F8 run result and ensure that at least one answer.md exists."
+        )
+
     dataset_yaml = {
         "schema_version": "dataset.v0.2",
         "dataset_id": dataset_id,
