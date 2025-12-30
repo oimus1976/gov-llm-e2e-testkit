@@ -11,6 +11,12 @@ depends_on:
 breaking_change: NO
 ---
 
+> ⚠ 本ドキュメントはアーカイブされています  
+> 本設計（Schema_dataset_v0.1）は初期検討版としての役割を終え、  
+> 後継となる Schema_dataset_v0.2 の検討が進行中です。  
+> 本文書は当時の設計判断を保存する目的で archive に移動されました。
+
+
 # 📘 dataset schema v0.1
 
 ## 0. 本ドキュメントの位置づけ（拘束）
