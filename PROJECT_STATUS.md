@@ -81,6 +81,8 @@
 - **Schema_dataset_v0.1 確定**
 - **dataset 構築処理（build_dataset_from_f8）を責務上分離**
 - **dataset 構築に対する人間実行前提のテストケース文書を追加**
+- dataset.yaml に schema_version を付与し、生成時刻を JST（ISO8601 +09:00）で出力する仕様を追加
+
 
 ---
 

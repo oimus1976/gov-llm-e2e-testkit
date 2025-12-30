@@ -7,6 +7,10 @@ import shutil
 import hashlib
 import yaml
 
+from datetime import datetime, timezone, timedelta
+
+JST = timezone(timedelta(hours=9))
+
 
 def build_dataset_from_f8(
     *,
@@ -64,13 +68,14 @@ def build_dataset_from_f8(
         )
 
     dataset_yaml = {
+        "schema_version": "dataset.v0.2",
         "dataset_id": dataset_id,
         "source": {
             "type": "f8_run",
             "run_id": f8_run_dir.name,
             "path": str(f8_run_dir.resolve()),
         },
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(JST).isoformat(),
         "entries": entries,
     }
 
@@ -137,7 +142,6 @@ if __name__ == "__main__":
     # 最小の手動実行用（CLI は後回し）
     import argparse
     import sys
-
 
     def _resolve_latest_f8_run(output_root: Path) -> Path:
         """

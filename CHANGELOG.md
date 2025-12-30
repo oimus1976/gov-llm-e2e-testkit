@@ -22,6 +22,8 @@
     テスト観点から明文化
 - verify-diff の目的を  
   **「コピー完全性検証」**として位置づけ
+- dataset.yaml に schema_version（dataset.v0.2）を追加
+- dataset.yaml の generated_at を JST（ISO8601 +09:00）で出力する仕様を追加
 
 ### Changed
 
@@ -33,7 +35,6 @@
 
 - 実装・schema・責務定義に変更はない
 - 本更新は運用成立を宣言するための patch 更新
-
 
 ## v0.7.13 (2025-12-30)
 
