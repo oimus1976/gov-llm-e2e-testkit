@@ -3,6 +3,36 @@ from typing import Optional
 
 from src.f9.a.ordinance.ordinance_structure import OrdinanceStructure
 
+from src.f9.a.ordinance.ordinance_protocol import OrdinanceStructureProtocol
+
+# src/f9/a/resolution/auto_resolver.py に追加
+
+from src.f9.a.resolution.resolution_required import ResolutionRequired
+
+
+def auto_resolve_article_paragraph(
+    question_text: str,
+    ordinance_structure: OrdinanceStructureProtocol,
+):
+    """
+    A-3 公開I/F（A-4 接続点）
+
+    - 一意なら ResolvedArticleRef を返す
+    - 一意でなければ ResolutionRequired を送出する
+    """
+    try:
+        return resolve_article_reference(
+            question_text=question_text,
+            ordinance_structure=ordinance_structure,
+        )
+    except ArticleResolutionError as e:
+        # 候補を構造的に列挙（意味解釈なし）
+        candidates = {
+            "article_candidates": ordinance_structure.articles,
+            "paragraphs_by_article": ordinance_structure.paragraphs,
+        }
+        raise ResolutionRequired(str(e), candidates)
+
 
 @dataclass(frozen=True)
 class ResolvedArticleRef:
@@ -18,7 +48,7 @@ class ArticleResolutionError(Exception):
 
 def resolve_article_reference(
     question_text: str,
-    ordinance_structure: OrdinanceStructure,
+    ordinance_structure: OrdinanceStructureProtocol,
 ) -> ResolvedArticleRef:
     """
     A-3: 抽象参照（第○条 / 第○条第○項）を
