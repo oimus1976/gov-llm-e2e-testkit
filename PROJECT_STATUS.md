@@ -141,14 +141,14 @@
 
 ※ 正本：
 
-- `docs/spec/Spec_F9-A_Question_Set_and_Binding_v0.1.md`
-- `docs/spec/Spec_F9-A_Implementation_v0.1.md`
+- `docs/spec/Spec_F9-A_Question_Set_and_Binding_v0.1r.md`
+- `docs/spec/Spec_F9-A_Implementation_v0.1r.md`
 
 ---
 
 ## 2. 設計・構造面での更新（v0.7.20）
 
-- **Spec_F9-A_Implementation_v0.1 を追加**
+- **Spec_F9-A_Implementation_v0.1r を追加**
   - F9-A の処理順序・責務境界・解決保証制御を明文化
   - 実装言語／UI 非依存の拘束仕様として確定
 - **F9 Backlog A を詳細チェックリスト化**

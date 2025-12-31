@@ -1,15 +1,17 @@
 ---
-spec_id: Spec_F9-A_Implementation_v0.1
+spec_id: Spec_F9-A_Implementation_v0.1r
 title: F9-A Implementation Specification
 phase: F9-A
-status: draft
+version: v0.1r
+status: revised
+previous_version: v0.1
 created_at: 2025-12-31
 updated_at: 2025-12-31
 authors:
   - Sumio Nishioka
   - ChatGPT (Architect Role)
 related_specs:
-  - Spec_F9-A_Question_Set_and_Binding_v0.1.md
+  - Spec_F9-A_Question_Set_and_Binding_v0.1r.md
   - Spec_F9-B_Execution_Conditions_Freeze_v0.1r.md
   - Spec_F9-C_DOM_Scope_Rules_v0.2.md
 scope:
@@ -23,7 +25,7 @@ out_of_scope:
   - ui_design
 ---
 
-# Spec_F9-A_Implementation_v0.1
+# Spec_F9-A_Implementation_v0.1r
 
 ## 1. 目的
 
@@ -61,10 +63,11 @@ F9-A は以下を行わない。
 ## 3. 全体処理フロー
 
 ```md
-
 Input:
 
-- question_template_set
+- question_template_set（質問テンプレ集合 / List[str]）
+  - 外部でロードされた質問テンプレ集合  
+  - 本仕様では List[str] として扱う
 - ordinance_id
 - ordinance_source
 - (optional) user_inputs
@@ -109,7 +112,7 @@ Output:
   - 抽象表現は以下に限定される
     - この条例
     - 第○条
-    - 第○項
+    - 第○条第○項
 
 #### 出力
 
@@ -127,8 +130,8 @@ Output:
 
 #### 対象
 
-- 質問セットファイル（例：YAML）
-- 各 `questions[].text` に記載された質問テンプレ文
+- 質問セットファイル（CSV）
+- 各行の `text` 列に記載された質問テンプレ文
 
 #### 手順
 

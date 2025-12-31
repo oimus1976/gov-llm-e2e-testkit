@@ -1,8 +1,10 @@
 ---
-spec_id: Spec_F9-A_Question_Set_and_Binding_v0.1
+spec_id: Spec_F9-A_Question_Set_and_Binding_v0.1r
 title: F9-A Question Set and Ordinance Binding Specification
 phase: F9-A
-status: draft
+version: v0.1r
+status: revised
+previous_version: v0.1
 fix_policy: fix-after-review
 created_at: 2025-12-31
 updated_at: 2025-12-31
@@ -24,7 +26,7 @@ out_of_scope:
   - quality_judgement
 ---
 
-# Spec_F9-A_Question_Set_and_Binding_v0.1
+# Spec_F9-A_Question_Set_and_Binding_v0.1r
 
 ## 1. 目的と位置づけ
 
@@ -47,7 +49,7 @@ F9-A はその入口として、**質問文と条例参照の対応関係を構�
 
 - 「この条例は〜」
 - 「第○条は〜」
-- 「第○項は〜」
+- 「第○条第○項は〜」
 
 といった抽象表現を含んでいた。
 
@@ -70,7 +72,7 @@ F9-A はこれを解消するために、
 ### 3.1 質問テンプレ（Question Template）
 
 - 人間（職員）が編集する質問文
-- 抽象表現（この条例／第○条／第○項）でなければならない  
+- 抽象表現（この条例／第○条／第○条第○項）でなければならない  
 （具体的な条例ID・条番号・項番号を含めてはならない）
 - 条例非依存である
 
@@ -148,6 +150,7 @@ Excel による自動加工は、
 - 拡張子：`.csv`
 - 区切り文字：カンマ（`,`）
 - 文字コード：制限しない（実装側で吸収）
+  - 実装では UTF-8 を前提とする
 
 ---
 
@@ -232,9 +235,14 @@ Q03,第○条第○項では何を規定していますか。
 
 ```
 
-※ 本フェーズにおける質問テンプレの入力形式は CSV とする。
+※ 本フェーズにおける質問テンプレの入力形式は CSV とする。  
 ※ YAML / JSON 等の構造化形式は、一般職員の編集負荷および
    運用事故リスクを考慮し、採用しない。
+
+- CSV ファイルは A-0 によって読み込まれ、
+質問テンプレ本文（text 列）の配列として A-1 に渡される。
+- CSV 読み込み段階では、
+質問内容の検証・解釈・補正は一切行わない。
 
 ### 5.3 制約
 
