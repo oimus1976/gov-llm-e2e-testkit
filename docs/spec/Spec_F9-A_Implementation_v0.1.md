@@ -180,6 +180,9 @@ Output:
 
 - `ordinance_id`
 - `validated_template_set`
+  - A-1 により検証済みの質問テンプレ集合  
+  - 型：List[str]  
+  - 本処理では再検証を行わない
 
 #### 処理内容
 

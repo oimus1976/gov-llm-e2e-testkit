@@ -26,6 +26,11 @@
 - F9 Backlog A を詳細チェックリスト化
   - 完了判定可能な作業単位に分解
   - F9-A の責務範囲と到達条件を明確化
+- Spec_F9-A_Implementation において、A-2（BindOrdinanceID）の入力契約を明確化
+  - 「検証済みの質問テンプレ集合」を  
+    A-1（ValidateTemplate）を通過した List[str] として定義
+  - A-2 が質問テンプレの再検証・ファイル I/O を行わない責務であることを明文化
+- 全体処理フローにおける question_template_set の型・責務境界を補足
 
 ---
 
