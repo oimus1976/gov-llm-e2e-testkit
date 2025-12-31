@@ -276,6 +276,37 @@ Q03:
 
 #### 4.4.2 PromptUserIfNeeded（解決保証）
 
+##### 入出力仕様（FIX）
+
+###### 入力
+
+- `question_id`
+- `question_text`
+- `resolution_error`
+- `candidates`
+  - article_candidates: List[int]
+  - paragraphs_by_article: Dict[int, List[int]]
+
+###### 処理
+
+1. 条番号候補を提示する
+2. 職員に条番号の直接入力を求める
+3. 該当条に複数項が存在する場合：
+   - 項番号候補を提示する
+   - 項番号入力または未指定（Enter）を受け付ける
+
+###### 出力
+
+- `resolved_reference`
+  - article: int
+  - paragraph: Optional[int]
+
+###### 制約
+
+- 入力が不正な場合は再入力を求める
+- 未確定状態（null / 未定義）で処理を終了してはならない
+- **有効な入力が得られるまで、処理は継続される**
+
 ##### 発火条件
 
 - `article` または `paragraph` が未確定の場合

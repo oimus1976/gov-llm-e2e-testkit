@@ -12,6 +12,27 @@
 
 ---
 
+## v0.7.21 — 2025-12-31
+
+### Added / Fixed
+
+- **F9-A（質問セット・条例バインディング）仕様確定**
+  - Spec_F9-A_Question_Set_and_Binding を v0.1r として確定
+  - Spec_F9-A_Implementation を v0.1r として確定
+- **A-4：人間入力による条・項解決の入出力仕様を FIX**
+  - 自動解決不可時の ResolutionRequired → ユーザー入力 → 解決確定フローを明文化
+- **F9-A 実装検証の成立**
+  - A-1〜A-4 の単体テスト・結合テスト（A-3→A-4）を pytest で確認
+- 質問セット起点として **CSV フォーマットを正式採用**
+  - YAML 記述例を廃止し、一般職員利用を前提とした入力形式に統一
+
+### Documentation
+
+- PROJECT_STATUS を v0.7.21 に更新
+- F9-A Backlog の設計判断・完了条件を最新状態に同期
+
+---
+
 ## v0.7.20 (2025-12-31)
 
 ### Added
