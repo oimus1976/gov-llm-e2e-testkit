@@ -490,6 +490,8 @@ Excel 等で作成・編集できます。
 この一連の流れは、
 実行用スクリプトが対話形式で案内します。
 
+2回目以降は、直前の入力値（条例データ / 各 CSV / 環境選択）が `run/.last_run.json` に保存されます。各入力で表示される前回値に対して Enter のみで再利用でき、ファイルが存在しない場合や無効な値の場合は初回と同様に入力を求めます。
+
 ---
 
 ### 5.4 実行用スクリプトの起動
@@ -919,6 +921,34 @@ Resolution Type:
 
 ---
 
+### 7.8 JSON 出力の構造
+
+出力は `output/` 配下に次の 2 つのファイルとして保存されます。
+
+- 履歴: `output/question_resolution_result_YYYYMMDDTHHMMSSZ.json` （実行のたびに新規作成）
+- 最新: `output/question_resolution_latest.json` （直近の結果を上書き）
+
+両ファイルの JSON 構造は同一で、次のとおりです。
+
+- `meta`  
+  `tool` = `question-resolution`、`phase` = `F9-A`、`generated_at` = ISO8601 形式
+- `results`（質問ごとの配列）  
+  - `original_question`: 質問セットに記載された元の質問文  
+  - `resolved_question`: 条・項を埋め込んだ質問文  
+  - `ordinance_id` / `article` / `paragraph` / `resolution_type`: 既存の評価項目（型は従来どおり）  
+  - `status`: 質問ごとの状態（現行は `resolved` 固定）
+
+`question_text` は `original_question` に名称変更されています。`ordinance_id` / `article` / `paragraph` / `resolution_type` の評価用項目は従来どおり確認できます。
+
+通常の作業確認や試行錯誤では、latest ファイルを参照してください。  
+一方、評価記録・提出用・後日の再確認など、  
+実行結果を保存・共有する場合は、履歴ファイルを使用してください。
+
+latest は常に上書きされるため、  
+正式な記録としての保存には適しません。
+
+---
+
 ## 8. 注意点・よくあるケース
 
 本章では、本ツールを利用する際に、
@@ -952,6 +982,16 @@ Resolution Type:
 
 自動解決されなかったこと自体を、
 異常と考える必要はありません。
+
+初回実行時や、質問内容が曖昧な場合は、
+対話入力が多く感じられることがあります。
+
+ただし、
+
+- 2回目以降は直前の入力内容が自動的に再利用されます
+- 条・項の入力が求められるのは、自動解決できない質問のみです
+
+すべての質問に対して毎回入力が必要になるわけではありません。
 
 ---
 

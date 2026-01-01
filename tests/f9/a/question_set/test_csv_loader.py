@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from src.f9.a.question.template_validator import validate_question_templates
-from src.f9.a.question_set.csv_loader import load_question_set_from_csv
+from src.f9.a.question_set.csv_loader import (
+    load_question_set_from_csv,
+    QuestionTemplateRow,
+)
 
 
 def test_a0_csv_to_a1_integration_ok(tmp_path: Path):
@@ -13,15 +16,19 @@ def test_a0_csv_to_a1_integration_ok(tmp_path: Path):
 
     csv_file = tmp_path / "questions.csv"
     csv_file.write_text(
-        "question_id,text\n"
+        "question_id,question_text\n"
         "Q01,この条例は何を目的として制定されていますか。\n"
         "Q02,第○条はどのような内容を定めていますか。\n"
         "Q03,第○条第○項では何を規定していますか。\n",
         encoding="utf-8",
     )
 
-    question_texts = load_question_set_from_csv(csv_file)
+    rows = load_question_set_from_csv(csv_file)
 
+    assert all(isinstance(row, QuestionTemplateRow) for row in rows)
+    assert [row.question_id for row in rows] == ["Q01", "Q02", "Q03"]
+
+    question_texts = [row.question_text for row in rows]
     assert question_texts == [
         "この条例は何を目的として制定されていますか。",
         "第○条はどのような内容を定めていますか。",

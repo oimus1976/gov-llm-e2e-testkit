@@ -12,6 +12,28 @@
 
 ---
 
+## [0.7.23] - 2026-01-01
+
+### Added
+
+- Question Resolution 実行用 PowerShell スクリプト（対話型）
+- 前回実行値の再利用機構（.last_run.json）
+- 出力 JSON の履歴保存（timestamp 付き）と latest 分離
+- Question Resolution 利用者向け FAQ
+
+### Changed
+
+- F9-A を「実装成立」から「運用成立」フェーズとして再定義
+- README_Question_Resolution を公式 I/F 手引書として確定
+- 実行 I/F を設計文書（Design_Run_Interface.md）として固定
+
+### Fixed
+
+- 出力 JSON 上書きによる運用事故リスクを解消
+- PowerShell 実行時の入力ミス・再実行時 UX を改善
+
+---
+
 ## v0.7.22 (2025-12-31)
 
 ### Docs
