@@ -12,6 +12,25 @@
 
 ---
 
+## [v0.7.24] - 2026-01-01
+
+### Changed
+
+- F9-A Question Resolution の配布・実行UXを確定
+- run/ ディレクトリを一般ユーザー実行専用として固定
+- PowerShell 版／bat 版の役割差を仕様として明文化
+- 前回入力再利用を透過型UXとして整理
+
+### Docs
+
+- README_Question_Resolution.md を実行I/F契約として確定
+- FAQ_Question_Resolution.md を配布UX前提で更新
+
+### Notes
+
+- 機能仕様・出力形式の変更はなし
+
+
 ## [0.7.23] - 2026-01-01
 
 ### Added
