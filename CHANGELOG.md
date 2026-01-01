@@ -12,6 +12,20 @@
 
 ---
 
+## v0.7.26 (2026-01-02)
+
+### Project
+
+- Declare completion of **F9: Evaluation-Ready Data Stable Provision Phase**
+- Add `Done_F9.md` as the authoritative completion definition
+- Reorganize PROJECT_STATUS to reflect F9 completion
+- Move remaining deferred backlog items to F10+ consideration
+
+### Docs
+
+- Align PROJECT_STATUS with Done_F9 decision
+- Synchronize phase status and backlog interpretation
+
 ## v0.7.25 (2026-01-02)
 
 ### Changed
