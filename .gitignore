@@ -177,3 +177,21 @@ sandbox/
 **/runs/**
 **/logs/**
 **/*.jsonl
+
+# =============================
+# Question Resolution (F9-A)
+# =============================
+
+# User-provided ordinance data (never commit)
+data/reiki_int/
+
+# User input CSVs
+ordinance.csv
+question.csv
+
+# Execution outputs
+output/
+output/*.json
+
+# Last-run cache (PowerShell)
+run/.last_run.json
