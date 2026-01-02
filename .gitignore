@@ -195,3 +195,4 @@ output/*.json
 
 # Last-run cache (PowerShell)
 run/.last_run.json
+data/reiki/
