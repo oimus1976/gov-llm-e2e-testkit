@@ -196,3 +196,8 @@ output/*.json
 # Last-run cache (PowerShell)
 run/.last_run.json
 data/reiki/
+
+# execution inputs / artifacts
+data/customized_question_sets/
+run/
+*.zip
