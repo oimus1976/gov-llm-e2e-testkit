@@ -63,10 +63,17 @@ class ExecutionProfile:
 class RunSummary:
     aborted: bool
     fatal_error: Optional[str]
+    executed_at: datetime
 
 
 def _ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+
+def _fs_safe_segment(value: str) -> str:
+    sanitized = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in value)
+    sanitized = sanitized.strip("_")
+    return sanitized or "question"
 
 
 def _is_fatal_state(chat_page: ChatPageProtocol) -> bool:
@@ -111,6 +118,7 @@ def _write_answer_markdown(
     chat_id: str,
     extracted_status: str,
 ) -> Path:
+    fs_question_id = _fs_safe_segment(question.question_id)
     _validate_required_keys(
         qommons_config,
         ["model", "web_search", "region", "ui_mode"],
@@ -123,7 +131,7 @@ def _write_answer_markdown(
     )
 
     question_dir.mkdir(parents=True, exist_ok=True)
-    output_path = question_dir / "answer.md"
+    output_path = question_dir / f"{fs_question_id}.md"
     if output_path.exists():
         raise FileExistsError(f"answer already exists: {output_path}")
 
@@ -158,6 +166,7 @@ def _write_answer_markdown(
             f"  ordinance_id: {ordinance.ordinance_id}",
             f"  ordinance_set: {ordinance_set}",
             f"  question_id: {question.question_id}",
+            f"  question_fs_id: {fs_question_id}",
             f"  question_pool: {question_pool}",
             "execution:",
             f"  retry: {execution['retry']}",
@@ -270,14 +279,17 @@ def run_f8_collection(
     Control is continue-on-error. Abort only when browser/page is unusable.
     """
     executed_at = datetime.now(timezone.utc)
-    run_root = Path(output_root) / "f8_runs" / run_id
+    run_root = Path(output_root)
 
     aborted = False
     fatal_error: Optional[str] = None
 
     for ordinance in ordinances:
         for question in questions:
-            question_dir = run_root / "entries" / question.question_id
+            fs_question_id = _fs_safe_segment(question.question_id)
+            question_dir = (
+                run_root / "answer" / ordinance.ordinance_id / fs_question_id
+            )
 
             status = ResultStatus.EXEC_ERROR
             reason: Optional[str] = None
@@ -413,4 +425,4 @@ def run_f8_collection(
         if aborted:
             break
 
-    return RunSummary(aborted=aborted, fatal_error=fatal_error)
+    return RunSummary(aborted=aborted, fatal_error=fatal_error, executed_at=executed_at)

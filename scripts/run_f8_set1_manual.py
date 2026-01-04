@@ -11,15 +11,16 @@ Non-Goals:
 - Automatic retries or heuristics
 """
 
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+import yaml
 
 from src.env_loader import load_env
 from tests.pages.login_page import LoginPage
 from tests.pages.chat_select_page import ChatSelectPage
 from tests.pages.chat_page import ChatPage
 
-from src.execution.f8_orchestrator import run_f8_collection
 from src.execution.f8_orchestrator import (
     run_f8_collection,
     OrdinanceSpec,
@@ -27,7 +28,60 @@ from src.execution.f8_orchestrator import (
     ExecutionProfile,
 )
 
-from datetime import datetime
+
+def _resolve_output_root() -> Path:
+    value = os.getenv("OUTPUT_ROOT")
+    if not value:
+        raise EnvironmentError(
+            "OUTPUT_ROOT is required and must point to the final output directory (includes run_id)."
+        )
+    output_root = Path(value).expanduser().resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    return output_root
+
+
+def _write_yaml_once(path: Path, payload: dict) -> None:
+    if path.exists():
+        raise FileExistsError(f"file already exists: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8"
+    )
+
+
+def _write_readme_once(path: Path) -> None:
+    if path.exists():
+        raise FileExistsError(f"file already exists: {path}")
+    content = """# F10-A Observation Dataset
+
+- 本成果物は Qommons.AI UI を観測した一次データです（評価なし）。
+- 評価・判定・Gate は reiki-rag-converter 側の責務です。
+- manifest.yaml と answer/ 配下のファイル群をそのまま引き渡してください。
+"""
+    path.write_text(content, encoding="utf-8")
+
+
+def _collect_manifest_entries(answer_root: Path) -> list[dict]:
+    if not answer_root.exists():
+        return []
+
+    entries = []
+    for ordinance_dir in sorted(
+        [p for p in answer_root.iterdir() if p.is_dir()], key=lambda p: p.name
+    ):
+        for answer_file in sorted(ordinance_dir.glob("*.md"), key=lambda p: p.name):
+            entries.append(
+                {
+                    "ordinance_id": ordinance_dir.name,
+                    "question_id": answer_file.stem,
+                    "file": (
+                        Path("answer")
+                        / ordinance_dir.name
+                        / answer_file.name
+                    ).as_posix(),
+                }
+            )
+    return entries
 
 
 def main():
@@ -39,9 +93,8 @@ def main():
     # --------------------------------------------------
     # Fixed manual execution parameters (explicit)
     # --------------------------------------------------
-    run_id = f"{datetime.now():%Y%m%dT%H%M%S}_manual"
-
-    output_root = Path("./out")
+    output_root = _resolve_output_root()
+    run_id = output_root.name
 
     # ---- F8 Set-1 (explicit, no inference) ----
     ordinances = [
@@ -130,6 +183,8 @@ def main():
         profile_name="web-default",
         run_mode="collect-only",
     )
+    question_pool = "Golden_Question_Pool_A_v1.1"
+    ordinance_set = "Golden_Ordinance_Set_v1"
 
     # --------------------------------------------------
     # Playwright bootstrap
@@ -169,7 +224,7 @@ def main():
             },
             knowledge_scope="golden",
             knowledge_files=[],
-            ordinance_set="Golden_Ordinance_Set_v1",
+            ordinance_set=ordinance_set,
             output_root=output_root,
             execution={
                 "mode": "manual",
@@ -177,6 +232,7 @@ def main():
                 "temperature": 0.0,
                 "max_tokens": 2048,
             },
+            question_pool=question_pool,
         )
 
         # --------------------------------------------------
@@ -202,6 +258,38 @@ def main():
         # --------------------------------------------------
         print("aborted:", summary.aborted)
         print("fatal_error:", summary.fatal_error)
+
+        # --------------------------------------------------
+        # F10-A artifacts
+        # --------------------------------------------------
+        executed_at = summary.executed_at.isoformat()
+        manifest = {
+            "schema_version": "manifest_v0.1",
+            "based_on_interface": "v0.1r+",
+            "kind": "manifest",
+            "run_id": run_id,
+            "executed_at": executed_at,
+            "sets": {
+                "ordinance_set": ordinance_set,
+                "question_pool": question_pool,
+            },
+            "entries": _collect_manifest_entries(output_root / "answer"),
+        }
+
+        execution_meta = {
+            "run_id": run_id,
+            "executed_at": executed_at,
+            "question_csv": None,
+            "question_pool": question_pool,
+            "ordinance_set": ordinance_set,
+            "execution_account": config.get("username", "N/A"),
+            "evaluation_performed": False,
+            "notes": ["UI 観測のみ。評価・Gate 判定は含まない。"],
+        }
+
+        _write_yaml_once(output_root / "manifest.yaml", manifest)
+        _write_yaml_once(output_root / "execution_meta.yaml", execution_meta)
+        _write_readme_once(output_root / "README.md")
 
         context.close()
         browser.close()
