@@ -131,7 +131,7 @@ def _write_answer_markdown(
     )
 
     question_dir.mkdir(parents=True, exist_ok=True)
-    output_path = question_dir / f"{fs_question_id}.md"
+    output_path = question_dir / f"{fs_question_id}_answer.md"
     if output_path.exists():
         raise FileExistsError(f"answer already exists: {output_path}")
 

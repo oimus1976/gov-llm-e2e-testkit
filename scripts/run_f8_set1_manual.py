@@ -69,14 +69,20 @@ def _collect_manifest_entries(answer_root: Path) -> list[dict]:
     for ordinance_dir in sorted(
         [p for p in answer_root.iterdir() if p.is_dir()], key=lambda p: p.name
     ):
-        for answer_file in sorted(ordinance_dir.glob("*.md"), key=lambda p: p.name):
+        for question_dir in sorted(
+            [p for p in ordinance_dir.iterdir() if p.is_dir()], key=lambda p: p.name
+        ):
+            answer_file = question_dir / f"{question_dir.name}_answer.md"
+            if not answer_file.is_file():
+                continue
             entries.append(
                 {
                     "ordinance_id": ordinance_dir.name,
-                    "question_id": answer_file.stem,
+                    "question_id": question_dir.name,
                     "file": (
                         Path("answer")
                         / ordinance_dir.name
+                        / question_dir.name
                         / answer_file.name
                     ).as_posix(),
                 }
@@ -265,7 +271,7 @@ def main():
         executed_at = summary.executed_at.isoformat()
         manifest = {
             "schema_version": "manifest_v0.1",
-            "based_on_interface": "v0.1r+",
+            "based_on_interface": "v0.2",
             "kind": "manifest",
             "run_id": run_id,
             "executed_at": executed_at,
