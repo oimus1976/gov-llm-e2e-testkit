@@ -2,6 +2,7 @@
 
 import pytest
 from datetime import datetime, timezone, timedelta
+import os
 
 from tests.rag.rag_cases_basic import load_basic_cases
 from tests.pages.chat_page import ChatPage
@@ -15,6 +16,36 @@ from src.answer_probe import (
 
 pytestmark = pytest.mark.rag
 JST = timezone(timedelta(hours=9))
+
+
+def _resolve_probe_timeout(config: dict) -> int:
+    """
+    Determine probe timeout with precedence:
+    1) config["probe_timeout_sec"]
+    2) config["probe_capture_seconds"]
+    3) env PROBE_TIMEOUT_SEC
+    4) fallback to browser page timeout_ms
+    """
+    candidates = [
+        config.get("probe_timeout_sec"),
+        config.get("probe_capture_seconds"),
+        os.getenv("PROBE_TIMEOUT_SEC"),
+    ]
+
+    for value in candidates:
+        if value is None:
+            continue
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0:
+            return parsed
+
+    try:
+        return max(1, int(config["browser"]["page_timeout_ms"]) // 1000)
+    except Exception:
+        return 90
 
 
 @pytest.mark.parametrize("case", load_basic_cases())
@@ -44,7 +75,7 @@ def test_rag_basic(case, chat_page, env_config, case_dirs):
             page=chat_page.page,
             submit_id=submit_id or "N/A",
             chat_id=chat_id,
-            timeout_sec=config["browser"]["page_timeout_ms"] // 1000,
+            probe_timeout_sec=_resolve_probe_timeout(config),
         )
     except AnswerNotAvailableError as e:
         pytest.skip(str(e))

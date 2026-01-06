@@ -1,6 +1,34 @@
 import pytest
+import os
 
 from src.answer_probe import wait_for_answer_text
+
+
+def _resolve_probe_timeout(config: dict) -> int:
+    """
+    Determine probe timeout with precedence:
+    1) config["probe_timeout_sec"]
+    2) config["probe_capture_seconds"]
+    3) env PROBE_TIMEOUT_SEC
+    4) default: 90
+    """
+    candidates = [
+        config.get("probe_timeout_sec"),
+        config.get("probe_capture_seconds"),
+        os.getenv("PROBE_TIMEOUT_SEC"),
+    ]
+
+    for value in candidates:
+        if value is None:
+            continue
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0:
+            return parsed
+
+    return 90
 
 
 def test_gate1_entry_minimal(chat_page, env_config):
@@ -20,13 +48,13 @@ def test_gate1_entry_minimal(chat_page, env_config):
         submit_id = receipt.get("submit_id")
 
     chat_id = chat_page.page.url.split("/")[-1]
-    timeout_sec = config["browser"]["page_timeout_ms"] // 1000
+    timeout_sec = _resolve_probe_timeout(config)
 
     raw_answer = wait_for_answer_text(
         page=chat_page.page,
         submit_id=submit_id or "N/A",
         chat_id=chat_id,
-        timeout_sec=timeout_sec,
+        probe_timeout_sec=timeout_sec,
     )
 
     execution_context = {

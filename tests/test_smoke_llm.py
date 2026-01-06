@@ -5,6 +5,7 @@
 
 import pytest
 from datetime import datetime, timezone, timedelta
+import os
 
 from tests.pages.login_page import LoginPage
 from tests.pages.chat_select_page import ChatSelectPage
@@ -16,6 +17,29 @@ from src.log_writer import LogContext, create_case_log
 
 # JST タイムスタンプ（ログ用）
 JST = timezone(timedelta(hours=9))
+
+
+def _resolve_probe_timeout(config: dict) -> int:
+    candidates = [
+        config.get("probe_timeout_sec"),
+        config.get("probe_capture_seconds"),
+        os.getenv("PROBE_TIMEOUT_SEC"),
+    ]
+
+    for value in candidates:
+        if value is None:
+            continue
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0:
+            return parsed
+
+    try:
+        return max(1, int(config["browser"]["page_timeout_ms"]) // 1000)
+    except Exception:
+        return 90
 
 
 @pytest.mark.smoke
@@ -115,7 +139,7 @@ def test_smoke_llm(page, env_config, case_dirs):
     # -----------------------------------------------------
     # 7. Probe (Answer Detection)
     # -----------------------------------------------------
-    capture_seconds = config.get("probe_capture_seconds", 30)
+    capture_seconds = _resolve_probe_timeout(config)
 
     summary = run_graphql_probe(
         page,

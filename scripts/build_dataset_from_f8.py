@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from typing import Any
+import json
 import shutil
 import hashlib
 import yaml
-
-from datetime import datetime, timezone, timedelta
 
 JST = timezone(timedelta(hours=9))
 
@@ -147,6 +147,104 @@ def verify_dataset_diff(*, f8_run_dir: Path, dataset_dir: Path) -> list[str]:
     return issues
 
 
+def _load_dataset_manifest(dataset_dir: Path) -> dict | None:
+    """
+    Load dataset.yaml emitted by build_dataset_from_f8.
+
+    Returns None when the manifest is absent; raises on parse errors.
+    """
+    manifest_path = dataset_dir / "dataset.yaml"
+    if not manifest_path.exists():
+        return None
+
+    try:
+        return yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - surface manifest issues
+        raise RuntimeError(f"failed to parse manifest at {manifest_path}: {exc}") from exc
+
+
+def _collect_raw_evidence_from_manifest(
+    *, manifest: dict | None, dataset_dir: Path
+) -> Any:
+    """
+    Build raw_evidence payload using manifest entries and copied answer.md content.
+
+    This uses actual artifacts (no synthetic data) to avoid empty datasets.
+    """
+    if not manifest or not isinstance(manifest, dict):
+        return {}
+
+    entries = manifest.get("entries") or []
+    evidence: list[dict[str, Any]] = []
+
+    for entry in entries:
+        entry_id = entry.get("id")
+        rel_path = entry.get("path")
+        if not rel_path:
+            continue
+
+        answer_path = dataset_dir / rel_path
+        record: dict[str, Any] = {
+            "id": entry_id,
+            "answer_path": rel_path,
+        }
+
+        try:
+            record["answer_text"] = answer_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            record["read_error"] = str(exc)
+
+        evidence.append(record)
+
+    return evidence or {}
+
+
+def write_trial_dataset_json(
+    *,
+    dataset_dir: Path,
+    rag_profile: str,
+    case_set: str,
+    run_mode: str = "collect-only",
+    raw_evidence: Any | None = None,
+    derived_summary: Any | None = None,
+) -> Path:
+    """
+    Materialize F4 trial dataset.json with required keys present.
+
+    Values may be empty structures, but raw_evidence / execution_context /
+    derived_summary keys are always emitted.
+    """
+
+    manifest = _load_dataset_manifest(dataset_dir)
+
+    if raw_evidence is None:
+        raw_evidence = _collect_raw_evidence_from_manifest(
+            manifest=manifest, dataset_dir=dataset_dir
+        )
+
+    execution_context = {
+        "rag_profile": rag_profile,
+        "case_set": case_set,
+        "run_mode": run_mode,
+    }
+
+    if isinstance(manifest, dict):
+        execution_context["dataset_id"] = manifest.get("dataset_id")
+        execution_context["source"] = manifest.get("source")
+
+    payload = {
+        "raw_evidence": raw_evidence if raw_evidence is not None else {},
+        "execution_context": execution_context,
+        "derived_summary": derived_summary if derived_summary is not None else {},
+    }
+
+    dataset_path = dataset_dir / "dataset.json"
+    dataset_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return dataset_path
+
+
 if __name__ == "__main__":
     # 最小の手動実行用（CLI は後回し）
     import argparse
@@ -205,6 +303,22 @@ if __name__ == "__main__":
         action="store_true",
         help="Verify answer.md files match source without modifying them",
     )
+    parser.add_argument(
+        "--write-trial-json",
+        action="store_true",
+        help=(
+            "Write dataset.json for F4 trial schema with required keys "
+            "(raw_evidence / execution_context / derived_summary). "
+            "Requires --rag-profile and --case-set."
+        ),
+    )
+    parser.add_argument("--rag-profile", help="Value for execution_context.rag_profile")
+    parser.add_argument("--case-set", help="Value for execution_context.case_set")
+    parser.add_argument(
+        "--run-mode",
+        default="collect-only",
+        help="Value for execution_context.run_mode (default: collect-only)",
+    )
 
     args = parser.parse_args()
 
@@ -213,6 +327,9 @@ if __name__ == "__main__":
 
     if not args.latest and not args.f8_run:
         parser.error("either --f8-run or --latest must be provided")
+
+    if args.write_trial_json and (not args.rag_profile or not args.case_set):
+        parser.error("--write-trial-json requires --rag-profile and --case-set")
 
     if args.latest:
         try:
@@ -233,6 +350,15 @@ if __name__ == "__main__":
         dataset_id=args.dataset_id,
         output_root=args.output_root,
     )
+
+    if args.write_trial_json:
+        dataset_json = write_trial_dataset_json(
+            dataset_dir=dataset_dir,
+            rag_profile=args.rag_profile,
+            case_set=args.case_set,
+            run_mode=args.run_mode,
+        )
+        print(f"Trial dataset.json created at: {dataset_json}")
 
     print(f"Dataset created at: {dataset_dir}")
 

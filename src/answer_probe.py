@@ -11,7 +11,8 @@ Key points:
 - Surfaces observable facts only (raw answer or exceptions).
 """
 
-from typing import Any, Dict
+import os
+from typing import Any, Dict, Optional
 
 from playwright.sync_api import Page
 
@@ -48,13 +49,51 @@ class ProbeExecutionError(Exception):
 # Public API
 # ----------------------------------------------------------------------
 
+DEFAULT_PROBE_TIMEOUT_SEC = 90
+
+
+def _resolve_probe_timeout(
+    *,
+    timeout_sec: Optional[int] = None,
+    probe_timeout_sec: Optional[int] = None,
+) -> int:
+    """
+    Determine probe wait time with precedence:
+    1) explicit probe_timeout_sec
+    2) legacy timeout_sec argument
+    3) environment variable PROBE_TIMEOUT_SEC
+    4) DEFAULT_PROBE_TIMEOUT_SEC
+    """
+
+    for value in (probe_timeout_sec, timeout_sec):
+        if value is None:
+            continue
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            continue
+        if parsed > 0:
+            return parsed
+
+    env_value = os.getenv("PROBE_TIMEOUT_SEC")
+    if env_value:
+        try:
+            parsed = int(env_value)
+            if parsed > 0:
+                return parsed
+        except ValueError:
+            pass
+
+    return DEFAULT_PROBE_TIMEOUT_SEC
+
 
 def wait_for_answer_text(
     *,
     page: Page,
     submit_id: str,
     chat_id: str,
-    timeout_sec: int = 60,
+    timeout_sec: Optional[int] = None,
+    probe_timeout_sec: Optional[int] = None,
 ) -> str:
     """
     Wait for an answer text via Answer Detection Layer (probe).
@@ -69,7 +108,10 @@ def wait_for_answer_text(
     chat_id : str
         Chat boundary identifier.
     timeout_sec : int, optional
-        Upper bound for waiting (seconds).
+        Legacy timeout binding (seconds). If provided, used as a fallback.
+    probe_timeout_sec : int, optional
+        Dedicated probe timeout (seconds). If not provided, resolved from
+        timeout_sec, environment variable PROBE_TIMEOUT_SEC, then default.
         Completion semantics are defined by probe, not here.
 
     Returns
@@ -91,11 +133,16 @@ def wait_for_answer_text(
     # submit_id is intentionally unused in v0.1r.
     # It is kept to preserve API contract and future extensibility.
 
+    capture_seconds = _resolve_probe_timeout(
+        timeout_sec=timeout_sec,
+        probe_timeout_sec=probe_timeout_sec,
+    )
+
     try:
         summary: Dict[str, Any] = run_graphql_probe(
             page=page,
             chat_id=chat_id,
-            capture_seconds=timeout_sec,
+            capture_seconds=capture_seconds,
         )
     except Exception as exc:
         raise ProbeExecutionError("probe execution failed") from exc

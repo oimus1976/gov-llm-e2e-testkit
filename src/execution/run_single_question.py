@@ -12,6 +12,7 @@ Responsibilities:
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -319,6 +320,7 @@ def run_single_question(
     profile: str,
     execution_context: Optional[dict] = None,
     timeout_sec: int = 60,
+    probe_timeout_sec: Optional[int] = None,
 ) -> SingleQuestionResult:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -369,12 +371,25 @@ def run_single_question(
     # ------------------------------------------------------------
     # Probe phase (observation only) — must not block DOM extraction
     # ------------------------------------------------------------
+    probe_timeout_override = None
+    if probe_timeout_sec is not None:
+        probe_timeout_override = probe_timeout_sec
+    else:
+        env_probe_timeout = os.getenv("PROBE_TIMEOUT_SEC")
+        if env_probe_timeout:
+            try:
+                parsed = int(env_probe_timeout)
+                if parsed > 0:
+                    probe_timeout_override = parsed
+            except ValueError:
+                probe_timeout_override = None
+
     try:
         probe_answer_text = wait_for_answer_text(
             page=chat_page.page,
             submit_id=submit_id,
             chat_id=chat_id,
-            timeout_sec=timeout_sec,
+            probe_timeout_sec=probe_timeout_override,
         )
     except Exception as exc:
         probe_exception = exc
