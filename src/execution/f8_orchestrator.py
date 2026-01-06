@@ -29,6 +29,7 @@ from src.answer_probe import (
 from src.execution.run_single_question import (
     ChatPageProtocol,
     RawCapture,
+    SubmitConfirmationError,
     run_single_question,
 )
 
@@ -117,6 +118,9 @@ def _write_answer_markdown(
     submit_id: str,
     chat_id: str,
     extracted_status: str,
+    submit_sent_at: datetime,
+    submitted_question_text: str,
+    submit_confirmation: Mapping[str, Any],
 ) -> Path:
     fs_question_id = _fs_safe_segment(question.question_id)
     _validate_required_keys(
@@ -235,6 +239,7 @@ def _write_answer_markdown(
             "",
             f"- submit_id: {submit_id or 'N/A'}",
             f"- chat_id: {chat_id or 'N/A'}",
+            f"- submit_timestamp: {submit_sent_at.isoformat() if submit_sent_at else 'N/A'}",
             f"- profile: {execution_profile.profile_name}",
             f"- output_dir: {question_dir}",
             f"- dom_selected: {dom.get('selected', 'N/A')}",
@@ -248,6 +253,29 @@ def _write_answer_markdown(
             f"- raw_answer_html: {raw_capture.html_path if raw_capture else 'N/A'}",
             f"- raw_answer_txt: {raw_capture.text_path if raw_capture else 'N/A'}",
             f"- raw_capture_meta: {raw_capture.meta_path if raw_capture else 'N/A'}",
+        ]
+    )
+
+    submission_signals = (
+        ", ".join(submit_confirmation.get("signals", []))
+        if isinstance(submit_confirmation, Mapping)
+        else ""
+    )
+    lines.extend(
+        [
+            "",
+            "## Submission Trace",
+            "",
+            f"- submit_signals: {submission_signals or 'N/A'}",
+            f"- message_state_before: {submit_confirmation.get('before') if isinstance(submit_confirmation, Mapping) else 'N/A'}",
+            f"- message_state_after: {submit_confirmation.get('after') if isinstance(submit_confirmation, Mapping) else 'N/A'}",
+            f"- message_state_final: {submit_confirmation.get('final_after') if isinstance(submit_confirmation, Mapping) else 'N/A'}",
+            "",
+            "### Submitted Question (echo)",
+            "",
+            "```text",
+            submitted_question_text or "",
+            "```",
         ]
     )
 
@@ -283,6 +311,7 @@ def run_f8_collection(
 
     aborted = False
     fatal_error: Optional[str] = None
+    fatal_submit_error: Optional[Exception] = None
 
     for ordinance in ordinances:
         for question in questions:
@@ -295,9 +324,12 @@ def run_f8_collection(
             reason: Optional[str] = None
             raw_capture: Optional[RawCapture] = None
             raw_capture_attempted = False
+            skip_answer_write = False
 
             submit_id = "N/A"
             chat_id = "N/A"
+            submit_sent_at: Optional[datetime] = None
+            submit_confirmation: Mapping[str, Any] = {}
             extracted_answer_text = ""
             extracted_status = "INVALID"
             execution_context: Optional[dict] = None
@@ -318,12 +350,21 @@ def run_f8_collection(
                     )
                     submit_id = result.submit_id
                     chat_id = result.chat_id
+                    submit_sent_at = result.submit_sent_at
+                    submit_confirmation = result.submit_confirmation
                     extracted_answer_text = result.answer_text
                     extracted_status = result.extracted_status
                     execution_context = result.execution_context or {}
                     raw_capture = result.raw_capture
                     raw_capture_attempted = result.raw_capture_attempted
                     status = ResultStatus.SUCCESS
+                except SubmitConfirmationError as exc:
+                    status = ResultStatus.EXEC_ERROR
+                    reason = str(exc)
+                    aborted = True
+                    fatal_error = str(exc)
+                    skip_answer_write = True
+                    fatal_submit_error = exc
                 except AnswerTimeoutError as exc:
                     status = ResultStatus.TIMEOUT
                     reason = str(exc)
@@ -388,32 +429,36 @@ def run_f8_collection(
                 )
                 # --- /TEMP DEBUG ---
 
-                _write_answer_markdown(
-                    question_dir=question_dir,
-                    question=question,
-                    ordinance=ordinance,
-                    execution_profile=execution_profile,
-                    run_id=run_id,
-                    executed_at=executed_at,
-                    qommons_config=qommons_config,
-                    knowledge_scope=knowledge_scope,
-                    knowledge_files=knowledge_files,
-                    ordinance_set=ordinance_set,
-                    question_pool=question_pool,
-                    execution=execution,
-                    extracted_answer_text=extracted_answer_text,
-                    execution_context=execution_context,
-                    raw_capture=raw_capture,
-                    raw_capture_attempted=raw_capture_attempted,
-                    result_status=status,
-                    result_reason=reason,
-                    aborted_run=aborted,
-                    citations=citations,
-                    observation_notes=observation_notes,
-                    submit_id=submit_id,
-                    chat_id=chat_id,
-                    extracted_status=extracted_status,
-                )
+                if not skip_answer_write:
+                    _write_answer_markdown(
+                        question_dir=question_dir,
+                        question=question,
+                        ordinance=ordinance,
+                        execution_profile=execution_profile,
+                        run_id=run_id,
+                        executed_at=executed_at,
+                        qommons_config=qommons_config,
+                        knowledge_scope=knowledge_scope,
+                        knowledge_files=knowledge_files,
+                        ordinance_set=ordinance_set,
+                        question_pool=question_pool,
+                        execution=execution,
+                        extracted_answer_text=extracted_answer_text,
+                        execution_context=execution_context,
+                        raw_capture=raw_capture,
+                        raw_capture_attempted=raw_capture_attempted,
+                        result_status=status,
+                        result_reason=reason,
+                        aborted_run=aborted,
+                        citations=citations,
+                        observation_notes=observation_notes,
+                        submit_id=submit_id,
+                        chat_id=chat_id,
+                        extracted_status=extracted_status,
+                        submit_sent_at=submit_sent_at or executed_at,
+                        submitted_question_text=question.question_text,
+                        submit_confirmation=submit_confirmation,
+                    )
             except Exception as exc:
                 print("[DEBUG] answer.md write failed:", exc)
                 status = ResultStatus.EXEC_ERROR
@@ -424,5 +469,8 @@ def run_f8_collection(
                 break
         if aborted:
             break
+
+    if fatal_submit_error is not None:
+        raise fatal_submit_error
 
     return RunSummary(aborted=aborted, fatal_error=fatal_error, executed_at=executed_at)

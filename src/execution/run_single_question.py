@@ -15,7 +15,8 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
+import time
 
 from playwright.sync_api import Page
 
@@ -34,6 +35,26 @@ class ChatPageProtocol(Protocol):
     def submit(self, message: str) -> Any: ...
 
 
+class SubmitConfirmationError(Exception):
+    """Raised when submit success cannot be confirmed via DOM signals."""
+
+
+@dataclass(frozen=True)
+class MessageState:
+    count: int
+    last_message_id: Optional[int]
+    last_markdown_id: Optional[int]
+    last_timestamp: Optional[str]
+
+    def as_dict(self) -> Dict[str, Any]:
+        return {
+            "count": self.count,
+            "last_message_id": self.last_message_id,
+            "last_markdown_id": self.last_markdown_id,
+            "last_timestamp": self.last_timestamp,
+        }
+
+
 @dataclass(frozen=True)
 class SingleQuestionResult:
     question_id: str
@@ -42,6 +63,8 @@ class SingleQuestionResult:
     profile: str
     output_dir: Path
     submit_id: str
+    submit_sent_at: datetime
+    submit_confirmation: Dict[str, Any]
     chat_id: str
     answer_text: str
     extracted_status: str
@@ -49,6 +72,8 @@ class SingleQuestionResult:
     raw_capture_attempted: bool
     anchor_dom_selector: Optional[str]
     execution_context: Optional[dict]
+    message_state_before: MessageState
+    message_state_after: MessageState
 
 
 @dataclass(frozen=True)
@@ -82,6 +107,99 @@ def _extract_chat_id(chat_page: ChatPageProtocol) -> str:
         return "N/A"
     parts = str(url).split("/")
     return parts[-1] or "N/A"
+
+
+def _snapshot_message_state(page: Page) -> MessageState:
+    try:
+        data = page.evaluate(
+            """() => {
+                const parseMax = (selector, prefix) => {
+                    const ids = Array.from(document.querySelectorAll(selector))
+                        .map(el => el.id || "")
+                        .filter(id => typeof id === "string" && id.startsWith(prefix))
+                        .map(id => parseInt(id.slice(prefix.length), 10))
+                        .filter(n => Number.isFinite(n));
+                    if (!ids.length) return null;
+                    return Math.max(...ids);
+                };
+
+                const items = Array.from(document.querySelectorAll("div[id^='message-item-']"));
+                const lastTimestamp = items.length
+                    ? items[items.length - 1].getAttribute("data-timestamp")
+                    : null;
+
+                return {
+                    count: items.length,
+                    last_message_id: parseMax("div[id^='message-item-']", "message-item-"),
+                    last_markdown_id: parseMax("div[id^='markdown-']", "markdown-"),
+                    last_timestamp: lastTimestamp,
+                };
+            }"""
+        )
+        return MessageState(
+            count=int(data.get("count", 0)),
+            last_message_id=data.get("last_message_id"),
+            last_markdown_id=data.get("last_markdown_id"),
+            last_timestamp=data.get("last_timestamp"),
+        )
+    except Exception:
+        return MessageState(count=0, last_message_id=None, last_markdown_id=None, last_timestamp=None)
+
+
+def _has_increment(current: Optional[int], baseline: Optional[int]) -> bool:
+    if current is None:
+        return False
+    if baseline is None:
+        return current >= 0
+    return current > baseline
+
+
+def _wait_for_submit_confirmation(
+    page: Page, before_state: MessageState, *, timeout_sec: int
+) -> Dict[str, Any]:
+    """
+    Wait for DOM-level evidence that the submit was accepted.
+    Returns a confirmation payload with observed states.
+    Raises SubmitConfirmationError on timeout.
+    """
+    deadline = time.time() + max(timeout_sec, 1)
+
+    try:
+        send_button = page.locator("#chat-send-button")
+    except Exception:
+        send_button = None
+
+    while time.time() < deadline:
+        state = _snapshot_message_state(page)
+        primary_signals: List[str] = []
+        secondary_signals: List[str] = []
+
+        if state.count > before_state.count:
+            primary_signals.append("message_count_increased")
+        if _has_increment(state.last_message_id, before_state.last_message_id):
+            primary_signals.append("message_id_advanced")
+        if _has_increment(state.last_markdown_id, before_state.last_markdown_id):
+            primary_signals.append("markdown_id_advanced")
+
+        if send_button is not None:
+            try:
+                if send_button.is_disabled():
+                    secondary_signals.append("send_button_disabled")
+            except Exception:
+                pass
+
+        if primary_signals:
+            return {
+                "before": before_state.as_dict(),
+                "after": state.as_dict(),
+                "signals": primary_signals + secondary_signals,
+            }
+
+        page.wait_for_timeout(200)
+
+    raise SubmitConfirmationError(
+        "submit confirmation not observed via DOM signals",
+    )
 
 
 def _safe_write_text(path: Path, content: str) -> None:
@@ -212,14 +330,27 @@ def run_single_question(
     after_submit_html = ""
     after_ready_html = ""
     dom_html = ""
+    submit_confirmation: Dict[str, Any] = {}
 
     # TEMP: UI readiness stabilization (remove after confirmation)
     chat_page.page.wait_for_timeout(1000)
     # ------------------------------------------------------------
 
+    before_submit_state = _snapshot_message_state(chat_page.page)
+
     submit_receipt = chat_page.submit(question_text)
     submit_id = _extract_submit_id(submit_receipt)
+    submit_sent_at = getattr(submit_receipt, "sent_at", datetime.now(timezone.utc))
     chat_id = _extract_chat_id(chat_page)
+
+    if not getattr(submit_receipt, "ui_ack", False):
+        raise SubmitConfirmationError("submit acknowledgment not observed (ui_ack=False)")
+
+    submit_confirmation = _wait_for_submit_confirmation(
+        chat_page.page,
+        before_submit_state,
+        timeout_sec=min(timeout_sec, 20),
+    )
 
     after_submit_html = _capture_html_snapshot(
         chat_page.page, after_submit_path, "after_submit", snapshot_errors
@@ -348,6 +479,28 @@ def run_single_question(
         errors=snapshot_errors,
     )
 
+    final_message_state = _snapshot_message_state(chat_page.page)
+    if final_message_state.count <= before_submit_state.count:
+        raise SubmitConfirmationError(
+            "no new message observed after submit (count did not increase)"
+        )
+    if (
+        final_message_state.last_markdown_id is not None
+        and before_submit_state.last_markdown_id is not None
+        and final_message_state.last_markdown_id <= before_submit_state.last_markdown_id
+    ):
+        raise SubmitConfirmationError("markdown id did not advance after submit")
+    if dom_result_observation is not None:
+        selected_n = dom_result_observation.get("selected_n")
+        if (
+            isinstance(selected_n, int)
+            and final_message_state.last_markdown_id is not None
+            and selected_n != final_message_state.last_markdown_id
+        ):
+            raise SubmitConfirmationError(
+                "extracted markdown is not the latest message after submit"
+            )
+
     # --- Observed facts (no evaluation, no print) ---
     dom_observation = dom_result_observation or {
         "candidates": [],
@@ -365,6 +518,10 @@ def run_single_question(
         {
             "probe_answer_text": probe_answer_text,
             "dom_extraction": dom_observation,
+            "submit_confirmation": {
+                **submit_confirmation,
+                "final_after": final_message_state.as_dict(),
+            },
         }
     )
 
@@ -410,6 +567,11 @@ def run_single_question(
         profile=profile,
         output_dir=output_dir,
         submit_id=submit_id,
+        submit_sent_at=submit_sent_at,
+        submit_confirmation={
+            **submit_confirmation,
+            "final_after": final_message_state.as_dict(),
+        },
         chat_id=chat_id,
         answer_text=canonical_answer_text,
         extracted_status=extracted_status,
@@ -417,4 +579,6 @@ def run_single_question(
         raw_capture_attempted=raw_capture_attempted,
         anchor_dom_selector=dom_observation.get("anchor_dom_selector"),
         execution_context=merged_context,
+        message_state_before=before_submit_state,
+        message_state_after=final_message_state,
     )
