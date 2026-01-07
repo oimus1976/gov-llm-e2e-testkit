@@ -2,7 +2,7 @@
 Diagnostic: submit button state probe (Q3 -> Q15 -> Q1) per Implementation Brief.
 
 - Standalone script (no changes to collection/orchestrator).
-- Captures DOM state before/after submit attempts plus class transition timeline.
+- Uses submit class transitions as the primary gate.
 """
 
 from __future__ import annotations
@@ -51,6 +51,10 @@ SUBMIT_CANDIDATE_SELECTORS: List[str] = [
     "button:has-text(\"Submit\")",
 ]
 
+SUBMIT_BLUE_CLASS = "text-blue-500"
+SUBMIT_GRAY_CLASS = "text-gray-400"
+SUBMIT_DISABLED_CLASS = "cursor-not-allowed"
+
 GENERATION_INDICATOR_SELECTORS: List[str] = [
     "[data-testid*=\"loading\"]",
     "[aria-busy=\"true\"]",
@@ -59,7 +63,8 @@ GENERATION_INDICATOR_SELECTORS: List[str] = [
     ".spinner",
 ]
 
-WAIT_AFTER_SUBMIT_MS = 30000
+# Safety cap for abort only; completion never relies on this value.
+MAX_WAIT_MS = 300000
 MONITOR_INTERVAL_MS = 500
 
 
@@ -120,6 +125,24 @@ def _collect_submit_candidates(page: Page) -> List[Dict[str, Any]]:
     return results
 
 
+def _classify_submit_state(candidate: Dict[str, Any]) -> str:
+    class_value = candidate.get("class") or ""
+    if SUBMIT_BLUE_CLASS in class_value:
+        return "blue"
+    if SUBMIT_GRAY_CLASS in class_value and SUBMIT_DISABLED_CLASS in class_value:
+        return "gray"
+    return "unknown"
+
+
+def _derive_submit_state(candidates: List[Dict[str, Any]]) -> str:
+    # Priority: blue (ready) > gray (busy) > unknown.
+    if any(_classify_submit_state(c) == "blue" for c in candidates):
+        return "blue"
+    if any(_classify_submit_state(c) == "gray" for c in candidates):
+        return "gray"
+    return "unknown"
+
+
 def _collect_generation_indicators(page: Page) -> List[Dict[str, Any]]:
     indicators: List[Dict[str, Any]] = []
 
@@ -160,7 +183,9 @@ def _snapshot_dom_state(
     question_text: str,
     stage: str,
     click_result: Optional[Dict[str, Any]] = None,
+    submit_state: Optional[str] = None,
 ) -> Dict[str, Any]:
+    submit_candidates = _collect_submit_candidates(page)
     return {
         "ts": _now_jst_iso(),
         "run_id": run_id,
@@ -170,10 +195,25 @@ def _snapshot_dom_state(
         "question_text": question_text,
         "stage": stage,
         "url": page.url,
-        "submit_candidates": _collect_submit_candidates(page),
+        "submit_candidates": submit_candidates,
+        "submit_state": submit_state or _derive_submit_state(submit_candidates),
         "generation_indicators": _collect_generation_indicators(page),
         "click_result": click_result,
     }
+
+
+def _pick_submit_candidate(
+    candidates: List[Dict[str, Any]], *, target_state: str
+) -> Optional[Dict[str, Any]]:
+    for candidate in candidates:
+        if _classify_submit_state(candidate) != target_state:
+            continue
+        if not candidate.get("is_visible"):
+            continue
+        if target_state == "blue" and not candidate.get("is_enabled"):
+            continue
+        return candidate
+    return None
 
 
 def _attempt_submit_click(page: Page) -> Dict[str, Any]:
@@ -188,42 +228,32 @@ def _attempt_submit_click(page: Page) -> Dict[str, Any]:
         "candidate_class": None,
     }
 
-    for selector in SUBMIT_CANDIDATE_SELECTORS:
-        locator = page.locator(selector)
-        count = locator.count()
+    candidates = _collect_submit_candidates(page)
+    preferred = _pick_submit_candidate(candidates, target_state="blue")
 
-        for idx in range(count):
-            candidate = locator.nth(idx)
+    if not preferred:
+        result["reason"] = "no_blue_candidate"
+        return result
 
-            try:
-                candidate_class = candidate.get_attribute("class") or ""
-            except Exception:
-                candidate_class = ""
+    result.update(
+        {
+            "attempted": True,
+            "selector": preferred.get("selector"),
+            "index": preferred.get("index"),
+            "candidate_class": preferred.get("class"),
+        }
+    )
 
-            if "text-blue-500" not in candidate_class:
-                continue
-
-            result.update(
-                {
-                    "attempted": True,
-                    "selector": selector,
-                    "index": idx,
-                    "candidate_class": candidate_class,
-                }
-            )
-
-            try:
-                if not candidate.is_visible():
-                    result["reason"] = "candidate_not_visible"
-                    return result
-                candidate.click()
-                result["clicked"] = True
-            except Exception as exc:
-                result["error"] = str(exc)
-
+    try:
+        locator = page.locator(preferred["selector"]).nth(int(preferred["index"]))
+        if not locator.is_visible():
+            result["reason"] = "candidate_not_visible"
             return result
+        locator.click()
+        result["clicked"] = True
+    except Exception as exc:
+        result["error"] = str(exc)
 
-    result["reason"] = "no_blue_candidate"
     return result
 
 
@@ -249,58 +279,139 @@ def _prepare_question_text(text: str) -> str:
     return f"法規文書ID：{ORDINANCE_ID} に基づき、次の法規文書について回答してください。{replaced}"
 
 
-def _monitor_submit_classes(
+def _read_input_value(page: Page) -> str:
+    try:
+        return page.locator(ChatPage.MESSAGE_INPUT).input_value()
+    except Exception:
+        return ""
+
+
+def _abort_probe(
     page: Page,
     *,
-    duration_ms: int,
+    question_dir: Path,
+    question_label: str,
+    reason: str,
+    payload: Dict[str, Any],
+) -> None:
+    payload["reason"] = reason
+    _write_json(question_dir / f"{question_label}_abort.json", payload)
+    page.screenshot(path=str(question_dir / f"{question_label}_screenshot_abort.png"))
+    (question_dir / f"{question_label}_page_abort.html").write_text(
+        page.content(), encoding="utf-8"
+    )
+    raise RuntimeError(reason)
+
+
+def _validate_transitions(transitions: List[str]) -> bool:
+    allowed_sequences = [
+        ["blue", "gray", "blue"],
+        ["gray", "blue"],
+    ]
+    for allowed in allowed_sequences:
+        if transitions == allowed[: len(transitions)]:
+            return True
+    return False
+
+
+def _monitor_submit_cycle(
+    page: Page,
+    *,
+    question_dir: Path,
+    question_label: str,
     interval_ms: int,
-    enable_transition_click: bool,
-    already_clicked: bool,
+    max_wait_ms: int,
+    monitor_input: bool,
 ) -> Dict[str, Any]:
     start = perf_counter()
     timeline: List[Dict[str, Any]] = []
     first_gray_ms: Optional[int] = None
     first_blue_ms: Optional[int] = None
-    transition_click: Optional[Dict[str, Any]] = None
+    transitions: List[str] = []
+    saw_gray = False
+    baseline_input = _read_input_value(page) if monitor_input else ""
+    allow_clear = monitor_input and bool(baseline_input)
 
     while True:
         elapsed_ms = int((perf_counter() - start) * 1000)
         candidates = _collect_submit_candidates(page)
+        submit_state = _derive_submit_state(candidates)
+        if not transitions or submit_state != transitions[-1]:
+            transitions.append(submit_state)
+            if not _validate_transitions(transitions):
+                _abort_probe(
+                    page,
+                    question_dir=question_dir,
+                    question_label=question_label,
+                    reason="submit_class_not_monotonic",
+                    payload={
+                        "elapsed_ms": elapsed_ms,
+                        "transitions": transitions,
+                        "timeline": timeline,
+                    },
+                )
 
-        if first_gray_ms is None and any(
-            (c.get("class") or "").find("text-gray-400") != -1
-            and (c.get("class") or "").find("cursor-not-allowed") != -1
-            for c in candidates
-        ):
+        if first_gray_ms is None and submit_state == "gray":
             first_gray_ms = elapsed_ms
+            saw_gray = True
 
-        if first_blue_ms is None and any(
-            "text-blue-500" in (c.get("class") or "") for c in candidates
-        ):
+        if first_blue_ms is None and submit_state == "blue":
             first_blue_ms = elapsed_ms
 
-            if enable_transition_click and transition_click is None and not already_clicked:
-                transition_click = _attempt_submit_click(page)
+        input_value = _read_input_value(page) if monitor_input else ""
+        if monitor_input:
+            if allow_clear and baseline_input and not input_value:
+                baseline_input = ""
+                allow_clear = False
+            elif input_value != baseline_input and input_value.strip():
+                _abort_probe(
+                    page,
+                    question_dir=question_dir,
+                    question_label=question_label,
+                    reason="input_overwritten",
+                    payload={
+                        "elapsed_ms": elapsed_ms,
+                        "baseline_input": baseline_input,
+                        "current_input": input_value,
+                        "transitions": transitions,
+                        "timeline": timeline,
+                    },
+                )
 
         timeline.append(
             {
                 "ts": _now_jst_iso(),
                 "elapsed_ms": elapsed_ms,
+                "submit_state": submit_state,
                 "submit_candidates": candidates,
+                "input_value": input_value if monitor_input else None,
             }
         )
 
-        if elapsed_ms >= duration_ms:
+        if saw_gray and submit_state == "blue":
             break
+
+        if elapsed_ms >= max_wait_ms:
+            _abort_probe(
+                page,
+                question_dir=question_dir,
+                question_label=question_label,
+                reason="submit_not_returned_blue",
+                payload={
+                    "elapsed_ms": elapsed_ms,
+                    "transitions": transitions,
+                    "timeline": timeline,
+                },
+            )
 
         page.wait_for_timeout(interval_ms)
 
     return {
-        "duration_ms": duration_ms,
+        "max_wait_ms": max_wait_ms,
         "interval_ms": interval_ms,
         "first_gray_ms": first_gray_ms,
         "first_blue_ms": first_blue_ms,
-        "transition_click": transition_click,
+        "transitions": transitions,
         "timeline": timeline,
     }
 
@@ -317,6 +428,16 @@ def _run_probe_for_question(
     question_dir.mkdir(parents=True, exist_ok=True)
 
     prepared_text = _prepare_question_text(question["text"])
+    pre_candidates = _collect_submit_candidates(page)
+    pre_state = _derive_submit_state(pre_candidates)
+    if pre_state != "blue":
+        _abort_probe(
+            page,
+            question_dir=question_dir,
+            question_label=question["label"],
+            reason="submit_not_blue_before_input",
+            payload={"submit_state": pre_state, "submit_candidates": pre_candidates},
+        )
     _fill_question_input(page, chat_timeout, prepared_text)
 
     before_payload = _snapshot_dom_state(
@@ -334,6 +455,14 @@ def _run_probe_for_question(
     )
 
     click_result = _attempt_submit_click(page)
+    if not click_result.get("clicked"):
+        _abort_probe(
+            page,
+            question_dir=question_dir,
+            question_label=question["label"],
+            reason="submit_click_failed",
+            payload={"click_result": click_result},
+        )
     after_click_payload = _snapshot_dom_state(
         page,
         run_id=run_id,
@@ -346,12 +475,13 @@ def _run_probe_for_question(
     _write_json(question_dir / f"{question['label']}_after_click.json", after_click_payload)
     page.screenshot(path=str(question_dir / f"{question['label']}_screenshot_after_click.png"))
 
-    monitor_payload = _monitor_submit_classes(
+    monitor_payload = _monitor_submit_cycle(
         page,
-        duration_ms=WAIT_AFTER_SUBMIT_MS,
         interval_ms=MONITOR_INTERVAL_MS,
-        enable_transition_click=question["label"] == "Q15",
-        already_clicked=click_result.get("clicked", False),
+        max_wait_ms=MAX_WAIT_MS,
+        question_dir=question_dir,
+        question_label=question["label"],
+        monitor_input=question["label"] == "Q15",
     )
     _write_json(question_dir / f"{question['label']}_submit_class_timeline.json", monitor_payload)
 
@@ -362,7 +492,7 @@ def _run_probe_for_question(
         question_id=question["question_id"],
         question_text=prepared_text,
         stage="after_wait",
-        click_result=monitor_payload.get("transition_click") or click_result,
+        click_result=click_result,
     )
     _write_json(question_dir / f"{question['label']}_after_wait.json", after_wait_payload)
     page.screenshot(path=str(question_dir / f"{question['label']}_screenshot_after_wait.png"))
