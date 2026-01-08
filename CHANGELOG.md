@@ -12,6 +12,29 @@
 
 ---
 
+## v0.7.27 (2026-01-08)
+
+### Added
+
+- submit button の UI 状態（gray → blue）を一次情報とする **Submit Blue Semantics** を正式設計として追加
+- ChatSelectPage におけるチャット遷移成功条件（`/chat/<chat_id>`）および Playwright 待機モデルの設計文書を追加
+
+### Changed
+
+- Gate1 を「submit blue 遷移確認のみ」に再定義し、pytest による最小合格条件として確定
+- pytest 全体を再実行し、現行ブランチにおいて **FAIL なしで安定通過**する状態を確認
+- submit-gate 実装を UI 状態駆動に整理し、旧来の message_count / ui_ack 依存を撤廃
+
+### Removed
+
+- submit-gate 検証過程で使用していた一時的検証ファイル（verify_dom_scope.txt）を整理・削除
+
+### Notes
+
+- answer.md の Path 解決に関する不整合は再現せず、原因未確定のため F10-A の保留事項として扱う
+
+---
+
 ## v0.7.26 (2026-01-02)
 
 ### Project
