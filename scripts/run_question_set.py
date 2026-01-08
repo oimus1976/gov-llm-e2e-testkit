@@ -14,6 +14,9 @@ import os
 from pathlib import Path
 from typing import List, Sequence
 
+from datetime import datetime
+from pathlib import Path
+
 from playwright.sync_api import sync_playwright
 import yaml
 
@@ -46,14 +49,22 @@ QUESTION_SET_FILENAME = "customized_question_set.json"
 
 
 def _resolve_output_root() -> Path:
-    value = os.getenv("OUTPUT_ROOT")
-    if not value:
-        raise EnvironmentError(
-            "OUTPUT_ROOT is required and must point to the final output directory (includes run_id)."
-        )
-    output_root = Path(value).expanduser().resolve()
-    output_root.mkdir(parents=True, exist_ok=True)
-    return output_root
+    """
+    Resolve OUTPUT_ROOT.
+    If not provided, auto-generate from timestamp.
+    """
+    output_root = os.environ.get("OUTPUT_ROOT")
+
+    if output_root:
+        path = Path(output_root)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    # fallback: auto-generate run_id-based output root
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = Path("out") / run_id
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def _write_yaml_once(path: Path, payload: dict) -> None:

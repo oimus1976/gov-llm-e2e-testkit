@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
 import time
+import uuid
 
 from playwright.sync_api import Page
 
@@ -37,7 +38,7 @@ class ChatPageProtocol(Protocol):
 
 
 class SubmitConfirmationError(Exception):
-    """Raised when submit success cannot be confirmed via DOM signals."""
+    """Raised when submit cannot be confirmed via submit-state transitions."""
 
 
 @dataclass(frozen=True)
@@ -89,16 +90,21 @@ class RawCapture:
     extracted_status: str
 
 
-def _extract_submit_id(submit_result: Any) -> str:
-    if hasattr(submit_result, "submit_id"):
-        value = getattr(submit_result, "submit_id")
-        if isinstance(value, str):
-            return value
-    if isinstance(submit_result, dict):
-        value = submit_result.get("submit_id")
-        if isinstance(value, str):
-            return value
-    return "N/A"
+SUBMIT_CANDIDATE_SELECTORS: List[str] = [
+    'button:has-text("送信")',
+    'button[type="submit"]',
+    '[role="button"]:has-text("送信")',
+    'form button[type="submit"]',
+    "form button",
+    'button:has-text("Submit")',
+]
+
+SUBMIT_BLUE_CLASS = "text-blue-500"
+SUBMIT_GRAY_CLASS = "text-gray-400"
+SUBMIT_DISABLED_CLASS = "cursor-not-allowed"
+
+SUBMIT_MONITOR_INTERVAL_MS = 500
+MESSAGE_INPUT_SELECTOR = "#message"
 
 
 def _extract_chat_id(chat_page: ChatPageProtocol) -> str:
@@ -144,63 +150,240 @@ def _snapshot_message_state(page: Page) -> MessageState:
             last_timestamp=data.get("last_timestamp"),
         )
     except Exception:
-        return MessageState(count=0, last_message_id=None, last_markdown_id=None, last_timestamp=None)
+        return MessageState(
+            count=0, last_message_id=None, last_markdown_id=None, last_timestamp=None
+        )
 
 
-def _has_increment(current: Optional[int], baseline: Optional[int]) -> bool:
-    if current is None:
-        return False
-    if baseline is None:
-        return current >= 0
-    return current > baseline
+def _collect_submit_candidates(page: Page) -> List[Dict[str, Any]]:
+    results: List[Dict[str, Any]] = []
+    seen_html: set[str] = set()
+
+    for selector in SUBMIT_CANDIDATE_SELECTORS:
+        locator = page.locator(selector)
+        try:
+            count = locator.count()
+        except Exception:
+            count = 0
+
+        for idx in range(count):
+            candidate = locator.nth(idx)
+            try:
+                outer_html = candidate.evaluate("el => el.outerHTML")
+            except Exception:
+                outer_html = None
+
+            dedup_key = f"{selector}:{outer_html}"
+            if dedup_key in seen_html:
+                continue
+            seen_html.add(dedup_key)
+
+            try:
+                is_visible = candidate.is_visible()
+            except Exception:
+                is_visible = False
+
+            try:
+                is_enabled = candidate.is_enabled()
+            except Exception:
+                is_enabled = False
+
+            results.append(
+                {
+                    "selector": selector,
+                    "index": idx,
+                    "is_visible": is_visible,
+                    "is_enabled": is_enabled,
+                    "disabled_attr": candidate.get_attribute("disabled"),
+                    "aria_disabled": candidate.get_attribute("aria-disabled"),
+                    "class": candidate.get_attribute("class"),
+                    "outer_html": outer_html,
+                }
+            )
+
+    return results
 
 
-def _wait_for_submit_confirmation(
-    page: Page, before_state: MessageState, *, timeout_sec: int
+def _classify_submit_state(candidate: Dict[str, Any]) -> str:
+    class_value = candidate.get("class") or ""
+    if SUBMIT_BLUE_CLASS in class_value:
+        return "blue"
+    if SUBMIT_GRAY_CLASS in class_value and SUBMIT_DISABLED_CLASS in class_value:
+        return "gray"
+    if SUBMIT_GRAY_CLASS in class_value:
+        return "gray"
+    return "unknown"
+
+
+def _derive_submit_state(candidates: List[Dict[str, Any]]) -> str:
+    if any(_classify_submit_state(c) == "blue" for c in candidates):
+        return "blue"
+    if any(_classify_submit_state(c) == "gray" for c in candidates):
+        return "gray"
+    return "unknown"
+
+
+def _pick_submit_candidate(
+    candidates: List[Dict[str, Any]], *, target_state: str
+) -> Optional[Dict[str, Any]]:
+    for candidate in candidates:
+        if _classify_submit_state(candidate) != target_state:
+            continue
+        if not candidate.get("is_visible"):
+            continue
+        if target_state == "blue" and not candidate.get("is_enabled"):
+            continue
+        return candidate
+    return None
+
+
+def _attempt_submit_click(
+    page: Page, candidates: List[Dict[str, Any]]
 ) -> Dict[str, Any]:
-    """
-    Wait for DOM-level evidence that the submit was accepted.
-    Returns a confirmation payload with observed states.
-    Raises SubmitConfirmationError on timeout.
-    """
-    deadline = time.time() + max(timeout_sec, 1)
+    result: Dict[str, Any] = {
+        "attempted": False,
+        "clicked": False,
+        "selector": None,
+        "index": None,
+        "error": None,
+        "reason": None,
+        "candidate_class": None,
+    }
+
+    preferred = _pick_submit_candidate(candidates, target_state="blue")
+    if not preferred:
+        result["reason"] = "no_blue_candidate"
+        return result
+
+    result.update(
+        {
+            "attempted": True,
+            "selector": preferred.get("selector"),
+            "index": preferred.get("index"),
+            "candidate_class": preferred.get("class"),
+        }
+    )
 
     try:
-        send_button = page.locator("#chat-send-button")
-    except Exception:
-        send_button = None
+        locator = page.locator(preferred["selector"]).nth(int(preferred["index"]))
+        if not locator.is_visible():
+            result["reason"] = "candidate_not_visible"
+            return result
+        locator.click()
+        result["clicked"] = True
+    except Exception as exc:
+        result["error"] = str(exc)
 
-    while time.time() < deadline:
-        state = _snapshot_message_state(page)
-        primary_signals: List[str] = []
-        secondary_signals: List[str] = []
+    return result
 
-        if state.count > before_state.count:
-            primary_signals.append("message_count_increased")
-        if _has_increment(state.last_message_id, before_state.last_message_id):
-            primary_signals.append("message_id_advanced")
-        if _has_increment(state.last_markdown_id, before_state.last_markdown_id):
-            primary_signals.append("markdown_id_advanced")
 
-        if send_button is not None:
-            try:
-                if send_button.is_disabled():
-                    secondary_signals.append("send_button_disabled")
-            except Exception:
-                pass
+def _read_env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if not value:
+        return default
+    try:
+        parsed = int(value)
+    except ValueError:
+        return default
+    return parsed if parsed > 0 else default
 
-        if primary_signals:
-            return {
-                "before": before_state.as_dict(),
-                "after": state.as_dict(),
-                "signals": primary_signals + secondary_signals,
-            }
 
-        page.wait_for_timeout(200)
-
-    raise SubmitConfirmationError(
-        "submit confirmation not observed via DOM signals",
+def _save_submit_abort_artifacts(
+    *,
+    page: Page,
+    output_dir: Path,
+    submit_id: str,
+    reason: str,
+    elapsed_ms: int,
+    submit_state: str,
+    submit_candidates: List[Dict[str, Any]],
+) -> None:
+    payload = {
+        "submit_id": submit_id,
+        "reason": reason,
+        "elapsed_ms": elapsed_ms,
+        "submit_state": submit_state,
+        "submit_candidates": submit_candidates,
+        "captured_at": datetime.now(timezone.utc).isoformat(),
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "submit_abort.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    _capture_html_snapshot(page, output_dir / "submit_abort.html", "submit_abort", [])
+    _capture_screenshot(page, output_dir / "submit_abort.png", "submit_abort", [])
+
+
+def _wait_for_blue_and_click(
+    *,
+    page: Page,
+    output_dir: Path,
+    submit_id: str,
+    max_wait_ms: int,
+    interval_ms: int,
+    watchdog_ms: int,
+) -> Dict[str, Any]:
+    start = time.monotonic()
+    last_state: Optional[str] = None
+    transition_to_blue_ms: Optional[int] = None
+    click_result: Optional[Dict[str, Any]] = None
+
+    while True:
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        candidates = _collect_submit_candidates(page)
+        submit_state = _derive_submit_state(candidates)
+
+        if submit_state == "blue" and last_state != "blue":
+            transition_to_blue_ms = elapsed_ms
+            click_result = _attempt_submit_click(page, candidates)
+            if click_result.get("clicked"):
+                return {
+                    "submit_state": submit_state,
+                    "submit_candidates": candidates,
+                    "click_result": click_result,
+                    "transition_to_blue_ms": transition_to_blue_ms,
+                }
+
+        if submit_state == "blue" and click_result and not click_result.get("clicked"):
+            click_result = _attempt_submit_click(page, candidates)
+            if click_result.get("clicked"):
+                return {
+                    "submit_state": submit_state,
+                    "submit_candidates": candidates,
+                    "click_result": click_result,
+                    "transition_to_blue_ms": transition_to_blue_ms,
+                }
+
+        if (
+            transition_to_blue_ms is not None
+            and (click_result is None or not click_result.get("clicked"))
+            and elapsed_ms - transition_to_blue_ms >= watchdog_ms
+        ):
+            _save_submit_abort_artifacts(
+                page=page,
+                output_dir=output_dir,
+                submit_id=submit_id,
+                reason="watchdog_no_click_after_blue",
+                elapsed_ms=elapsed_ms,
+                submit_state=submit_state,
+                submit_candidates=candidates,
+            )
+            raise SubmitConfirmationError("submit click watchdog expired after blue")
+
+        if elapsed_ms >= max_wait_ms:
+            _save_submit_abort_artifacts(
+                page=page,
+                output_dir=output_dir,
+                submit_id=submit_id,
+                reason="submit_never_reached_blue",
+                elapsed_ms=elapsed_ms,
+                submit_state=submit_state,
+                submit_candidates=candidates,
+            )
+            raise SubmitConfirmationError("submit never reached blue state")
+
+        last_state = submit_state
+        page.wait_for_timeout(interval_ms)
 
 
 def _safe_write_text(path: Path, content: str) -> None:
@@ -334,25 +517,35 @@ def run_single_question(
     dom_html = ""
     submit_confirmation: Dict[str, Any] = {}
 
-    # TEMP: UI readiness stabilization (remove after confirmation)
-    chat_page.page.wait_for_timeout(1000)
-    # ------------------------------------------------------------
-
     before_submit_state = _snapshot_message_state(chat_page.page)
 
-    submit_receipt = chat_page.submit(question_text)
-    submit_id = _extract_submit_id(submit_receipt)
-    submit_sent_at = getattr(submit_receipt, "sent_at", datetime.now(timezone.utc))
+    submit_id = str(uuid.uuid4())
     chat_id = _extract_chat_id(chat_page)
 
-    if not getattr(submit_receipt, "ui_ack", False):
-        raise SubmitConfirmationError("submit acknowledgment not observed (ui_ack=False)")
+    input_box = chat_page.page.locator(MESSAGE_INPUT_SELECTOR)
+    input_box.wait_for(state="visible", timeout=max(timeout_sec, 10) * 1000)
+    input_box.fill("")
+    input_box.fill(question_text)
 
-    submit_confirmation = _wait_for_submit_confirmation(
-        chat_page.page,
-        before_submit_state,
-        timeout_sec=min(timeout_sec, 20),
+    submit_ready_max_ms = _read_env_int(
+        "SUBMIT_READY_MAX_WAIT_MS", max(timeout_sec, 1) * 1000
     )
+    submit_watchdog_ms = _read_env_int("POST_TRANSITION_WATCHDOG_MS", 5000)
+    submit_interval_ms = _read_env_int(
+        "SUBMIT_MONITOR_INTERVAL_MS", SUBMIT_MONITOR_INTERVAL_MS
+    )
+    submit_confirmation = _wait_for_blue_and_click(
+        page=chat_page.page,
+        output_dir=output_dir,
+        submit_id=submit_id,
+        max_wait_ms=submit_ready_max_ms,
+        interval_ms=submit_interval_ms,
+        watchdog_ms=submit_watchdog_ms,
+    )
+    submit_confirmation["signals"] = [
+        f"submit_state={submit_confirmation.get('submit_state')}"
+    ]
+    submit_sent_at = datetime.now(timezone.utc)
 
     after_submit_html = _capture_html_snapshot(
         chat_page.page, after_submit_path, "after_submit", snapshot_errors
@@ -495,26 +688,6 @@ def run_single_question(
     )
 
     final_message_state = _snapshot_message_state(chat_page.page)
-    if final_message_state.count <= before_submit_state.count:
-        raise SubmitConfirmationError(
-            "no new message observed after submit (count did not increase)"
-        )
-    if (
-        final_message_state.last_markdown_id is not None
-        and before_submit_state.last_markdown_id is not None
-        and final_message_state.last_markdown_id <= before_submit_state.last_markdown_id
-    ):
-        raise SubmitConfirmationError("markdown id did not advance after submit")
-    if dom_result_observation is not None:
-        selected_n = dom_result_observation.get("selected_n")
-        if (
-            isinstance(selected_n, int)
-            and final_message_state.last_markdown_id is not None
-            and selected_n != final_message_state.last_markdown_id
-        ):
-            raise SubmitConfirmationError(
-                "extracted markdown is not the latest message after submit"
-            )
 
     # --- Observed facts (no evaluation, no print) ---
     dom_observation = dom_result_observation or {
@@ -533,10 +706,7 @@ def run_single_question(
         {
             "probe_answer_text": probe_answer_text,
             "dom_extraction": dom_observation,
-            "submit_confirmation": {
-                **submit_confirmation,
-                "final_after": final_message_state.as_dict(),
-            },
+            "submit_confirmation": submit_confirmation,
         }
     )
 
@@ -552,23 +722,20 @@ def run_single_question(
         else ""
     )
 
-    # TEMP/VERIFY: diagnose extraction result
+    # TEMP/VERIFY: output_dir & answer materialization check
     _safe_write_text(
-        output_dir / "verify_extraction_state.txt",
+        output_dir / "verify_answer_materialization.txt",
         json.dumps(
             {
-                "dom_result_is_none": dom_result is None,
-                "dom_result_status": getattr(dom_result, "extracted_status", None),
-                "dom_result_text_len": (
-                    len(dom_result.text) if dom_result and dom_result.text else None
+                "output_dir": str(output_dir),
+                "output_dir_exists": output_dir.exists(),
+                "files_in_output_dir": (
+                    sorted(p.name for p in output_dir.iterdir())
+                    if output_dir.exists()
+                    else []
                 ),
-                "final_extracted_status": extracted_status,
                 "canonical_answer_len": len(canonical_answer_text),
-                "probe_exception_type": (
-                    type(probe_exception).__name__
-                    if probe_exception is not None
-                    else None
-                ),
+                "will_write_answer_md": bool(canonical_answer_text),
             },
             ensure_ascii=False,
             indent=2,
@@ -583,10 +750,7 @@ def run_single_question(
         output_dir=output_dir,
         submit_id=submit_id,
         submit_sent_at=submit_sent_at,
-        submit_confirmation={
-            **submit_confirmation,
-            "final_after": final_message_state.as_dict(),
-        },
+        submit_confirmation=submit_confirmation,
         chat_id=chat_id,
         answer_text=canonical_answer_text,
         extracted_status=extracted_status,

@@ -30,7 +30,7 @@ owner: Sumio Nishioka
 ```bash
 git status
 git log --oneline -5
-````
+```
 
 ### 1.2 入力データ（Git管理外）
 
@@ -39,7 +39,7 @@ git log --oneline -5
 
 例:
 
-```
+```text
 data/customized_question_sets/
   ├─ k518RG00000022/
   │   └─ customized_question_set.json
@@ -134,7 +134,7 @@ tree out/20260107_0910_golden10x18
 
 最低限の期待:
 
-```
+```text
 out/<run_id>/
   ├─ answer/
   │   └─ <ordinance_id>/
@@ -218,12 +218,3 @@ OOM対策（推奨）:
 * `execution_meta.yaml` / `manifest.yaml`（生成済みなら）
 
 ---
-
-```
-
----
-
-## 次の最小の一手
-この手順書どおりに、まず **単一条例スモーク**をやりましょう。  
-あなたの環境だと PowerShell / Git Bash どちらで回します？（コマンドは同じですが、環境変数の設定だけ分岐します）
-```
