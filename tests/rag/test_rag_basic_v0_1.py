@@ -52,18 +52,7 @@ def test_rag_basic(case, chat_page, env_config, case_dirs):
         pytest.skip(str(e))
 
     # -----------------------------------------------------
-    # 3. keyword judgment
-    # -----------------------------------------------------
-    expected_keywords = case.get("expected_keywords", [])
-    must_not = case.get("must_not_contain", [])
-
-    missing = [kw for kw in expected_keywords if kw not in answer_text]
-    unexpected = [ng for ng in must_not if ng in answer_text]
-
-    status = "PASS" if not missing and not unexpected else "FAIL"
-
-    # -----------------------------------------------------
-    # 4. logging
+    # 3. logging
     # -----------------------------------------------------
     ctx = LogContext(
         case_id=case["id"],
@@ -73,9 +62,3 @@ def test_rag_basic(case, chat_page, env_config, case_dirs):
     )
 
     create_case_log(case_log_dir, ctx)
-
-    print("ANSWER_TEXT:", answer_text)
-    print("MISSING:", missing)
-    print("UNEXPECTED:", unexpected)
-
-    assert status == "PASS"

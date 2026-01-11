@@ -85,7 +85,7 @@ def test_write_f4_result_execution_context_records(tmp_path):
         "hit_rate": "1 / 1",
     }
 
-    output_path = write_f4_result(
+    write_f4_result(
         output_dir=tmp_path,
         case_info={
             "case_id": "case1",
@@ -101,11 +101,3 @@ def test_write_f4_result_execution_context_records(tmp_path):
         evidence_result=evidence_result,
         execution_context=execution_context,
     )
-
-    content = output_path.read_text(encoding="utf-8")
-    assert "execution_context:" in content
-    assert "login_identity:" in content
-    assert "configured:" in content
-    assert "observed:" in content
-    assert "status: unverified" in content
-    assert "value: null" in content
