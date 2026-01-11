@@ -18,7 +18,7 @@ from src.log_writer import LogContext, create_case_log
 JST = timezone(timedelta(hours=9))
 
 
-@pytest.mark.smoke
+@pytest.mark.contract
 def test_smoke_llm(page, env_config, case_dirs):
     """
     Smoke Test v0.4
