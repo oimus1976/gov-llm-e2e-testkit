@@ -26,6 +26,9 @@ from src.execution.answer_dom_extractor import (
     extract_answer_dom,
 )
 
+NON_F10A_TIMEOUT_MULTIPLIER = 2
+F10A_BLUE_WAIT_TIMEOUT_SEC = float("inf")
+
 
 class ChatPageProtocol(Protocol):
     """Minimal ChatPage interface needed for execution."""
@@ -319,8 +322,21 @@ def run_single_question(
     profile: str,
     execution_context: Optional[dict] = None,
     timeout_sec: int = 60,
+    f10a_mode: bool = False,
+    submit_blue_timeout_sec: float = 10.0,
+    submit_ack_timeout_sec: float = 3.0,
+    submit_timeline_poll_ms: int = 100,
 ) -> SingleQuestionResult:
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    effective_timeout_sec = (
+        max(int(timeout_sec * NON_F10A_TIMEOUT_MULTIPLIER), 1)
+        if not f10a_mode
+        else timeout_sec
+    )
+    effective_submit_blue_timeout_sec = (
+        F10A_BLUE_WAIT_TIMEOUT_SEC if f10a_mode else submit_blue_timeout_sec
+    )
 
     snapshot_errors: List[str] = []
     after_submit_path = output_dir / "after_submit.html"
@@ -338,19 +354,108 @@ def run_single_question(
 
     before_submit_state = _snapshot_message_state(chat_page.page)
 
-    submit_receipt = chat_page.submit(question_text)
+    submit_receipt = chat_page.submit(
+        question_text,
+        wait_for_blue=f10a_mode,
+        blue_wait_timeout_sec=effective_submit_blue_timeout_sec,
+        ack_timeout_sec=submit_ack_timeout_sec,
+        timeline_poll_ms=submit_timeline_poll_ms,
+    )
     submit_id = _extract_submit_id(submit_receipt)
     submit_sent_at = getattr(submit_receipt, "sent_at", datetime.now(timezone.utc))
     chat_id = _extract_chat_id(chat_page)
+    submit_diagnostics = getattr(submit_receipt, "diagnostics", {})
+
+    merged_context = dict(execution_context or {})
+    if submit_diagnostics:
+        merged_context["submit_diagnostics"] = dict(submit_diagnostics)
+        _safe_write_text(
+            output_dir / "submit_diagnostics.json",
+            json.dumps(submit_diagnostics, ensure_ascii=True, indent=2),
+        )
 
     if not getattr(submit_receipt, "ui_ack", False):
-        raise SubmitConfirmationError("submit acknowledgment not observed (ui_ack=False)")
+        reason = (
+            submit_diagnostics.get("reason")
+            if isinstance(submit_diagnostics, dict)
+            else None
+        )
+        message = "submit acknowledgment not observed (ui_ack=False)"
+        if reason:
+            message = f"{message}: {reason}"
+        error = SubmitConfirmationError(message)
+        error.submit_receipt = submit_receipt
+        if f10a_mode:
+            merged_context.update(
+                {
+                    "ungenerated": {
+                        "reason": message,
+                        "type": type(error).__name__,
+                    },
+                    "submit_confirmation": {},
+                }
+            )
+            final_message_state = _snapshot_message_state(chat_page.page)
+            return SingleQuestionResult(
+                question_id=question_id,
+                ordinance_id=ordinance_id,
+                question_text=question_text,
+                profile=profile,
+                output_dir=output_dir,
+                submit_id=submit_id,
+                submit_sent_at=submit_sent_at,
+                submit_confirmation={},
+                chat_id=chat_id,
+                answer_text="",
+                extracted_status="INVALID",
+                raw_capture=None,
+                raw_capture_attempted=False,
+                anchor_dom_selector=None,
+                execution_context=merged_context,
+                message_state_before=before_submit_state,
+                message_state_after=final_message_state,
+            )
+        raise error
 
-    submit_confirmation = _wait_for_submit_confirmation(
-        chat_page.page,
-        before_submit_state,
-        timeout_sec=min(timeout_sec, 20),
-    )
+    try:
+        submit_confirmation = _wait_for_submit_confirmation(
+            chat_page.page,
+            before_submit_state,
+            timeout_sec=min(effective_timeout_sec, 20),
+        )
+    except SubmitConfirmationError as exc:
+        exc.submit_receipt = submit_receipt
+        if f10a_mode:
+            merged_context.update(
+                {
+                    "ungenerated": {
+                        "reason": str(exc),
+                        "type": type(exc).__name__,
+                    },
+                    "submit_confirmation": {},
+                }
+            )
+            final_message_state = _snapshot_message_state(chat_page.page)
+            return SingleQuestionResult(
+                question_id=question_id,
+                ordinance_id=ordinance_id,
+                question_text=question_text,
+                profile=profile,
+                output_dir=output_dir,
+                submit_id=submit_id,
+                submit_sent_at=submit_sent_at,
+                submit_confirmation={},
+                chat_id=chat_id,
+                answer_text="",
+                extracted_status="INVALID",
+                raw_capture=None,
+                raw_capture_attempted=False,
+                anchor_dom_selector=None,
+                execution_context=merged_context,
+                message_state_before=before_submit_state,
+                message_state_after=final_message_state,
+            )
+        raise
 
     after_submit_html = _capture_html_snapshot(
         chat_page.page, after_submit_path, "after_submit", snapshot_errors
@@ -364,8 +469,6 @@ def run_single_question(
     raw_capture_attempted = False
     raw_capture: Optional[RawCapture] = None
 
-    merged_context = dict(execution_context or {})
-
     # ------------------------------------------------------------
     # Probe phase (observation only) — must not block DOM extraction
     # ------------------------------------------------------------
@@ -374,7 +477,7 @@ def run_single_question(
             page=chat_page.page,
             submit_id=submit_id,
             chat_id=chat_id,
-            timeout_sec=timeout_sec,
+            timeout_sec=effective_timeout_sec,
         )
     except Exception as exc:
         probe_exception = exc
@@ -480,8 +583,9 @@ def run_single_question(
     )
 
     final_message_state = _snapshot_message_state(chat_page.page)
+    submit_validation_failures: List[str] = []
     if final_message_state.count <= before_submit_state.count:
-        raise SubmitConfirmationError(
+        submit_validation_failures.append(
             "no new message observed after submit (count did not increase)"
         )
     if (
@@ -489,7 +593,7 @@ def run_single_question(
         and before_submit_state.last_markdown_id is not None
         and final_message_state.last_markdown_id <= before_submit_state.last_markdown_id
     ):
-        raise SubmitConfirmationError("markdown id did not advance after submit")
+        submit_validation_failures.append("markdown id did not advance after submit")
     if dom_result_observation is not None:
         selected_n = dom_result_observation.get("selected_n")
         if (
@@ -497,9 +601,21 @@ def run_single_question(
             and final_message_state.last_markdown_id is not None
             and selected_n != final_message_state.last_markdown_id
         ):
-            raise SubmitConfirmationError(
+            submit_validation_failures.append(
                 "extracted markdown is not the latest message after submit"
             )
+
+    if submit_validation_failures:
+        message = "; ".join(submit_validation_failures)
+        error = SubmitConfirmationError(message)
+        error.submit_receipt = submit_receipt
+        error.submit_confirmation = submit_confirmation
+        if not f10a_mode:
+            raise error
+        merged_context["ungenerated"] = {
+            "reason": message,
+            "type": type(error).__name__,
+        }
 
     # --- Observed facts (no evaluation, no print) ---
     dom_observation = dom_result_observation or {

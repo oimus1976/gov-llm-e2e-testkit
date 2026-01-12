@@ -10,8 +10,10 @@ Features:
 
 from __future__ import annotations
 
+import argparse
 import os
 from pathlib import Path
+from datetime import datetime
 from typing import List, Sequence
 
 from playwright.sync_api import sync_playwright
@@ -45,13 +47,24 @@ INPUT_ROOT = Path("data") / "customized_question_sets"
 QUESTION_SET_FILENAME = "customized_question_set.json"
 
 
-def _resolve_output_root() -> Path:
-    value = os.getenv("OUTPUT_ROOT")
-    if not value:
-        raise EnvironmentError(
-            "OUTPUT_ROOT is required and must point to the final output directory (includes run_id)."
-        )
-    output_root = Path(value).expanduser().resolve()
+def _resolve_output_root(args: argparse.Namespace, parser: argparse.ArgumentParser) -> Path:
+    if args.output_root:
+        value = args.output_root
+    else:
+        value = os.getenv("OUTPUT_ROOT")
+    if value:
+        output_root = Path(value).expanduser().resolve()
+        output_root.mkdir(parents=True, exist_ok=True)
+        return output_root
+
+    auto_env = os.getenv("AUTO_RUN_ID")
+    auto_enabled = args.auto_run_id or auto_env == "1"
+    if not auto_enabled:
+        parser.print_usage()
+        raise SystemExit(2)
+
+    run_id = f"auto_{datetime.now():%Y%m%d_%H%M%S}"
+    output_root = (Path("out") / run_id).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     return output_root
 
@@ -171,8 +184,42 @@ def _aggregate_value(values: Sequence[str]) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Run customized_question_set.json files via F10-A orchestrator."
+    )
+    parser.add_argument(
+        "--output-root",
+        help="Output directory (includes run_id). Overrides OUTPUT_ROOT.",
+    )
+    parser.add_argument(
+        "--auto-run-id",
+        action="store_true",
+        help="Auto-generate run_id and use out/auto_YYYYMMDD_HHMMSS as output root.",
+    )
+    parser.add_argument(
+        "--f10a-mode",
+        action="store_true",
+        help="Enable F10-A submit handling (wait for blue + non-fatal submit timeouts).",
+    )
+    parser.add_argument(
+        "--submit-blue-timeout-sec",
+        type=float,
+        help="Max seconds to wait for submit to turn blue (F10-A mode).",
+    )
+    parser.add_argument(
+        "--submit-ack-timeout-sec",
+        type=float,
+        help="Max seconds to wait for submit ack after click (F10-A mode).",
+    )
+    parser.add_argument(
+        "--submit-timeline-poll-ms",
+        type=int,
+        help="Polling interval in ms for submit button state (F10-A mode).",
+    )
+    args = parser.parse_args()
+
     config, _ = load_env()
-    output_root = _resolve_output_root()
+    output_root = _resolve_output_root(args, parser)
     run_id = output_root.name
 
     available_sets = _discover_available_sets()
@@ -189,6 +236,22 @@ def main() -> None:
         "temperature": 0.0,
         "max_tokens": 2048,
     }
+    f10a_mode = args.f10a_mode or os.getenv("F10A_MODE") == "1"
+    submit_blue_timeout_sec = float(
+        args.submit_blue_timeout_sec
+        if args.submit_blue_timeout_sec is not None
+        else os.getenv("F10A_SUBMIT_BLUE_TIMEOUT_SEC", "10")
+    )
+    submit_ack_timeout_sec = float(
+        args.submit_ack_timeout_sec
+        if args.submit_ack_timeout_sec is not None
+        else os.getenv("F10A_SUBMIT_ACK_TIMEOUT_SEC", "3")
+    )
+    submit_timeline_poll_ms = int(
+        args.submit_timeline_poll_ms
+        if args.submit_timeline_poll_ms is not None
+        else os.getenv("F10A_SUBMIT_POLL_MS", "100")
+    )
 
     latest_summary = None
     question_pool_values = []
@@ -234,6 +297,10 @@ def main() -> None:
                 output_root=output_root,
                 execution=execution,
                 question_pool=question_set.question_pool,
+                f10a_mode=f10a_mode,
+                submit_blue_timeout_sec=submit_blue_timeout_sec,
+                submit_ack_timeout_sec=submit_ack_timeout_sec,
+                submit_timeline_poll_ms=submit_timeline_poll_ms,
             )
             latest_summary = summary
             question_pool_values.append(question_set.question_pool)
