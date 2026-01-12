@@ -41,6 +41,7 @@ from src.execution.customized_question_set_loader import (
     QuestionSetLoadError,
     load_customized_question_set,
 )
+from scripts.archive_run import create_run_archive
 
 
 INPUT_ROOT = Path("data") / "customized_question_sets"
@@ -354,6 +355,17 @@ def main() -> None:
     _write_yaml_once(output_root / "manifest.yaml", manifest)
     _write_yaml_once(output_root / "execution_meta.yaml", execution_meta)
     _write_readme_once(output_root / "README.md")
+
+    run_completed = (
+        latest_summary is not None
+        and not latest_summary.aborted
+        and not latest_summary.fatal_error
+    )
+    if run_completed:
+        archive_path = create_run_archive(output_root)
+        print(f"[INFO] Created run archive: {archive_path}")
+    else:
+        print("[INFO] Run not completed; archive skipped.")
 
 
 if __name__ == "__main__":
