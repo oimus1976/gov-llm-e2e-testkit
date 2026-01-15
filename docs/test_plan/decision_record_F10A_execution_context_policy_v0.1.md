@@ -1,10 +1,11 @@
 ---
-title: "Decision Record: F10-A Execution Context Generation Policy"
+title: "Decision Record: Execution Context Generation Policy (Project-wide)"
 version: v0.1
 status: accepted
 date: 2026-01-12
 scope:
   - F10-A
+  - project-wide
 related_decisions:
   - decision_record_F10A_Submit_Waiting_v0.2.md
 depends_on:
@@ -12,7 +13,7 @@ depends_on:
 supersedes: null
 ---
 
-# Decision Record: F10-A Execution Context Generation Policy
+# Decision Record: Execution Context Generation Policy (Project-wide)
 
 ## 1. 結論（Decision）
 
@@ -28,6 +29,8 @@ F10-A フェーズにおける `execution_context` の生成方針は、以下�
 > `execution_context` は  
 > **UNGENERATED 状態の説明責任を果たすための補助成果物**  
 > として位置づける。
+
+※ 本方針は特定フェーズ専用ではなく、プロジェクト全体の原則とする。
 
 ---
 
