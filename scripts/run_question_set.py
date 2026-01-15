@@ -48,7 +48,9 @@ INPUT_ROOT = Path("data") / "customized_question_sets"
 QUESTION_SET_FILENAME = "customized_question_set.json"
 
 
-def _resolve_output_root(args: argparse.Namespace, parser: argparse.ArgumentParser) -> Path:
+def _resolve_output_root(
+    args: argparse.Namespace, parser: argparse.ArgumentParser
+) -> Path:
     if args.output_root:
         value = args.output_root
     else:
@@ -197,26 +199,6 @@ def main() -> None:
         action="store_true",
         help="Auto-generate run_id and use out/auto_YYYYMMDD_HHMMSS as output root.",
     )
-    parser.add_argument(
-        "--f10a-mode",
-        action="store_true",
-        help="Enable F10-A submit handling (wait for blue + non-fatal submit timeouts).",
-    )
-    parser.add_argument(
-        "--submit-blue-timeout-sec",
-        type=float,
-        help="Max seconds to wait for submit to turn blue (F10-A mode).",
-    )
-    parser.add_argument(
-        "--submit-ack-timeout-sec",
-        type=float,
-        help="Max seconds to wait for submit ack after click (F10-A mode).",
-    )
-    parser.add_argument(
-        "--submit-timeline-poll-ms",
-        type=int,
-        help="Polling interval in ms for submit button state (F10-A mode).",
-    )
     args = parser.parse_args()
 
     config, _ = load_env()
@@ -237,23 +219,6 @@ def main() -> None:
         "temperature": 0.0,
         "max_tokens": 2048,
     }
-    f10a_mode = args.f10a_mode or os.getenv("F10A_MODE") == "1"
-    submit_blue_timeout_sec = float(
-        args.submit_blue_timeout_sec
-        if args.submit_blue_timeout_sec is not None
-        else os.getenv("F10A_SUBMIT_BLUE_TIMEOUT_SEC", "10")
-    )
-    submit_ack_timeout_sec = float(
-        args.submit_ack_timeout_sec
-        if args.submit_ack_timeout_sec is not None
-        else os.getenv("F10A_SUBMIT_ACK_TIMEOUT_SEC", "3")
-    )
-    submit_timeline_poll_ms = int(
-        args.submit_timeline_poll_ms
-        if args.submit_timeline_poll_ms is not None
-        else os.getenv("F10A_SUBMIT_POLL_MS", "100")
-    )
-
     latest_summary = None
     question_pool_values = []
     ordinance_set_values = []
@@ -298,10 +263,6 @@ def main() -> None:
                 output_root=output_root,
                 execution=execution,
                 question_pool=question_set.question_pool,
-                f10a_mode=f10a_mode,
-                submit_blue_timeout_sec=submit_blue_timeout_sec,
-                submit_ack_timeout_sec=submit_ack_timeout_sec,
-                submit_timeline_poll_ms=submit_timeline_poll_ms,
             )
             latest_summary = summary
             question_pool_values.append(question_set.question_pool)
