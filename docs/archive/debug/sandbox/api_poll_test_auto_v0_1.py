@@ -9,9 +9,11 @@ import requests
 from pathlib import Path
 from datetime import datetime
 from playwright.sync_api import sync_playwright
+from src.env_loader import load_env
 
 
 def main():
+    config, _ = load_env()
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     outdir = Path(f"sandbox/api_poll_auto_{ts}")
@@ -41,9 +43,9 @@ def main():
         # -------------------------------------------------
         # 1. ログイン
         # -------------------------------------------------
-        page.goto("https://qommons.ai/login")
-        page.fill("input[name='username']", "test_e2e@和歌山県_かつらぎ町")
-        page.fill("input[name='password']", "1234Test!")
+        page.goto(config["url"])
+        page.fill("input[name='username']", config["username"])
+        page.fill("input[name='password']", config["password"])
         page.click("#login-button")
 
         page.wait_for_selector("div[data-slot='card']")
@@ -70,12 +72,12 @@ def main():
         if not user_id:
             raise RuntimeError("USER_ID could not be captured")
 
-        print("[OK] USER_ID =", user_id)
+        print("[OK] USER_ID captured")
 
         # -------------------------------------------------
         # 3. UIを使わず API で質問送信（POST）
         # -------------------------------------------------
-        API_BASE = "https://qommons.ai/api/v1"
+        API_BASE = config["url"].removesuffix("/login").rstrip("/") + "/api/v1"
 
         question = "かつらぎ町について教えて"
         print(f"[POST] {question}")

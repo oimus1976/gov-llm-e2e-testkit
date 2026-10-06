@@ -25,14 +25,13 @@ def main():
         # -------------------------------------------------
         # 1. XHR / fetch をすべてフックする
         # -------------------------------------------------
+        # Record metadata only: authentication headers and payloads are excluded.
         def on_request(req):
             if req.resource_type == "xhr" or req.resource_type == "fetch":
                 entry = {
                     "type": "request",
                     "url": req.url,
                     "method": req.method,
-                    "postData": req.post_data,
-                    "headers": req.headers,
                 }
                 log_path.write_text("", encoding="utf-8", errors="ignore")
                 with open(log_path, "a", encoding="utf-8") as f:
@@ -40,17 +39,10 @@ def main():
 
         def on_response(res):
             if res.request.resource_type in ("xhr", "fetch"):
-                try:
-                    body = res.text()
-                except Exception:
-                    body = "<non-text or binary>"
-
                 entry = {
                     "type": "response",
                     "url": res.url,
                     "status": res.status,
-                    "body": body,
-                    "headers": res.headers,
                 }
                 with open(log_path, "a", encoding="utf-8") as f:
                     f.write(json.dumps(entry, ensure_ascii=False) + "\n")
