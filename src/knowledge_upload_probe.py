@@ -1,0 +1,155 @@
+"""Synthetic-only login/inspection probe; upload DOM remains unobserved."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SAMPLE = ROOT / "data" / "knowledge_upload" / "synthetic.md"
+SAMPLE_BYTES = b"# Synthetic Private Knowledge probe\n\nFictional test only. The sample code is SYNTHETIC-KNOWLEDGE-0001.\n"
+
+
+def prepare_txt(source: Path) -> tuple[Path, str]:
+    """Retain exact UTF-8 Markdown bytes and refuse divergent exports."""
+    if source.suffix.lower() != ".md" or not source.is_file():
+        raise ValueError("An existing .md file is required")
+    raw = source.read_bytes()
+    raw.decode("utf-8")
+    if not raw:
+        raise ValueError("Empty input is not valid")
+    target = source.with_suffix(".txt")
+    if target.exists():
+        if target.read_bytes() != raw:
+            raise FileExistsError("Different existing export; refusing overwrite")
+    else:
+        with target.open("xb") as stream:
+            stream.write(raw)
+    return target, hashlib.sha256(raw).hexdigest()
+
+
+def validate_sample(source: Path) -> None:
+    """A synthetic assertion alone must not enable arbitrary business data."""
+    if source.resolve() != SAMPLE.resolve() or source.read_bytes() != SAMPLE_BYTES:
+        raise ValueError("Only the unchanged bundled synthetic sample is permitted")
+
+
+def write_receipt(source: Path, target: Path, digest: str) -> Path:
+    """For future observed file selection; not used by inspection mode."""
+    receipt = source.parent / (
+        source.stem
+        + ".selection-"
+        + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        + ".json"
+    )
+    data = {
+        "source_name": source.name,
+        "upload_name": target.name,
+        "sha256": digest,
+        "status": "selected_unverified",
+        "http_acceptance_verified": False,
+        "server_registration_verified": False,
+        "search_verified": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    with receipt.open("x", encoding="utf-8") as stream:
+        json.dump(data, stream, ensure_ascii=False, indent=2)
+        stream.write("\n")
+    return receipt
+
+
+def load_login_config() -> dict:
+    from src.env_loader import load_env
+
+    config, _options = load_env()
+    for key in ("url", "username", "password"):
+        value = config.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"Required login configuration is missing: {key}")
+    return config
+
+
+def inspect_ui(config: dict) -> None:
+    from playwright.sync_api import sync_playwright
+    from tests.pages.login_page import LoginPage
+
+    settings = config.get("browser", {})
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=False)
+        try:
+            page = browser.new_page()
+            page.set_default_timeout(settings["browser_timeout_ms"])
+            page.set_default_navigation_timeout(settings["page_timeout_ms"])
+            login = LoginPage(page, config, timeout=settings["page_timeout_ms"])
+            login.open()
+            login.login()
+            print(
+                "Login completed. Inspect registration navigation in Playwright Inspector."
+            )
+            print(
+                "Do not upload, delete, replace, or send chats during this observation."
+            )
+            page.pause()
+        finally:
+            browser.close()
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Synthetic Private Knowledge UI inspection"
+    )
+    parser.add_argument(
+        "markdown", type=Path, help="Unchanged data/knowledge_upload/synthetic.md"
+    )
+    parser.add_argument("--synthetic", action="store_true")
+    parser.add_argument("--confirm-upload", action="store_true")
+    parser.add_argument(
+        "--inspect-ui",
+        action="store_true",
+        help="Automatic login and Inspector; no file selection",
+    )
+    args = parser.parse_args(argv)
+    if not args.synthetic or (not args.inspect_ui and not args.confirm_upload):
+        parser.error("Requires --synthetic and either --inspect-ui or --confirm-upload")
+    try:
+        source = args.markdown.expanduser().resolve()
+        validate_sample(source)
+    except (OSError, ValueError):
+        print(
+            "Stopped: only the unchanged bundled synthetic Markdown sample is permitted."
+        )
+        return 2
+    if not args.inspect_ui:
+        print(
+            "Stopped: registration navigation/file selection DOM is unobserved; upload is disabled."
+        )
+        print(
+            "Use --synthetic --inspect-ui to observe the real UI without selecting a file."
+        )
+        return 2
+    try:
+        config = load_login_config()
+    except Exception:
+        print(
+            "Stopped: existing env.yaml/.env profile or login dependencies are unavailable."
+        )
+        print(
+            "Check existing configuration locally; no fallback or settings changes were made."
+        )
+        return 2
+    try:
+        prepare_txt(source)
+        inspect_ui(config)
+    except Exception:
+        # Playwright fill errors can include credentials; never print the exception.
+        print(
+            "Stopped: local export, browser, login or UI inspection failed. Check locally."
+        )
+        return 2
+    print(
+        "Observation ended. Upload, HTTP acceptance, list registration and search remain unverified."
+    )
+    return 2

@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.30 (draft branch)
+# 📘 PROJECT_STATUS v0.7.31 (draft branch)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -7,7 +7,17 @@
 
 ---
 
-## 2026-10-06: Private Knowledge upload MVP (experimental branch, unverified)
+## 2026-10-06: Issue #2 — automatic login / DOM observation boundary
+- Draft PR #1 branch only: existing `load_env()` and unchanged `LoginPage` reused through `src.knowledge_upload_probe`. No environment/profile/CI/chat changes.
+- `--inspect-ui` opens a visible browser, automatically logs in, and pauses for operator DOM observation. Only the unchanged bundled synthetic sample is accepted; arbitrary business files are rejected even with `--synthetic`.
+- The previous unobserved generic file-input selection is disabled. No registration PageObject/guessed navigation locators, upload, chat send, or selection receipt is produced by inspection mode.
+- **Verified here:** offline unittest 13/13 PASS; focused offline pytest 36 PASS plus 2 subtests. `git diff --check` passed. Existing loader resolved nonempty fields without printing secret values.
+- **Live attempt:** Chromium opened the login screen, but existing LoginPage did not complete login (`Error`; screenshot with input fields masked retained locally under ignored logs). Failure cause not established; no registration-screen DOM observed. No further live attempts or upload performed.
+- **Not verified:** headed Inspector flow, successful live login, registration navigation, file selection, HTTP acceptance, list registration, indexing, search or duplicate handling. Four browser-dependent regression cases were not successfully run; the offline subset passed after dependency/temp-path setup.
+- Next human action: run the inspection command in `docs/operation/KnowledgeUpload_DOM_Observation_v0.1.md` using valid local authentication and provide sanitized registration navigation/form evidence. Implementation must stay Draft and upload-disabled until evidence exists.
+- Current design/test plan: `Design_KnowledgeUploadProbe_v0.2.md` / `Test_KnowledgeUploadProbe_v0.2.md`. v0.1 preserved as history. No existing PageObject, env, CI, smoke or synthetic HTML suite changes requiring PENTA were made.
+
+## 2026-10-06: Private Knowledge upload MVP v0.1 (historical branch checkpoint)
 - `feature/private-knowledge-upload-mvp` only: design, synthetic-only `scripts/knowledge_upload_probe.py`, and offline unit tests.
 - Keeps local Markdown and byte-identical .txt, refuses conflicting .txt, explicit operator gates before file selection.
 - Existing F8/F9, profiles, production data and CI unchanged. F9-B knowledge re-insertion prohibition still applies to F9 test comparisons.

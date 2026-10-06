@@ -12,12 +12,30 @@
 
 ---
 
+## v0.7.31 (2026-10-06) — Issue #2, draft branch only
+### Changed
+- Reuse existing load_env/LoginPage for automatic login in a visible `--inspect-ui` observation mode; script delegates reusable code to src.
+- Restrict CLI input to the byte-exact bundled synthetic sample; preserve Markdown/.txt no-overwrite semantics. Pin sample bytes across Windows checkouts and ignore generated exports/receipts.
+- Disable v0.1's unobserved generic file-input selection until actual registration DOM supports a PrivateKnowledgePage. Upload confirmation flag alone cannot select/send a file.
+### Added
+- Versioned design v0.2, focused test plan, sanitized DOM observation procedure and offline login/cleanup/configuration/redaction tests.
+### Fixed
+- Literal escaped newline separators in the previous v0.7.30 entry.
+### Verification and limits
+- Offline unittest 13/13 PASS; focused pytest 36 PASS plus 2 subtests; diff whitespace check passed. Existing environment loader resolved fields without secret disclosure.
+- Chromium login-screen observation attempted with existing LoginPage, but login completion failed (`Error`, cause undetermined). Registration DOM remains unavailable. No upload/HTTP/list/search success is claimed.
+- Four browser-dependent regression cases remain unverified. No environment/profile/CI/chat changes, Ready/merge/main update or real-data upload.
+
+---
+
 ## v0.7.30 (2026-10-06) — draft branch only
 ### Added
 - Design_KnowledgeUploadProbe_v0.1: isolated, synthetic-only upload probe, excluding existing F9 knowledge experiments.
 - Operator-gated Markdown-to-text copy and Playwright native file-input probe, plus offline tests.
 ### Unverified
-- Live QommonsAI DOM, actual Private Knowledge registration, indexing, search and duplicate handling. Do not present this as an operational uploader.\n### Verified (isolated, 2026-10-06)\n- SHA-matched implementation and test source against GitHub. Python unittest 6/6 PASS in an isolated local test directory, without QommonsAI access or CI execution.
+- Live QommonsAI DOM, actual Private Knowledge registration, indexing, search and duplicate handling. Do not present this as an operational uploader.
+### Verified (isolated, 2026-10-06)
+- SHA-matched implementation and test source against GitHub. Python unittest 6/6 PASS in an isolated local test directory, without QommonsAI access or CI execution.
 - No production data upload, F9 change, merge or release.
 
 ---
