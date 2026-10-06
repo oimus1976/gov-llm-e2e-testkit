@@ -4,6 +4,8 @@ Date: 2026-10-06
 State: Issue #2 implementation; live DOM observation pending
 Previous: Design_KnowledgeUploadProbe_v0.1.md (retained)
 
+Observed blocker: post-push E2E CI run `37434783824` shows site CSP rejecting the unchanged LoginPage string-based `wait_for_function`. Successful live login/Inspector observation is therefore not verified. Shared PageObject remediation requires the existing design/PENTA process; this isolated probe does not change it or bypass CSP. Use normal operator-authenticated browser observation to obtain the missing registration DOM.
+
 ## Purpose
 Reuse `src.env_loader.load_env()` and the unchanged `tests.pages.login_page.LoginPage` for the Private Knowledge probe in Draft PR #1. GitHub Issue #2 is the scope authority.
 
