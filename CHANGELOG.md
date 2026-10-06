@@ -17,7 +17,7 @@
 - Design_KnowledgeUploadProbe_v0.1: isolated, synthetic-only upload probe, excluding existing F9 knowledge experiments.
 - Operator-gated Markdown-to-text copy and Playwright native file-input probe, plus offline tests.
 ### Unverified
-- Live QommonsAI DOM, actual Private Knowledge registration, indexing, search, duplicate handling, and test execution. Do not present this as an operational uploader.
+- Live QommonsAI DOM, actual Private Knowledge registration, indexing, search and duplicate handling. Do not present this as an operational uploader.\n### Verified (isolated, 2026-10-06)\n- SHA-matched implementation and test source against GitHub. Python unittest 6/6 PASS in an isolated local test directory, without QommonsAI access or CI execution.
 - No production data upload, F9 change, merge or release.
 
 ---
