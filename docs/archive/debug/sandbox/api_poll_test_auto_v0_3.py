@@ -37,7 +37,7 @@ def main():
 
     print("[info] env loaded:")
     print(" URL      =", BASE_URL)
-    print(" username =", USERNAME)
+    print(" username configured")
 
     # ----------------------------------------------
     # 2. Playwright 起動
@@ -100,7 +100,7 @@ def main():
         if not user_id:
             raise RuntimeError("USER_ID could not be captured")
 
-        print("[OK] USER_ID =", user_id)
+        print("[OK] USER_ID captured")
 
         # -------------------------------------------------
         # 7. POST → 質問送信

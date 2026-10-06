@@ -21,11 +21,11 @@ def test_profile_resolution_diagnostic():
     print(f"sys.argv     : {sys.argv}")
 
     print("\n===== ENV LOADER RESULT =====")
-    print("profile_cfg:")
-    pprint.pprint(profile_cfg)
+    print("profile_cfg keys (values omitted):")
+    pprint.pprint(sorted(profile_cfg))
 
-    print("\noptions:")
-    pprint.pprint(options)
+    print("\noptions keys (values omitted):")
+    pprint.pprint(sorted(options))
 
     # ---- minimal safety assertion (not correctness) ----
     assert profile_cfg is not None, "profile_cfg must not be None"
