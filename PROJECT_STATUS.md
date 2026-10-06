@@ -11,8 +11,9 @@
 - `feature/private-knowledge-upload-mvp` only: design, synthetic-only `scripts/knowledge_upload_probe.py`, and offline unit tests.
 - Keeps local Markdown and byte-identical .txt, refuses conflicting .txt, explicit operator gates before file selection.
 - Existing F8/F9, profiles, production data and CI unchanged. F9-B knowledge re-insertion prohibition still applies to F9 test comparisons.
-- **Verified (2026-10-06):** GitHub blob SHA matched local copies for both implementation and tests; isolated offline unittest 6/6 PASS. No CI or actual QommonsAI requests were run.\n- **Not verified:** QommonsAI upload UI DOM, server acceptance, indexing, duplicate filename semantics, retrieval or live tests.
-- Next: run offline unit tests in a clone, inspect real upload DOM with synthetic data and record actual behavior. No real municipal data transfer approved.
+- **Verified (2026-10-06):** GitHub blob SHA matched local copies for both implementation and tests; isolated offline unittest 6/6 PASS. No CI or actual QommonsAI requests were run.
+- **Not verified:** QommonsAI upload UI DOM, server acceptance, indexing, duplicate filename semantics, retrieval or live tests.
+- Next: inspect real upload DOM with synthetic data and record actual behavior. No real municipal data transfer approved.
 
 ## 0. フェーズ定義の統一（不変）
 
