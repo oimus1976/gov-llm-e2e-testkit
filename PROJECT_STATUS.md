@@ -1,11 +1,18 @@
-# 📘 PROJECT_STATUS v0.7.29
+# 📘 PROJECT_STATUS v0.7.30 (draft branch)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
-**Last Updated:** 2026-01-11  
+**Last Updated:** 2026-10-06  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-06: Private Knowledge upload MVP (experimental branch, unverified)
+- `feature/private-knowledge-upload-mvp` only: design, synthetic-only `scripts/knowledge_upload_probe.py`, and offline unit tests.
+- Keeps local Markdown and byte-identical .txt, refuses conflicting .txt, explicit operator gates before file selection.
+- Existing F8/F9, profiles, production data and CI unchanged. F9-B knowledge re-insertion prohibition still applies to F9 test comparisons.
+- **Not verified:** QommonsAI upload UI DOM, server acceptance, indexing, duplicate filename semantics, retrieval, live tests or local test execution.
+- Next: run offline unit tests in a clone, inspect real upload DOM with synthetic data and record actual behavior. No real municipal data transfer approved.
 
 ## 0. フェーズ定義の統一（不変）
 
