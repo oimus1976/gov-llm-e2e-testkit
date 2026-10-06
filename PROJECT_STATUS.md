@@ -1,11 +1,21 @@
-# 📘 PROJECT_STATUS v0.7.29
+# 📘 PROJECT_STATUS v0.7.31 (credential cleanup branch)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
-**Last Updated:** 2026-01-11  
+**Last Updated:** 2026-10-06
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-06: QommonsAI credential cleanup (isolated from Draft PR #1)
+
+- Base: `origin/main` at `0a81f6d`; branch: `codex/qommons-credential-cleanup`. Draft PR #1 and Issue #2 were OPEN; PR #1 remained Draft. Existing upload-development changes were preserved in the original checkout; this fix uses a separate worktree.
+- Confirmed plaintext username/password: `docs/archive/debug/sandbox/inspect_chat_dom.py:3-4` and `api_poll_test_auto_v0_1.py:45-46` (pre-fix lines). Both now call existing `load_env()` before browser startup and use `url`, `username`, `password` from the selected profile. No configuration, profile, priority, PageObject or CI changes.
+- Confirmed debug exposure: `tests/diagnostic/test_profile_resolution.py:25,28` dumped resolved configuration; `api_poll_test_auto_v0_3.py:40,103` and `api_poll_test_auto_v0_1.py:73` printed username/API user ID; `xhr_sniffer_v0_1.py:34-35,54-55` recorded raw request/response headers and payloads (pre-fix lines). Diagnostics now omit values; the archived sniffer records metadata only.
+- Existing artifacts: the same username appeared in 29 tracked HTML files under `docs/archive/debug/sandbox/`; a tracked `xhr_capture_20251212_035123/xhr_log.jsonl:2` contained it in a response, and line 1 exposed `x-user-id`. Only these confirmed values were replaced with `[REDACTED]`, preserving the artifacts and DOM structure.
+- History audit: 737 reachable blobs across fetched local/remote refs. Known credentials remain in commit `85a09a8` and its descendants; current-file cleanup does not remove history. No AWS access-key-ID pattern (`AKIA`/`ASIA`) or `aws_secret_access_key` assignment was found; response headers named `x-amzn-*`/`x-amz-*` are not evidence of user-owned AWS credentials. The old Push Protection finding's cause is unverified. No history rewrite, force push, authentication attempt or secret-file addition.
+- Offline verification: **29 PASS** (8 credential-handling tests, 21 existing F9 tests). Mocked login checks, early failure for missing secrets, diagnostic non-disclosure, XHR payload exclusion, and OS > `.env` > `.env.<profile>` priority for internet/lgwan. Initial run had a missing test-output parent directory; corrected before the passing run. Gate1 initially failed before browser startup because Chromium was absent; no authentication occurred. Live Smoke/F4/RAG/Gate1 tests were not completed under this task's no-authentication constraint.
+- Audit limits: textual/AST checks and known-literal matching are not a certification that every binary screenshot or arbitrary token is secret-free. Password validity was not tested. Human next step: change the exposed account password if not already changed; decide separately whether historical removal is needed, accounting for existing branches, clones and PRs. No additional feature development is part of this fix.
 
 ## 0. フェーズ定義の統一（不変）
 

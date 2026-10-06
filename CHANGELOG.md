@@ -12,6 +12,23 @@
 
 ---
 
+## v0.7.31 (2026-10-06) — isolated credential cleanup branch
+
+### Fixed
+
+- Removed plaintext QommonsAI username/password from archived `inspect_chat_dom.py` and `api_poll_test_auto_v0_1.py`; reused `src.env_loader.load_env()` and the existing selected-profile keys without changing env.yaml, env_loader, priorities or authentication design.
+- Stopped resolved-config, username and API user-ID debug output. Changed the archived XHR sniffer to metadata-only logging to exclude authentication headers and payloads.
+- Redacted confirmed username occurrences in 29 archived HTML files and username/API user-ID occurrences in one archived JSONL file. Kept artifact structure and unrelated evidence intact.
+
+### Verification and follow-up
+
+- Added 8 offline credential-handling checks; these and 21 existing F9 tests passed (29 total). No real-service authentication was attempted; browser-dependent tests remain unverified. See PROJECT_STATUS for initial test setup failures and audit limits.
+- Audited 737 reachable Git blobs. Commit `85a09a8` still contains the credentials; no history rewrite or force push. Exposed-account password change, unless already done, is an operator action; validity was not tested.
+- No matching AWS access-key-ID/secret-key assignment patterns found. AWS-related server response-header names do not establish AWS credential ownership or explain the historical Push Protection detection.
+- Fix based on main and separated from Draft PR #1 / Issue #2 feature work; version 0.7.30 remains reserved for that Draft's documentation.
+
+---
+
 ## v0.7.29 (2026-01-11)
 
 ### Changed

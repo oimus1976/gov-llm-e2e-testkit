@@ -1,9 +1,9 @@
 from playwright.sync_api import sync_playwright
+from src.env_loader import load_env
 
-EMAIL = "test_e2e@和歌山県_かつらぎ町"
-PASSWORD = "1234Test!"
 
 def main():
+    config, _ = load_env()
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
 
@@ -13,7 +13,7 @@ def main():
         # ---------------------------------------------------------
         # 1. ログインページへ
         # ---------------------------------------------------------
-        page.goto("https://qommons.ai/login")
+        page.goto(config["url"])
 
         page.wait_for_load_state("networkidle")
         page.wait_for_timeout(2000)
@@ -23,8 +23,8 @@ def main():
         # ---------------------------------------------------------
         # 2. ログイン
         # ---------------------------------------------------------
-        page.fill("input[name='username']", EMAIL)
-        page.fill("input[name='password']", PASSWORD)
+        page.fill("input[name='username']", config["username"])
+        page.fill("input[name='password']", config["password"])
         page.click("#login-button")
 
         # ---------------------------------------------------------
