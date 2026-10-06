@@ -1,11 +1,19 @@
-# 📘 PROJECT_STATUS v0.7.31 (credential cleanup branch)
+# 📘 PROJECT_STATUS v0.7.32 (CSP fix proposal branch)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
-**Last Updated:** 2026-10-06
+**Last Updated:** 2026-10-07
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-07: LoginPage CSP-safe wait (review-only branch)
+
+- Separate branch `fix/loginpage-csp-url-wait` from merged security-cleanup main. Shared PageObject change is deliberately outside Draft PR #1 until reviewed.
+- Primary evidence: E2E CI run `37434783824`, job `112173829013` failed on `LoginPage.wait_for_login_success` because string `wait_for_function` violated site CSP (`unsafe-eval` rejected).
+- Design/PENTA impact review: `docs/design/core/Design_LoginPage_v0.3.2_CSP.md`. Narrow change to `page.wait_for_url(re.compile(...))` to preserve `/chat` and `/chat/<id>` semantics, timeout, exception and optional evidence collection; adds isolated offline mock coverage.
+- No env, credentials, CI workflow, smoke test, authentication, CSP configuration or upload behavior changes. Real QommonsAI login and registration DOM have **not** been verified after this change. Tests/CI evidence must be distinguished before merge.
+- Next: review Draft PR / relevant CI outcome and request human merge authorization. Draft PR #1 still requires sanitized registration-form DOM evidence before enabling any file upload.
 
 ## 2026-10-06: QommonsAI credential cleanup (isolated from Draft PR #1)
 
