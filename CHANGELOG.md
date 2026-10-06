@@ -12,6 +12,16 @@
 
 ---
 
+## v0.7.30 (2026-10-06) — draft branch only
+### Added
+- Design_KnowledgeUploadProbe_v0.1: isolated, synthetic-only upload probe, excluding existing F9 knowledge experiments.
+- Operator-gated Markdown-to-text copy and Playwright native file-input probe, plus offline tests.
+### Unverified
+- Live QommonsAI DOM, actual Private Knowledge registration, indexing, search, duplicate handling, and test execution. Do not present this as an operational uploader.
+- No production data upload, F9 change, merge or release.
+
+---
+
 ## v0.7.29 (2026-01-11)
 
 ### Changed
