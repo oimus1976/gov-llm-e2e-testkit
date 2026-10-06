@@ -4,6 +4,8 @@
 # 最終更新: 2025-12-10
 # ---------------------------------------------------------
 
+import re
+
 from .base_page import BasePage
 
 
@@ -53,7 +55,7 @@ class LoginPage(BasePage):
     # ------------------------------
     def wait_for_login_success(self, *, evidence_dir=None) -> None:
         try:
-            self.page.wait_for_function("window.location.href.includes('/chat')", timeout=self.timeout)
+            self.page.wait_for_url(re.compile(r"/chat(?:/|$|[?#])"), timeout=self.timeout)
         except Exception:
             if evidence_dir:
                 self.collect_evidence(evidence_dir, "login_failed")
