@@ -12,7 +12,11 @@
 
 ---
 
-## v0.7.32 (2026-10-07) — Issue #2, draft branch (main credential cleanup incorporated)
+## v0.7.33 (2026-10-09) — Issue #2, draft branch (CSP fix incorporated)
+### Integration note (2026-10-09)
+- Merged main PR #4's CSP-safe LoginPage into feature Draft PR #1 without changing the upload gate. Last PR #4 CI Smoke Test passed (1 test), but the Private Knowledge upload flow remains unverified.
+- Historical v0.7.33 notes on the earlier blocked CI login describe pre-main-integration results.
+
 ### Changed
 - Reuse existing load_env/LoginPage for automatic login in a visible `--inspect-ui` observation mode; script delegates reusable code to src.
 - Restrict CLI input to the byte-exact bundled synthetic sample; preserve Markdown/.txt no-overwrite semantics. Pin sample bytes across Windows checkouts and ignore generated exports/receipts.
@@ -26,6 +30,19 @@
 - Chromium login-screen observation attempted with existing LoginPage, but login completion failed (`Error`, cause undetermined). Registration DOM remains unavailable. No upload/HTTP/list/search success is claimed.
 - Four browser-dependent regression cases remain unverified. No environment/profile/CI/chat changes, Ready/merge/main update or real-data upload.
 - Post-push E2E run `37434783824` failed in unchanged LoginPage's string-based `wait_for_function`, rejected by site CSP. Shared login-wait remediation requires design/PENTA review; no PageObject/CSP bypass modification was made. Local failure cause remains unconfirmed.
+
+---
+
+## v0.7.32 (2026-10-07) — Draft CSP-safe LoginPage wait
+
+### Design and implementation
+- PENTA impact analysis and versioned design `docs/design/core/Design_LoginPage_v0.3.2_CSP.md` grounded in observed CI failure `37434783824`.
+- Replace only string `wait_for_function` in `LoginPage.wait_for_login_success` with `wait_for_url` and URL-route regex; keep existing timeout and optional error evidence behavior.
+- Add `tests/unit/test_login_wait_csp.py` with synthetic URL and exception cases, without browser or network operations.
+
+### Verification boundaries
+- Live login, full E2E success, Private Knowledge registration and search are not verified by offline unit cases.
+- No environment, CI, smoke or credential management change. Separate from Draft PR #1; human review and merge decision outstanding.
 
 ---
 

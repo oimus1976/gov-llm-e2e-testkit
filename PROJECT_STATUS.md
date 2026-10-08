@@ -1,11 +1,19 @@
-# 📘 PROJECT_STATUS v0.7.32 (draft branch; credential cleanup main incorporated)
+# 📘 PROJECT_STATUS v0.7.33 (draft branch; main CSP fix integrated)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
-**Last Updated:** 2026-10-07  
+**Last Updated:** 2026-10-09  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Draft PR #1 integrated merged CSP fix (still upload-disabled)
+
+- Main PR #4 merged as `12706627e74c9e942a1f5598345bd635a7a243ea`, providing native `LoginPage.wait_for_login_success` URL wait instead of a JavaScript-string evaluator. Draft PR #1 now incorporates the complete main history without force push or feature code replacement.
+- Last PR #4 CI run `37542569711`, job `113560167471`: Smoke Test **1 PASS** and correlation-summary-generation step PASS following operator re-registration of the CI account credentials. This does not verify the Private Knowledge registration page or file upload, and correlation state was not independently read.
+- Earlier Issue #2 local login/CI blocker descriptions below remain as **historical observations before PR #4**. The current PageObject CSP blocker is resolved in merged main; real registration DOM is still not observed.
+- Next: obtain sanitized registration-navigation/form DOM evidence on a permitted test account, then implement evidence-based upload controls for the unchanged bundled synthetic sample only. Never send municipal data or claim server registration without evidence.
+- PR #1 stays OPEN/Draft. Ready/merge are outside this branch synchronization.
 
 ## 2026-10-06: Issue #2 — automatic login / DOM observation boundary
 - Draft PR #1 branch only: existing `load_env()` and unchanged `LoginPage` reused through `src.knowledge_upload_probe`. No environment/profile/CI/chat changes.
@@ -25,6 +33,14 @@
 - **Verified (2026-10-06):** GitHub blob SHA matched local copies for both implementation and tests; isolated offline unittest 6/6 PASS. No CI or actual QommonsAI requests were run.
 - **Not verified:** QommonsAI upload UI DOM, server acceptance, indexing, duplicate filename semantics, retrieval or live tests.
 - Next: inspect real upload DOM with synthetic data and record actual behavior. No real municipal data transfer approved.
+
+## 2026-10-07: LoginPage CSP-safe wait (review-only branch)
+
+- Separate branch `fix/loginpage-csp-url-wait` from merged security-cleanup main. Shared PageObject change is deliberately outside Draft PR #1 until reviewed.
+- Primary evidence: E2E CI run `37434783824`, job `112173829013` failed on `LoginPage.wait_for_login_success` because string `wait_for_function` violated site CSP (`unsafe-eval` rejected).
+- Design/PENTA impact review: `docs/design/core/Design_LoginPage_v0.3.2_CSP.md`. Narrow change to `page.wait_for_url(re.compile(...))` to preserve `/chat` and `/chat/<id>` semantics, timeout, exception and optional evidence collection; adds isolated offline mock coverage.
+- No env, credentials, CI workflow, smoke test, authentication, CSP configuration or upload behavior changes. Real QommonsAI login and registration DOM have **not** been verified after this change. Tests/CI evidence must be distinguished before merge.
+- Next: review Draft PR / relevant CI outcome and request human merge authorization. Draft PR #1 still requires sanitized registration-form DOM evidence before enabling any file upload.
 
 ## 2026-10-06: QommonsAI credential cleanup (isolated from Draft PR #1)
 
