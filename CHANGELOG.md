@@ -12,6 +12,17 @@
 
 ---
 
+## v0.7.34 (2026-10-09) — Windows registration DOM observation runbook
+
+### Added
+- `docs/operation/KnowledgeUpload_DOM_Observation_v0.2.md` with PowerShell checkout/venv/Playwright setup, local masked configuration check, focused offline tests, exact synthetic-only `--inspect-ui` command and sanitized evidence template.
+- Clarified that GitHub Actions Secrets are not copied onto the local test machine, that main's CSP fix is incorporated, and that Inspector observation can finish with exit code 2 while upload remains disabled.
+
+### Boundaries
+- Documentation-only; v0.1 preserved. No env/CI/PageObject/probe/credentials changes. No live headed UI execution or upload claimed. Draft PR #1 stays unmerged.
+
+---
+
 ## v0.7.33 (2026-10-09) — Issue #2, draft branch (CSP fix incorporated)
 ### Integration note (2026-10-09)
 - Merged main PR #4's CSP-safe LoginPage into feature Draft PR #1 without changing the upload gate. Last PR #4 CI Smoke Test passed (1 test), but the Private Knowledge upload flow remains unverified.

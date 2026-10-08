@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.33 (draft branch; main CSP fix integrated)
+# 📘 PROJECT_STATUS v0.7.34 (draft branch; local UI observation prepared)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,12 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Windows UI observation preparation (operator run pending)
+
+- Added versioned operational runbook `docs/operation/KnowledgeUpload_DOM_Observation_v0.2.md`, preserving v0.1 as history. Current CSP-safe login is in Draft PR #1 and its Smoke Test passed CI run `37850592792` (one test).
+- Runbook covers clean checkout/ff-only update, optional venv/Chromium installation, local-only secret resolution (GitHub Secrets do not synchronize to Windows), offline focused tests, exact inspect command, and redacted observation template. Operator must not select/upload files or collect/share raw authenticated DOM.
+- This is **documentation preparation only**: no Windows machine, local configuration, headed Playwright Inspector or registration DOM was verified by this change. Upload path stays disabled; PR #1 stays Draft.
 
 ## 2026-10-09: Draft PR #1 integrated merged CSP fix (still upload-disabled)
 
