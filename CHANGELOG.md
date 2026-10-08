@@ -12,6 +12,19 @@
 
 ---
 
+## v0.7.32 (2026-10-07) — Draft CSP-safe LoginPage wait
+
+### Design and implementation
+- PENTA impact analysis and versioned design `docs/design/core/Design_LoginPage_v0.3.2_CSP.md` grounded in observed CI failure `37434783824`.
+- Replace only string `wait_for_function` in `LoginPage.wait_for_login_success` with `wait_for_url` and URL-route regex; keep existing timeout and optional error evidence behavior.
+- Add `tests/unit/test_login_wait_csp.py` with synthetic URL and exception cases, without browser or network operations.
+
+### Verification boundaries
+- Live login, full E2E success, Private Knowledge registration and search are not verified by offline unit cases.
+- No environment, CI, smoke or credential management change. Separate from Draft PR #1; human review and merge decision outstanding.
+
+---
+
 ## v0.7.31 (2026-10-06) — isolated credential cleanup branch
 
 ### Fixed
