@@ -1,4 +1,4 @@
-"""Synthetic-only login/inspection probe; upload DOM remains unobserved."""
+"""Synthetic-only login/control inspection probe; live upload stays disabled."""
 
 from __future__ import annotations
 
@@ -146,10 +146,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if not args.inspect_ui:
         print(
-            "Stopped: registration navigation/file selection DOM is unobserved; upload is disabled."
+            "Stopped: file selection and upload are not yet authorized or enabled."
         )
         print(
-            "Use --synthetic --inspect-ui to observe the real UI without selecting a file."
+            "Use --synthetic --inspect-ui --check-observed-controls for read-only UI checks."
         )
         return 2
     try:
