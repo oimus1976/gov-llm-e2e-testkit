@@ -1,11 +1,89 @@
-# 📘 PROJECT_STATUS v0.7.32 (CSP fix proposal branch)
+# 📘 PROJECT_STATUS v0.7.39 (Draft; gated CLI description aligned with live evidence)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
-**Last Updated:** 2026-10-07
+**Last Updated:** 2026-10-09  
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Draft PR #1 — clarify active gate descriptions (source comments only)
+
+- Previously reviewed issue: three docstrings and one CLI help string still described the one-file selection path as "future" or "not wired to CLI" even after the separately approved single selection was observed. These statements are no longer accurate for the current Draft feature branch.
+- Minimal change in `src/knowledge_upload_probe.py`, `tests/pages/private_knowledge_page.py`, and the module comment of `tests/unit/test_knowledge_upload_gated.py` describes the **present opt-in CLI gate** and the distinct `selected_unverified` receipt boundary. The code, selectors, flags, data validation, no-retry behavior, tests and browser behavior are unchanged; this is descriptive only.
+- Existing baseline evidence: focused Windows offline suite PASS was **operator-reported** on four test files after v0.7.37; documentation-only HEAD `260bdbc` succeeded in existing GitHub Smoke run [37918355399](https://github.com/oimus1976/gov-llm-e2e-testkit/actions/runs/37918355399). These are not executions of this new source-comment commit; its CI must be checked separately.
+- **Known boundary preserved:** `synthetic.txt` already exists in test My Drive by operator observation. No repeated selection, server-side deduplication, additional actual upload, chat automation, Ready, merge, or main update is authorized. Draft PR #1 remains OPEN/Draft pending human scope/acceptance decision.
+
+
+## 2026-10-09: Private Knowledge synthetic one-file observed and manually retrieved (evidence sync)
+
+- **Baseline authority/state:** Issue #2 [handoff 6078499424](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6078499424); Draft PR #1 `feature/private-knowledge-upload-mvp` at pre-documentation HEAD `7837d8c96b5247bbcefb09ac6dc6859e831e6d2b` (main +17/−0). Earlier v0.7.37 and older sections are **historical checkpoints**, not current unexecuted prerequisites.
+- **Windows focused offline tests:** after the v0.7.37 tuple-unpack correction, operator re-ran four focused pytest files and reported `[100%]`, `$LASTEXITCODE=0`; **exact test count unknown** ([Issue #2 6076752013](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6076752013)). This was not independently executed in the current documentation change.
+- **One-time human-approved live synthetic operation:** operator checked My Drive for absence of `synthetic.txt`, entered exact `UPLOAD synthetic.txt`, and Playwright selected the sample through the observed FileChooser. Local receipt `synthetic.selection-20261009T081657879642Z.json` remained on test PC and is **not** to be committed. Receipt status `selected_unverified` is correct; does not claim HTTP success ([6077190221](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6077190221)).
+- **Manual QommonsAI observations:** My Drive displayed `synthetic.txt`, retained it after F5, and showed `学習中` -> `学習済み` ([6077224107](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6077224107)). In Private Knowledge chat, only this file was selected with Web search OFF; question omitted the expected code; answer contained exact `SYNTHETIC-KNOWLEDGE-0001` and file name — **single manual retrieval PASS**, not automated search E2E ([6078368762](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6078368762)).
+- **GitHub CI:** [run 37882053878](https://github.com/oimus1976/gov-llm-e2e-testkit/actions/runs/37882053878) completed/success for the **existing Smoke** at baseline HEAD; it does not cover the new focused suite.
+- **Still unknown:** HTTP status and backend indexing internals, server-side same-name/replace semantics, citation link clickability, other formats/multiple files, and automated knowledge selection/chat answer check. QommonsAI live UI and Windows evidence are operator-reported; GitHub HEAD/code/CI are directly checked.
+- **Current guard:** A `synthetic.txt` now exists on the test account by operator observation. Do **not** re-upload, delete, replace or retry; no broader or real municipal data. Code, env, login, CI and chat workflows remain unchanged in this documentation-only v0.7.38 update.
+- **Documents:** new post-execution evidence editions `docs/design/Design_KnowledgeUploadProbe_v0.5.md` and `docs/test_plan/Test_KnowledgeUploadProbe_v0.5.md` supersede *status reporting*, not historical v0.4 gate design. Next: independent Draft PR review and minimal correction of substantiated issues; later retrieval automation only as separately scoped and authorized work. Ready/merge/main are human decisions.
+
+## 2026-10-09: Focused Windows unit-test regression — correction prepared
+
+- Operator ran focused pytest after fast-forward to `9219ae2`. Two tests FAILED: `ReadOnlyCliTests.test_check_mode_does_not_call_selector_or_upload_code` and `LoginInspectionTests.test_inspection_never_writes_selection_receipt`. The test summary did not include a total PASS count, and no service upload took place.
+- Primary evidence: `main()` introduced unconditional tuple unpacking `target, digest = prepare_txt(source)` before the inspect/upload mode branch. The two legacy inspection tests intentionally mocked `prepare_txt` without a tuple return, so that unpacking raised an exception caught by the generic STOP and `inspect_ui` was never called.
+- Minimal correction: retain `prepared = prepare_txt(source)` for all modes, but unpack it **only inside** `if args.execute_synthetic_upload`. This restores inspection mock compatibility without weakening the upload flags/confirmation or changing any PageObject, login, env, or CI implementation.
+- **Verification pending**: operator must fast-forward to this correction and rerun the same four focused offline test files on Windows. A fresh CI Smoke Test may run but does not cover the focused suite. Do **not** attempt live file selection. PR #1 remains Draft/unmerged.
+
+## 2026-10-09: Synthetic single-file live gate — implementation and offline tests prepared
+
+- Human approval in this iteration covers **implementation/test preparation only**, NOT real QommonsAI file selection, upload, server write or existing-item replacement.
+- Operator-reported Windows verification of prior commit `255756f`: clean worktree after fast-forward, focused pytest exit 0, live `Read-only check PASS: My Drive, New menu, upload item and file input` (Issue #2 comment `6073651368`). This establishes the My Drive navigation and observed control probe, not the FileChooser or HTTP upload.
+- New `docs/design/Design_KnowledgeUploadProbe_v0.4.md` and `tests/unit/test_knowledge_upload_gated.py`, mock-only gate tests, versioned v0.4 test plan and a runbook explicitly marked **not authorized to execute**.
+- Future explicit-only CLI path requires **both** `--confirm-upload` and `--execute-synthetic-upload` along with `--synthetic`, pauses before selecting a file for manual inspection of `synthetic.txt` collisions, then requires exact console phrase `UPLOAD synthetic.txt`. Prior inspection commands and plain `--confirm-upload` remain unmodified/blocked.
+- Selecting a file **may upload immediately**. The PageObject only handles byte-exact bundled `synthetic.txt`; after selection a local receipt says `selected_unverified` and false for HTTP acceptance, registration and search. No retry on uncertainty. **Server-side collision protection is not established.**
+- The newly written gated unit tests **have not yet been executed on Windows**; existing CI Smoke Test success is separate and does not exercise them. Five-area PENTA-style impact assessment is author-only, not independent approval. No actual file selection or upload by this development action.
+- **Next gate:** Windows branch ff-only update and focused local offline tests. Then independent authorization before running the live one-file command. Draft PR #1 stays OPEN/Draft; no main/Ready/merge.
+
+## 2026-10-09: Observed registration controls — offline implementation candidate
+
+- Operator-provided first-hand QommonsAI DOM evidence is recorded in Issue #2 comment `6073127818`: `/private-knowledge/my-drive`, New `button`, file-upload `menuitem`, exact file input `accept` + `multiple`, and distinct folder selector. No real file selected.
+- New versioned design `docs/design/Design_KnowledgeUploadProbe_v0.3.md` describes grounded, isolated `PrivateKnowledgePage`, plus five-domain PENTA-style **author impact assessment, not independent sign-off**.
+- Added `tests/pages/private_knowledge_page.py`: role-based locators and strict observed file-input discrimination, same-origin direct My Drive URL (automated navigation **still unverified live**), read-only control inspection. A future separately gated synthetic-only selection method is present but **not wired to CLI**.
+- Added optional `--check-observed-controls` to `--synthetic --inspect-ui`: open observed My Drive URL, click New (not upload menu item), inspect input attributes, pause. `--confirm-upload` remains disabled; default `--inspect-ui` unchanged.
+- Added mock-only `tests/unit/test_private_knowledge_page.py`, v0.3 test plan and operator runbook. Creating tests does not constitute an executed PASS; only CI's existing Smoke Test is automatically run.
+- **Never claim** browser navigation, file chooser linkage, upload, HTTP acceptance, list registration or search success until independently observed. No real service request or actual file selection was made in this code preparation. PR #1 remains Draft/unmerged.
+
+## 2026-10-09: Windows UI observation preparation (operator run pending)
+
+- Added versioned operational runbook `docs/operation/KnowledgeUpload_DOM_Observation_v0.2.md`, preserving v0.1 as history. Current CSP-safe login is in Draft PR #1 and its Smoke Test passed CI run `37850592792` (one test).
+- Runbook covers clean checkout/ff-only update, optional venv/Chromium installation, local-only secret resolution (GitHub Secrets do not synchronize to Windows), offline focused tests, exact inspect command, and redacted observation template. Operator must not select/upload files or collect/share raw authenticated DOM.
+- This is **documentation preparation only**: no Windows machine, local configuration, headed Playwright Inspector or registration DOM was verified by this change. Upload path stays disabled; PR #1 stays Draft.
+
+## 2026-10-09: Draft PR #1 integrated merged CSP fix (still upload-disabled)
+
+- Main PR #4 merged as `12706627e74c9e942a1f5598345bd635a7a243ea`, providing native `LoginPage.wait_for_login_success` URL wait instead of a JavaScript-string evaluator. Draft PR #1 now incorporates the complete main history without force push or feature code replacement.
+- Last PR #4 CI run `37542569711`, job `113560167471`: Smoke Test **1 PASS** and correlation-summary-generation step PASS following operator re-registration of the CI account credentials. This does not verify the Private Knowledge registration page or file upload, and correlation state was not independently read.
+- Earlier Issue #2 local login/CI blocker descriptions below remain as **historical observations before PR #4**. The current PageObject CSP blocker is resolved in merged main; real registration DOM is still not observed.
+- Next: obtain sanitized registration-navigation/form DOM evidence on a permitted test account, then implement evidence-based upload controls for the unchanged bundled synthetic sample only. Never send municipal data or claim server registration without evidence.
+- PR #1 stays OPEN/Draft. Ready/merge are outside this branch synchronization.
+
+## 2026-10-06: Issue #2 — automatic login / DOM observation boundary
+- Draft PR #1 branch only: existing `load_env()` and unchanged `LoginPage` reused through `src.knowledge_upload_probe`. No environment/profile/CI/chat changes.
+- `--inspect-ui` opens a visible browser, automatically logs in, and pauses for operator DOM observation. Only the unchanged bundled synthetic sample is accepted; arbitrary business files are rejected even with `--synthetic`.
+- The previous unobserved generic file-input selection is disabled. No registration PageObject/guessed navigation locators, upload, chat send, or selection receipt is produced by inspection mode.
+- **Verified here:** offline unittest 13/13 PASS; focused offline pytest 36 PASS plus 2 subtests. `git diff --check` passed. Existing loader resolved nonempty fields without printing secret values.
+- **Live attempt:** Chromium opened the login screen, but existing LoginPage did not complete login (`Error`; screenshot with input fields masked retained locally under ignored logs). Failure cause not established; no registration-screen DOM observed. No further live attempts or upload performed.
+- **Not verified:** headed Inspector flow, successful live login, registration navigation, file selection, HTTP acceptance, list registration, indexing, search or duplicate handling. Four browser-dependent regression cases were not successfully run; the offline subset passed after dependency/temp-path setup.
+- **Post-push CI:** run `37434783824` failed in unchanged `LoginPage.wait_for_login_success`: string JavaScript evaluation rejected by site CSP (`unsafe-eval` disallowed). This confirms a shared login-wait blocker in CI; it does not establish the cause of the separate local failure. Fixing this shared PageObject requires its design/PENTA review and is not included in this isolated probe change.
+- Next human action: obtain sanitized registration navigation/form evidence in the normal authenticated local browser, using `docs/operation/KnowledgeUpload_DOM_Observation_v0.1.md`. Automated inspection remains blocked where the existing LoginPage hits CSP. Implementation stays Draft and upload-disabled until evidence exists.
+- Current design/test plan: `Design_KnowledgeUploadProbe_v0.2.md` / `Test_KnowledgeUploadProbe_v0.2.md`. v0.1 preserved as history. No existing PageObject, env, CI, smoke or synthetic HTML suite changes requiring PENTA were made.
+
+## 2026-10-06: Private Knowledge upload MVP v0.1 (historical branch checkpoint)
+- `feature/private-knowledge-upload-mvp` only: design, synthetic-only `scripts/knowledge_upload_probe.py`, and offline unit tests.
+- Keeps local Markdown and byte-identical .txt, refuses conflicting .txt, explicit operator gates before file selection.
+- Existing F8/F9, profiles, production data and CI unchanged. F9-B knowledge re-insertion prohibition still applies to F9 test comparisons.
+- **Verified (2026-10-06):** GitHub blob SHA matched local copies for both implementation and tests; isolated offline unittest 6/6 PASS. No CI or actual QommonsAI requests were run.
+- **Not verified:** QommonsAI upload UI DOM, server acceptance, indexing, duplicate filename semantics, retrieval or live tests.
+- Next: inspect real upload DOM with synthetic data and record actual behavior. No real municipal data transfer approved.
 
 ## 2026-10-07: LoginPage CSP-safe wait (review-only branch)
 
