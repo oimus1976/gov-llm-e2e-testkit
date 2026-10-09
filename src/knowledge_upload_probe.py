@@ -1,4 +1,8 @@
-"""Synthetic-only login/control inspection probe; live upload stays disabled."""
+"""Synthetic-only inspection and explicitly gated one-file UI selection.
+
+File selection can trigger an immediate upload. The CLI gate requires a separate
+operator decision; it is not a repeatable or server-verified upload primitive.
+"""
 
 from __future__ import annotations
 
@@ -38,7 +42,7 @@ def validate_sample(source: Path) -> None:
 
 
 def write_receipt(source: Path, target: Path, digest: str) -> Path:
-    """For future observed file selection; not used by inspection mode."""
+    """Record local file selection only; never assert HTTP or server acceptance."""
     receipt = source.parent / (
         source.stem
         + ".selection-"
@@ -118,7 +122,7 @@ def upload_synthetic_one(
     *,
     operator_input=None,
 ) -> bool:
-    """Future *separately authorized* live test; never called by inspection mode.
+    """Human-gated one-file UI selection; never called by inspection mode.
 
     A selected file can upload immediately. A manual duplicate check is required
     because file-list DOM and provider replacement semantics are unobserved.
@@ -193,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--execute-synthetic-upload",
         action="store_true",
-        help="Future human-authorized one-file synthetic selection only",
+        help="Separately authorized one-file synthetic selection only",
     )
     parser.add_argument(
         "--inspect-ui",

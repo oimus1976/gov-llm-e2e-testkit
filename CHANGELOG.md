@@ -12,6 +12,18 @@
 
 ---
 
+## v0.7.39 (2026-10-09) — align gated upload descriptions (no behavior change)
+
+### Corrected descriptions
+- Remove obsolete "live upload disabled / not wired to CLI / future" wording from `src/knowledge_upload_probe.py`, `tests/pages/private_knowledge_page.py`, and the gated mock-test module header. The opt-in synthetic-only selection CLI has been wired and exercised **once** with separate human authorization, as recorded in v0.7.38.
+- Clarify that `selected_unverified` is a local file-selection record, not HTTP/server-indexing success, and that the operation cannot be treated as a repeatable upload when `synthetic.txt` already exists.
+
+### Scope and verification
+- **Comment/docstring/CLI help only**; no executable path, selectors, data, security gates, CI workflow, unit assertions or tests modified. New commit still requires its own CI check; last prior HEAD `260bdbc` ran existing Smoke CI [37918355399](https://github.com/oimus1976/gov-llm-e2e-testkit/actions/runs/37918355399) successfully. Focused four-file Windows pytest PASS remains operator-reported from v0.7.37, not rerun by this edit.
+- PR #1 remains Draft. No fresh live upload, retry, file deletion/replacement, chat send, Ready, merge or main update.
+
+---
+
 ## v0.7.38 (2026-10-09) — record authorized synthetic one-file live evidence (docs only)
 
 ### Added

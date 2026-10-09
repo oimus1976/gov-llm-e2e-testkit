@@ -1,4 +1,4 @@
-"""Mock-only tests for the future one-file live gate. Never contact QommonsAI."""
+"""Mock-only tests for the gated one-file UI selection. Never contact QommonsAI."""
 
 import io
 import unittest

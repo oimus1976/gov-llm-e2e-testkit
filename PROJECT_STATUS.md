@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.38 (Draft; synthetic one-file UI + manual retrieval evidence recorded)
+# 📘 PROJECT_STATUS v0.7.39 (Draft; gated CLI description aligned with live evidence)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,14 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Draft PR #1 — clarify active gate descriptions (source comments only)
+
+- Previously reviewed issue: three docstrings and one CLI help string still described the one-file selection path as "future" or "not wired to CLI" even after the separately approved single selection was observed. These statements are no longer accurate for the current Draft feature branch.
+- Minimal change in `src/knowledge_upload_probe.py`, `tests/pages/private_knowledge_page.py`, and the module comment of `tests/unit/test_knowledge_upload_gated.py` describes the **present opt-in CLI gate** and the distinct `selected_unverified` receipt boundary. The code, selectors, flags, data validation, no-retry behavior, tests and browser behavior are unchanged; this is descriptive only.
+- Existing baseline evidence: focused Windows offline suite PASS was **operator-reported** on four test files after v0.7.37; documentation-only HEAD `260bdbc` succeeded in existing GitHub Smoke run [37918355399](https://github.com/oimus1976/gov-llm-e2e-testkit/actions/runs/37918355399). These are not executions of this new source-comment commit; its CI must be checked separately.
+- **Known boundary preserved:** `synthetic.txt` already exists in test My Drive by operator observation. No repeated selection, server-side deduplication, additional actual upload, chat automation, Ready, merge, or main update is authorized. Draft PR #1 remains OPEN/Draft pending human scope/acceptance decision.
+
 
 ## 2026-10-09: Private Knowledge synthetic one-file observed and manually retrieved (evidence sync)
 

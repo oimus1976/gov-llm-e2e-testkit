@@ -1,6 +1,6 @@
 """Observed QommonsAI Private Knowledge My Drive controls (Issue #2).
 
-DOM-derived locators only. Live file selection is not connected to the CLI.
+DOM-derived locators only. Live selection is wired only to the explicit CLI gate.
 """
 
 from __future__ import annotations
@@ -86,7 +86,7 @@ class PrivateKnowledgePage(BasePage):
     def select_synthetic_file(
         self, markdown: Path, exported_txt: Path, *, confirmation: str
     ) -> str:
-        """Future opt-in only; NOT wired to CLI. Selection may cause instant upload."""
+        """Only via explicit CLI gate; selection may cause immediate upload."""
         if confirmation != "UPLOAD":
             raise PermissionError("Explicit UPLOAD confirmation required")
 
