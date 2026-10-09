@@ -246,8 +246,9 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     try:
-        target, digest = prepare_txt(source)
+        prepared = prepare_txt(source)
         if args.execute_synthetic_upload:
+            target, digest = prepared
             upload_synthetic_one(config, source, target, digest)
         elif args.check_observed_controls:
             inspect_ui(config, check_observed_controls=True)

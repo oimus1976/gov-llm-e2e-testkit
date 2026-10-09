@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.36 (Draft; synthetic one-file gate prepared, live upload unapproved)
+# 📘 PROJECT_STATUS v0.7.37 (Draft; inspection regression corrected, Windows recheck pending)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,13 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Focused Windows unit-test regression — correction prepared
+
+- Operator ran focused pytest after fast-forward to `9219ae2`. Two tests FAILED: `ReadOnlyCliTests.test_check_mode_does_not_call_selector_or_upload_code` and `LoginInspectionTests.test_inspection_never_writes_selection_receipt`. The test summary did not include a total PASS count, and no service upload took place.
+- Primary evidence: `main()` introduced unconditional tuple unpacking `target, digest = prepare_txt(source)` before the inspect/upload mode branch. The two legacy inspection tests intentionally mocked `prepare_txt` without a tuple return, so that unpacking raised an exception caught by the generic STOP and `inspect_ui` was never called.
+- Minimal correction: retain `prepared = prepare_txt(source)` for all modes, but unpack it **only inside** `if args.execute_synthetic_upload`. This restores inspection mock compatibility without weakening the upload flags/confirmation or changing any PageObject, login, env, or CI implementation.
+- **Verification pending**: operator must fast-forward to this correction and rerun the same four focused offline test files on Windows. A fresh CI Smoke Test may run but does not cover the focused suite. Do **not** attempt live file selection. PR #1 remains Draft/unmerged.
 
 ## 2026-10-09: Synthetic single-file live gate — implementation and offline tests prepared
 

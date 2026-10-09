@@ -12,6 +12,18 @@
 
 ---
 
+## v0.7.37 (2026-10-09) — restore inspection mock compatibility
+
+### Observed regression
+- Operator Windows focused pytest reported two failures in existing read-only inspection tests. Both mocked `prepare_txt()` without an iterable return value. v0.7.36 had unpacked its result unconditionally, so the read-only branch aborted before `inspect_ui()`.
+
+### Minimal correction
+- `src/knowledge_upload_probe.py`: unpack the prepared (path, digest) tuple **only for** `--execute-synthetic-upload`, retaining the original inspection-mode behavior. No modification to upload confirmation, selector, source-data gates, or service interaction.
+- Existing two failing offline tests act as regression tests. The new focused suite must be rerun on Windows; passing CI Smoke Test alone is insufficient.
+- No live file selection, upload, replacement, Ready or merge is approved or performed.
+
+---
+
 ## v0.7.36 (2026-10-09) — prepared one-file synthetic selection gate (NOT executed)
 
 ### Design and implementation
