@@ -12,6 +12,22 @@
 
 ---
 
+## v0.7.35 (2026-10-09) — observed Private Knowledge controls and read-only check
+
+### Design
+- Added versioned `Design_KnowledgeUploadProbe_v0.3.md` with evidence from Issue #2's operator DOM and five-domain PENTA-style author impact review (no independent sign-off).
+
+### Implementation
+- Added isolated `PrivateKnowledgePage`: observed My Drive path, role-based New/upload item locators, strict exact file-input attribute checks excluding folder input, with fail-closed uniqueness checks.
+- Extended `--synthetic --inspect-ui` with optional read-only `--check-observed-controls`; this navigates My Drive and opens New menu but does **not** click Upload, select a file, or transmit content.
+- Prepared a separately gated synthetic-only FileChooser selection method with literal `UPLOAD` confirmation and byte-exact `.txt` checks; **no CLI route invokes it** and there is no live upload approval in this change.
+- Added offline mock-only `test_private_knowledge_page.py`, v0.3 test plan and a simplified operator runbook.
+
+### Verification boundary
+- Focused test execution and fresh CI status must be reported from actual runs, not inferred. No real Windows DOM check, FileChooser selection or server registration performed by this change. Existing env/CI/LoginPage/Smoke Test untouched; PR #1 remains Draft.
+
+---
+
 ## v0.7.34 (2026-10-09) — Windows registration DOM observation runbook
 
 ### Added

@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.34 (draft branch; local UI observation prepared)
+# 📘 PROJECT_STATUS v0.7.35 (Draft; observed controls, read-only implementation)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,15 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Observed registration controls — offline implementation candidate
+
+- Operator-provided first-hand QommonsAI DOM evidence is recorded in Issue #2 comment `6073127818`: `/private-knowledge/my-drive`, New `button`, file-upload `menuitem`, exact file input `accept` + `multiple`, and distinct folder selector. No real file selected.
+- New versioned design `docs/design/Design_KnowledgeUploadProbe_v0.3.md` describes grounded, isolated `PrivateKnowledgePage`, plus five-domain PENTA-style **author impact assessment, not independent sign-off**.
+- Added `tests/pages/private_knowledge_page.py`: role-based locators and strict observed file-input discrimination, same-origin direct My Drive URL (automated navigation **still unverified live**), read-only control inspection. A future separately gated synthetic-only selection method is present but **not wired to CLI**.
+- Added optional `--check-observed-controls` to `--synthetic --inspect-ui`: open observed My Drive URL, click New (not upload menu item), inspect input attributes, pause. `--confirm-upload` remains disabled; default `--inspect-ui` unchanged.
+- Added mock-only `tests/unit/test_private_knowledge_page.py`, v0.3 test plan and operator runbook. Creating tests does not constitute an executed PASS; only CI's existing Smoke Test is automatically run.
+- **Never claim** browser navigation, file chooser linkage, upload, HTTP acceptance, list registration or search success until independently observed. No real service request or actual file selection was made in this code preparation. PR #1 remains Draft/unmerged.
 
 ## 2026-10-09: Windows UI observation preparation (operator run pending)
 

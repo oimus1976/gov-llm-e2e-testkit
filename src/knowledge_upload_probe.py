@@ -72,7 +72,7 @@ def load_login_config() -> dict:
     return config
 
 
-def inspect_ui(config: dict) -> None:
+def inspect_ui(config: dict, *, check_observed_controls: bool = False) -> None:
     from playwright.sync_api import sync_playwright
     from tests.pages.login_page import LoginPage
 
@@ -86,9 +86,22 @@ def inspect_ui(config: dict) -> None:
             login = LoginPage(page, config, timeout=settings["page_timeout_ms"])
             login.open()
             login.login()
-            print(
-                "Login completed. Inspect registration navigation in Playwright Inspector."
-            )
+            if check_observed_controls:
+                from tests.pages.private_knowledge_page import PrivateKnowledgePage
+
+                knowledge = PrivateKnowledgePage(
+                    page, config, timeout=settings["page_timeout_ms"]
+                )
+                knowledge.open_my_drive()
+                knowledge.inspect_controls()
+                print(
+                    "Read-only check PASS: My Drive, New menu, upload item and file input."
+                )
+                print("No file was selected; network acceptance remains unverified.")
+            else:
+                print(
+                    "Login completed. Inspect registration navigation in Playwright Inspector."
+                )
             print(
                 "Do not upload, delete, replace, or send chats during this observation."
             )
@@ -111,7 +124,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Automatic login and Inspector; no file selection",
     )
+    parser.add_argument(
+        "--check-observed-controls",
+        action="store_true",
+        help="Read-only My Drive/menu/file-input check; requires --inspect-ui",
+    )
     args = parser.parse_args(argv)
+    if args.check_observed_controls and not args.inspect_ui:
+        parser.error("--check-observed-controls requires --inspect-ui")
+    if args.confirm_upload and args.inspect_ui:
+        parser.error("Do not combine --confirm-upload with inspection mode")
     if not args.synthetic or (not args.inspect_ui and not args.confirm_upload):
         parser.error("Requires --synthetic and either --inspect-ui or --confirm-upload")
     try:
@@ -142,7 +164,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         prepare_txt(source)
-        inspect_ui(config)
+        if args.check_observed_controls:
+            inspect_ui(config, check_observed_controls=True)
+        else:
+            inspect_ui(config)
     except Exception:
         # Playwright fill errors can include credentials; never print the exception.
         print(
