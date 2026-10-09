@@ -12,6 +12,21 @@
 
 ---
 
+## v0.7.38 (2026-10-09) — record authorized synthetic one-file live evidence (docs only)
+
+### Added
+- New versioned `docs/design/Design_KnowledgeUploadProbe_v0.5.md` and `docs/test_plan/Test_KnowledgeUploadProbe_v0.5.md`, preserving prior v0.1–v0.4 historical design/test plans.
+- Explicit distinction between **operator-reported** Windows focused tests and QommonsAI UI/manual search results versus directly observed GitHub branch/CI status.
+
+### Evidence and boundaries
+- Windows operator reported the v0.7.37 four-file offline pytest recheck exited 0 (individual test count unknown).
+- One separately approved Playwright synthetic FileChooser selection, My Drive listing persisting after F5, UI `学習済み`, and manual exact-code answer `SYNTHETIC-KNOWLEDGE-0001` with only `synthetic.txt` selected and Web search disabled were reported in Issue #2 comments 6076752013, 6077190221, 6077224107 and 6078368762.
+- Existing CI Smoke run `37882053878` succeeded. It does **not** prove the new focused offline unit tests run in CI.
+- HTTP/backend indexing, duplicate/replacement semantics, source-citation clickability, and automated retrieval E2E remain unverified. The local selection receipt remains `selected_unverified`; no false success state was added.
+- A same-name file now exists according to operator observation; the previous upload preflight must **not** be repeated. No source code, tests, profile, CI, service file, real data, Ready, merge or main modification in this documentation update. PR #1 remains Draft pending review.
+
+---
+
 ## v0.7.37 (2026-10-09) — restore inspection mock compatibility
 
 ### Observed regression

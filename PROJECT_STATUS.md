@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.37 (Draft; inspection regression corrected, Windows recheck pending)
+# 📘 PROJECT_STATUS v0.7.38 (Draft; synthetic one-file UI + manual retrieval evidence recorded)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,17 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Private Knowledge synthetic one-file observed and manually retrieved (evidence sync)
+
+- **Baseline authority/state:** Issue #2 [handoff 6078499424](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6078499424); Draft PR #1 `feature/private-knowledge-upload-mvp` at pre-documentation HEAD `7837d8c96b5247bbcefb09ac6dc6859e831e6d2b` (main +17/−0). Earlier v0.7.37 and older sections are **historical checkpoints**, not current unexecuted prerequisites.
+- **Windows focused offline tests:** after the v0.7.37 tuple-unpack correction, operator re-ran four focused pytest files and reported `[100%]`, `$LASTEXITCODE=0`; **exact test count unknown** ([Issue #2 6076752013](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6076752013)). This was not independently executed in the current documentation change.
+- **One-time human-approved live synthetic operation:** operator checked My Drive for absence of `synthetic.txt`, entered exact `UPLOAD synthetic.txt`, and Playwright selected the sample through the observed FileChooser. Local receipt `synthetic.selection-20261009T081657879642Z.json` remained on test PC and is **not** to be committed. Receipt status `selected_unverified` is correct; does not claim HTTP success ([6077190221](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6077190221)).
+- **Manual QommonsAI observations:** My Drive displayed `synthetic.txt`, retained it after F5, and showed `学習中` -> `学習済み` ([6077224107](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6077224107)). In Private Knowledge chat, only this file was selected with Web search OFF; question omitted the expected code; answer contained exact `SYNTHETIC-KNOWLEDGE-0001` and file name — **single manual retrieval PASS**, not automated search E2E ([6078368762](https://github.com/oimus1976/gov-llm-e2e-testkit/issues/2#issuecomment-6078368762)).
+- **GitHub CI:** [run 37882053878](https://github.com/oimus1976/gov-llm-e2e-testkit/actions/runs/37882053878) completed/success for the **existing Smoke** at baseline HEAD; it does not cover the new focused suite.
+- **Still unknown:** HTTP status and backend indexing internals, server-side same-name/replace semantics, citation link clickability, other formats/multiple files, and automated knowledge selection/chat answer check. QommonsAI live UI and Windows evidence are operator-reported; GitHub HEAD/code/CI are directly checked.
+- **Current guard:** A `synthetic.txt` now exists on the test account by operator observation. Do **not** re-upload, delete, replace or retry; no broader or real municipal data. Code, env, login, CI and chat workflows remain unchanged in this documentation-only v0.7.38 update.
+- **Documents:** new post-execution evidence editions `docs/design/Design_KnowledgeUploadProbe_v0.5.md` and `docs/test_plan/Test_KnowledgeUploadProbe_v0.5.md` supersede *status reporting*, not historical v0.4 gate design. Next: independent Draft PR review and minimal correction of substantiated issues; later retrieval automation only as separately scoped and authorized work. Ready/merge/main are human decisions.
 
 ## 2026-10-09: Focused Windows unit-test regression — correction prepared
 
