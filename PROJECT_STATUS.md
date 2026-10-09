@@ -1,4 +1,4 @@
-# 📘 PROJECT_STATUS v0.7.35 (Draft; observed controls, read-only implementation)
+# 📘 PROJECT_STATUS v0.7.36 (Draft; synthetic one-file gate prepared, live upload unapproved)
 
 **— F9 完結後／テスト計画再構築・工程5（実装修正）完了記録版 —**
 
@@ -6,6 +6,16 @@
 **Maintainer:** Sumio Nishioka & ChatGPT (Architect Role)
 
 ---
+
+## 2026-10-09: Synthetic single-file live gate — implementation and offline tests prepared
+
+- Human approval in this iteration covers **implementation/test preparation only**, NOT real QommonsAI file selection, upload, server write or existing-item replacement.
+- Operator-reported Windows verification of prior commit `255756f`: clean worktree after fast-forward, focused pytest exit 0, live `Read-only check PASS: My Drive, New menu, upload item and file input` (Issue #2 comment `6073651368`). This establishes the My Drive navigation and observed control probe, not the FileChooser or HTTP upload.
+- New `docs/design/Design_KnowledgeUploadProbe_v0.4.md` and `tests/unit/test_knowledge_upload_gated.py`, mock-only gate tests, versioned v0.4 test plan and a runbook explicitly marked **not authorized to execute**.
+- Future explicit-only CLI path requires **both** `--confirm-upload` and `--execute-synthetic-upload` along with `--synthetic`, pauses before selecting a file for manual inspection of `synthetic.txt` collisions, then requires exact console phrase `UPLOAD synthetic.txt`. Prior inspection commands and plain `--confirm-upload` remain unmodified/blocked.
+- Selecting a file **may upload immediately**. The PageObject only handles byte-exact bundled `synthetic.txt`; after selection a local receipt says `selected_unverified` and false for HTTP acceptance, registration and search. No retry on uncertainty. **Server-side collision protection is not established.**
+- The newly written gated unit tests **have not yet been executed on Windows**; existing CI Smoke Test success is separate and does not exercise them. Five-area PENTA-style impact assessment is author-only, not independent approval. No actual file selection or upload by this development action.
+- **Next gate:** Windows branch ff-only update and focused local offline tests. Then independent authorization before running the live one-file command. Draft PR #1 stays OPEN/Draft; no main/Ready/merge.
 
 ## 2026-10-09: Observed registration controls — offline implementation candidate
 

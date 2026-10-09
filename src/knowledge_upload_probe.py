@@ -110,6 +110,77 @@ def inspect_ui(config: dict, *, check_observed_controls: bool = False) -> None:
             browser.close()
 
 
+def upload_synthetic_one(
+    config: dict,
+    source: Path,
+    target: Path,
+    digest: str,
+    *,
+    operator_input=None,
+) -> bool:
+    """Future *separately authorized* live test; never called by inspection mode.
+
+    A selected file can upload immediately. A manual duplicate check is required
+    because file-list DOM and provider replacement semantics are unobserved.
+    """
+    from playwright.sync_api import sync_playwright
+    from tests.pages.login_page import LoginPage
+    from tests.pages.private_knowledge_page import PrivateKnowledgePage
+
+    settings = config.get("browser", {})
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=False)
+        try:
+            page = browser.new_page()
+            page.set_default_timeout(settings["browser_timeout_ms"])
+            page.set_default_navigation_timeout(settings["page_timeout_ms"])
+            login = LoginPage(page, config, timeout=settings["page_timeout_ms"])
+            login.open()
+            login.login()
+            knowledge = PrivateKnowledgePage(
+                page, config, timeout=settings["page_timeout_ms"]
+            )
+            knowledge.open_my_drive()
+            print(
+                "PRE-SELECTION CHECKPOINT: inspect My Drive for an existing synthetic.txt."
+            )
+            print(
+                "If there is any duplicate or the list is incomplete, do not proceed."
+            )
+            print(
+                "Resume Inspector after checking; file selection may trigger immediate upload."
+            )
+            page.pause()
+            read_input = operator_input if operator_input is not None else input
+            try:
+                phrase = read_input(
+                    "Confirm NO existing synthetic.txt, and approve one possible "
+                    "immediate upload by typing exactly UPLOAD synthetic.txt: "
+                )
+            except EOFError:
+                phrase = ""
+            if phrase != "UPLOAD synthetic.txt":
+                print("Stopped before file selection; no selection receipt created.")
+                return False
+
+            # The PageObject revalidates the exact sample and export immediately
+            # before clicking. Never retry automatically if this step fails.
+            outcome = knowledge.select_synthetic_file(
+                source, target, confirmation="UPLOAD"
+            )
+            receipt = write_receipt(source, target, digest)
+            print(f"File chooser result: {outcome}.")
+            print(f"Local receipt: {receipt.name}.")
+            print(
+                "HTTP acceptance, My Drive registration and search remain unverified."
+            )
+            print("Inspect the page without deleting, replacing or retrying.")
+            page.pause()
+            return True
+        finally:
+            browser.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Synthetic Private Knowledge UI inspection"
@@ -119,6 +190,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--synthetic", action="store_true")
     parser.add_argument("--confirm-upload", action="store_true")
+    parser.add_argument(
+        "--execute-synthetic-upload",
+        action="store_true",
+        help="Future human-authorized one-file synthetic selection only",
+    )
     parser.add_argument(
         "--inspect-ui",
         action="store_true",
@@ -130,6 +206,13 @@ def main(argv: list[str] | None = None) -> int:
         help="Read-only My Drive/menu/file-input check; requires --inspect-ui",
     )
     args = parser.parse_args(argv)
+    if args.execute_synthetic_upload and (
+        not args.confirm_upload or args.inspect_ui or args.check_observed_controls
+    ):
+        parser.error(
+            "--execute-synthetic-upload requires --confirm-upload and cannot "
+            "be combined with inspection controls"
+        )
     if args.check_observed_controls and not args.inspect_ui:
         parser.error("--check-observed-controls requires --inspect-ui")
     if args.confirm_upload and args.inspect_ui:
@@ -144,12 +227,12 @@ def main(argv: list[str] | None = None) -> int:
             "Stopped: only the unchanged bundled synthetic Markdown sample is permitted."
         )
         return 2
-    if not args.inspect_ui:
+    if not args.inspect_ui and not args.execute_synthetic_upload:
         print(
-            "Stopped: file selection and upload are not yet authorized or enabled."
+            "Stopped: --confirm-upload alone never selects or uploads a file."
         )
         print(
-            "Use --synthetic --inspect-ui --check-observed-controls for read-only UI checks."
+            "Use --synthetic --inspect-ui --check-observed-controls for read-only checks."
         )
         return 2
     try:
@@ -163,18 +246,23 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     try:
-        prepare_txt(source)
-        if args.check_observed_controls:
+        target, digest = prepare_txt(source)
+        if args.execute_synthetic_upload:
+            upload_synthetic_one(config, source, target, digest)
+        elif args.check_observed_controls:
             inspect_ui(config, check_observed_controls=True)
         else:
             inspect_ui(config)
     except Exception:
         # Playwright fill errors can include credentials; never print the exception.
         print(
-            "Stopped: local export, browser, login or UI inspection failed. Check locally."
+            "Stopped: export, browser, login, inspection or selection failed."
+        )
+        print(
+            "If file selection was attempted, server state is unknown. Do not retry."
         )
         return 2
     print(
-        "Observation ended. Upload, HTTP acceptance, list registration and search remain unverified."
+        "Session ended. HTTP acceptance, list registration and search remain unverified."
     )
     return 2

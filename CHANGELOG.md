@@ -12,6 +12,21 @@
 
 ---
 
+## v0.7.36 (2026-10-09) — prepared one-file synthetic selection gate (NOT executed)
+
+### Design and implementation
+- Added versioned `Design_KnowledgeUploadProbe_v0.4.md` and operator runbook `KnowledgeUpload_Synthetic_OneFile_Gate_v0.1.md`. Earlier design versions preserved.
+- Added optional explicit `--execute-synthetic-upload` path only with both `--synthetic` and `--confirm-upload`. Future operator run pauses before file selection for manual same-name check and requires exact terminal attestation `UPLOAD synthetic.txt`.
+- Reused observed `PrivateKnowledgePage.select_synthetic_file` and the bundled byte-exact sample. Selection may immediately upload; status remains `selected_unverified`, not server/list/search success. No retry, deletion, replacement or other data path introduced.
+- Added mock-only `test_knowledge_upload_gated.py` and `Test_KnowledgeUploadProbe_v0.4.md`. Existing CI, Smoke Test, login and chat interfaces unchanged.
+
+### Verification and authority
+- Previous Windows operator observation passed read-only My Drive control detection and prior offline pytest exit 0, recorded Issue #2 comment `6073651368`.
+- New gated offline tests written but **not yet operator-run**. A fresh CI status for the new Draft head must be checked separately. Code preparation approved; **actual one-file upload not approved or performed**.
+- PR #1 remains Draft, no main or Ready/merge. Separate human approval and duplicate-preflight required before any real file selection.
+
+---
+
 ## v0.7.35 (2026-10-09) — observed Private Knowledge controls and read-only check
 
 ### Design
